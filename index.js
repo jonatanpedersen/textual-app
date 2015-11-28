@@ -2,7 +2,6 @@ import http from 'http';
 import express from 'express';
 import bodyParser from 'body-parser';
 import fs from 'fs';
-import repositories from './data/repositories';
 import Git from 'nodegit';
 import path  from 'path';
 

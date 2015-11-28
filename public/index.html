@@ -46,27 +46,6 @@
           </menu>
         </div>
       </section>
-      <hr />
-      <section class="section section-default">
-        <div class="container">
-          <h2>Clone repository</h2>
-          <form name="cloneRepositoryForm" ng-submit="submitCloneRepositoryForm()">
-            <p class"form-group">
-              <label for="repositoryUrl">Repository Name</label>
-              <input type="text" class="form-control" ng-model="cloneRepositoryFormData.repositoryName" required />
-              <p>e.g. <span ng-click="cloneRepositoryFormData.repositoryName = 'example-consumer-app-translations'">example-consumer-app-translations</span></p>
-            </p>
-            <p class"form-group">
-              <label for="repositoryUrl">Repository Url</label>
-              <input type="uri" class="form-control" ng-model="cloneRepositoryFormData.repositoryUrl" required />
-              <p>e.g. <span ng-click="cloneRepositoryFormData.repositoryUrl = 'https://github.com/intranslator/example-consumer-app-translations.git'">https://github.com/intranslator/example-consumer-app-translations.git</span></p>
-            </p>
-            <p class"form-group">
-              <button type="submit" class="btn btn-primary">Clone</button>
-            </p>
-          </form>
-        </div>
-      </section>
     </script>
 
     <script type="text/ng-template" id="clone-repository.html">
@@ -96,7 +75,7 @@
     </script>
 
     <script type="text/ng-template" id="design.html">
-      <nav>
+      <nav class="toolbar">
         <div class="container-fluid">
           <div class="btn-toolbar">
             <div class="btn-group">
@@ -108,10 +87,27 @@
               <button class="btn btn-default active">Design</button>
               <button ng-click="source()" class="btn btn-default">Source</button>
             </div>
+            <div class="btn-group" uib-dropdown>
+              <button type="button" uib-dropdown-toggle class="btn btn-default dropdown-toggle">
+                Columns <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu">
+                <li ng-repeat="column in availableColumns" ng-click="toggleColumn(column)"><a href="">{{column}}</a></li>
+              </ul>
+            </div>
+            <div class="btn-group" uib-dropdown>
+              <button type="button" uib-dropdown-toggle class="btn btn-default dropdown-toggle">
+                Order by <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu">
+                <li ng-repeat="column in availableColumns" ng-click="orderByColumn(column, 1)"><a href="">{{column}} ascending</a></li>
+                <li ng-repeat="column in availableColumns" ng-click="orderByColumn(column, -1)"><a href="">{{column}} descending</a></li>
+              </ul>
+            </div>
             <div class="btn-group">
               <form class="form-inline" role="search">
                 <div class="form-group">
-                  <input type="text" class="form-control" placeholder="Search">
+                  <input type="text" class="form-control" placeholder="Search" ng-model="searchText">
                 </div>
               </form>
             </div>
@@ -119,41 +115,43 @@
         </div>
       </nav>
 
-      <div class="container-fluid">
-        <table class="table table-bordered table-condensed">
+      <div>
+        <table class="table table-bordered table-condensed table-input">
           <thead>
             <tr>
               <th>Key</th>
-              <th ng-repeat="column in columns">
+              <th ng-repeat="column in selectedColumns">
                 {{column}}
               </th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="(key, value) in repository.texts">
+            <tr ng-repeat="text in allTexts | filter: searchText | orderBy: 'selectedOrderByColumn' | limitTo: 100">
               <td>
-                <input ng-model="key" type="text" class="form-control input-sm" />
+                <input ng-model="text.key" type="text" class="form-control input-sm" />
               </td>
-              <td ng-repeat="column in columns">
-                <input ng-model="value[column]" type="text" class="form-control input-sm" />
+              <td ng-repeat="column in selectedColumns">
+                <input ng-model="text.value[column]" type="text" class="form-control input-sm" />
               </td>
               <td>
-                <button ng-click="deleteKey(key)" class="btn btn-small btn-default btn-sm"><i class="glyphicon glyphicon-minus"></i></button>
+                <button ng-click="deleteKey(text.key)" class="btn btn-sm btn-default"><i class="glyphicon glyphicon-minus"></i></button>
               </td>
             </tr>
+          </tbody>
+          <tfoot>
             <tr>
               <td>
                 <input ng-model="addForm.key" type="text" class="form-control input-sm" />
               </td>
-              <td ng-repeat="column in columns">
+              <td ng-repeat="column in selectedColumns">
                 <input ng-model="addForm.value[column]" type="text" class="form-control input-sm" />
               </td>
               <td>
-                <button type="submit" class="btn btn-small btn-default btn-sm" ng-click="add()"><i class="glyphicon glyphicon-plus"></i></button>
+                <button type="submit" class="btn btn-default btn-sm" ng-click="add()"><i class="glyphicon glyphicon-plus"></i></button>
               </td>
             </tr>
-          </tbody>
+          </tfoot>
         </table>
       </div>
     </script>
@@ -174,9 +172,7 @@
           </div>
         </div>
       </nav>
-      <pre>
-         {{repository.texts}}
-      </pre>
+      <pre>{{repository.texts | json: 4}}</pre>
     </script>
 
     <script type="text/ng-template" id="about.html">

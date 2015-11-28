@@ -1,7 +1,11 @@
 .section { padding: 30px 0;}
 .section-default { }
-.section-primary { background-color: #eee; }
-.btn-toolbar { margin: 20px 0; }
+.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }
+
+.toolbar + * { padding-top: 73px;}
+
+.btn-toolbar { margin: 15px -5px; }
+.btn-toolbar form { margin: 0; }
 .navbar-bottom { margin-bottom: 0;}
 .main { margin: 50px 0; }
 pre {
@@ -9,4 +13,18 @@ pre {
   padding: 0;
   background: none;
   border: none;
+}
+
+button .glyphicon {
+  line-height: 1.4em;
+}
+
+.table-input > tbody > tr > td,
+.table-input > tfoot > tr > td {
+  padding: 0 !important;
+}
+
+table input {
+  border: none !important;
+  box-shadow: none !important;
 }

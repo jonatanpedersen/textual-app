@@ -72,12 +72,6 @@ function IndexController ($scope, RepositoryService) {
   RepositoryService.getRepositoryNames().then(function(repositoryNames) {
     $scope.repositoryNames = repositoryNames;
   });
-
-  $scope.cloneRepositoryFormData = { };
-
-  $scope.submitCloneRepositoryForm = function() {
-    RepositoryService.cloneRepository($scope.cloneRepositoryFormData.repositoryUrl, $scope.cloneRepositoryFormData.repositoryName);
-  }
 }
 
 function LicenseController () {
@@ -100,9 +94,23 @@ function RepositoryController ($routeParams, $location) {
 function DesignController ($scope, $routeParams, $location, $uibModal, RepositoryService) {
   $scope.repositoryName = $routeParams.repositoryName;
 
+  $scope.allTexts = [];
+
   RepositoryService.getRepository($routeParams.repositoryName).then(function(repository) {
     $scope.repository = repository;
+
+    $scope.allTexts = Object.keys($scope.repository.texts).reduce(function(array, key) {
+      var value = $scope.repository.texts[key];
+      array.push({
+        key: key,
+        value: value
+      });
+
+      return array;
+    }, []);
   });
+
+  $scope.searchText = undefined;
 
   $scope.checkout = function() {
     RepositoryService.checkoutRepository($routeParams.repositoryName);
@@ -131,7 +139,24 @@ function DesignController ($scope, $routeParams, $location, $uibModal, Repositor
     RepositoryService.saveRepository($routeParams.repositoryName, $scope.repository);
   }
 
-  $scope.columns = ['da-DK', 'en-GB', 'fr-FR', 'de-DE', 'it-IT', 'es-ES'];
+  $scope.availableColumns = ['da-DK', 'en-GB', 'fr-FR', 'de-DE', 'it-IT', 'es-ES'].sort();
+  $scope.selectedColumns = ['da-DK', 'en-GB', 'de-DE'].sort();
+
+  $scope.toggleColumn = function(column) {
+    var indexOfColumn = $scope.selectedColumns.indexOf(column);
+
+    if (indexOfColumn > -1) {
+      $scope.selectedColumns.splice(indexOfColumn, 1);
+    } else {
+      $scope.selectedColumns.push(column);
+      $scope.selectedColumns.sort();
+    }
+  };
+
+  $scope.orderByColumn = function(column) {
+    console.log('orderByColumn', column);
+    $scope.selectedOrderByColumn = column;
+  };
 
   $scope.resetAddForm = function() {
     $scope.addForm = {
