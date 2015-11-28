@@ -1,0 +1,246 @@
+<html ng-app="app">
+  <head>
+    <title>translator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.6/cosmo/bootstrap.min.css">
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top" ng-controller="NavBarController">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a href="#/" class="navbar-brand">translator</a>
+        </div>
+        <ul class="nav navbar-nav navbar-left">
+          <li class="dropdown" uib-dropdown>
+           <a href="#" uib-dropdown-toggle class="dropdown-toggle">Repositories <span class="caret"></span></a>
+           <ul class="dropdown-menu">
+             <li ng-repeat="repositoryName in repositoryNames" ng-class="{ active: repositoryName === currentRepositoryName }"><a href="/#/repository/{{repositoryName}}">{{repositoryName}}</a></li>
+             <li role="separator" class="divider"></li>
+             <li><a href="/#/clone-repository">Clone repository</a></li>
+           </ul>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <main ng-view class="main"></main>
+
+    <nav class="navbar navbar-default navbar-fixed-bottom navbar-bottom">
+      <div class="container-fluid">
+        <p class="navbar-text">Copyright &copy; 2015 <a href="https://www.jonatanpedersen.com">Jonatan Pedersen</a></p>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/#/about">About</a></li>
+          <li><a href="/#/help">Help</a></li>
+          <li><a href="/#/license">License</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <script type="text/ng-template" id="index.html">
+      <section class="section section-default">
+        <div class="container">
+          <h2>Repositories</h2>
+          <menu class="list-group">
+            <a href="#/repository/{{repositoryName}}" class="list-group-item" ng-repeat="repositoryName in repositoryNames">{{repositoryName}}</a>
+          </menu>
+        </div>
+      </section>
+      <hr />
+      <section class="section section-default">
+        <div class="container">
+          <h2>Clone repository</h2>
+          <form name="cloneRepositoryForm" ng-submit="submitCloneRepositoryForm()">
+            <p class"form-group">
+              <label for="repositoryUrl">Repository Name</label>
+              <input type="text" class="form-control" ng-model="cloneRepositoryFormData.repositoryName" required />
+              <p>e.g. <span ng-click="cloneRepositoryFormData.repositoryName = 'example-consumer-app-translations'">example-consumer-app-translations</span></p>
+            </p>
+            <p class"form-group">
+              <label for="repositoryUrl">Repository Url</label>
+              <input type="uri" class="form-control" ng-model="cloneRepositoryFormData.repositoryUrl" required />
+              <p>e.g. <span ng-click="cloneRepositoryFormData.repositoryUrl = 'https://github.com/intranslator/example-consumer-app-translations.git'">https://github.com/intranslator/example-consumer-app-translations.git</span></p>
+            </p>
+            <p class"form-group">
+              <button type="submit" class="btn btn-primary">Clone</button>
+            </p>
+          </form>
+        </div>
+      </section>
+    </script>
+
+    <script type="text/ng-template" id="clone-repository.html">
+      <section class="section section-default">
+        <div class="container">
+          <h2>Clone repository</h2>
+          <form name="cloneRepositoryForm" ng-submit="submitCloneRepositoryForm()">
+            <p class"form-group">
+              <label for="repositoryUrl">Repository Name</label>
+              <input type="text" class="form-control" ng-model="cloneRepositoryFormData.repositoryName" required />
+              <p>e.g. <span ng-click="cloneRepositoryFormData.repositoryName = 'example-consumer-app-translations'">example-consumer-app-translations</span></p>
+            </p>
+            <p class"form-group">
+              <label for="repositoryUrl">Repository Url</label>
+              <input type="uri" class="form-control" ng-model="cloneRepositoryFormData.repositoryUrl" required />
+              <p>e.g. <span ng-click="cloneRepositoryFormData.repositoryUrl = 'https://github.com/intranslator/example-consumer-app-translations.git'">https://github.com/intranslator/example-consumer-app-translations.git</span></p>
+            </p>
+            <p class"form-group">
+              <button type="submit" class="btn btn-primary">Clone</button>
+            </p>
+          </form>
+        </div>
+      </section>
+    </script>
+
+    <script type="text/ng-template" id="repository.html">
+    </script>
+
+    <script type="text/ng-template" id="design.html">
+      <nav>
+        <div class="container-fluid">
+          <div class="btn-toolbar">
+            <div class="btn-group">
+              <button ng-click="checkout()" class="btn btn-default">Checkout</button>
+              <button ng-click="commit()" class="btn btn-default">Commit</button>
+              <button ng-click="push()" class="btn btn-default">Push</button>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-default active">Design</button>
+              <button ng-click="source()" class="btn btn-default">Source</button>
+            </div>
+            <div class="btn-group">
+              <form class="form-inline" role="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" placeholder="Search">
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container-fluid">
+        <table class="table table-bordered table-condensed">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th ng-repeat="column in columns">
+                {{column}}
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="(key, value) in repository.texts">
+              <td>
+                <input ng-model="key" type="text" class="form-control input-sm" />
+              </td>
+              <td ng-repeat="column in columns">
+                <input ng-model="value[column]" type="text" class="form-control input-sm" />
+              </td>
+              <td>
+                <button ng-click="deleteKey(key)" class="btn btn-small btn-default btn-sm"><i class="glyphicon glyphicon-minus"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input ng-model="addForm.key" type="text" class="form-control input-sm" />
+              </td>
+              <td ng-repeat="column in columns">
+                <input ng-model="addForm.value[column]" type="text" class="form-control input-sm" />
+              </td>
+              <td>
+                <button type="submit" class="btn btn-small btn-default btn-sm" ng-click="add()"><i class="glyphicon glyphicon-plus"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </script>
+
+    <script type="text/ng-template" id="source.html">
+      <nav>
+        <div class="container-fluid">
+          <div class="btn-toolbar">
+            <div class="btn-group">
+              <button ng-click="checkout()" class="btn btn-default">Checkout</button>
+              <button ng-click="commit()" class="btn btn-default">Commit</button>
+              <button ng-click="push()" class="btn btn-default">Push</button>
+            </div>
+            <div class="btn-group">
+              <button ng-click="design()" class="btn btn-default">Design</button>
+              <button class="btn btn-default active">Source</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <pre>
+         {{repository.texts}}
+      </pre>
+    </script>
+
+    <script type="text/ng-template" id="about.html">
+      <section class="section section-default">
+        <div class="container">
+          <h2>About</h2>
+        </div>
+      </section>
+    </script>
+
+    <script type="text/ng-template" id="help.html">
+      <section class="section section-default">
+        <div class="container">
+          <h2>Help</h2>
+        </div>
+      </section>
+    </script>
+
+    <script type="text/ng-template" id="license.html">
+      <section class="section section-default">
+        <div class="container">
+          <h2>License (MIT)</h2>
+          <pre>Copyright (c) 2015 Jonatan Pedersen
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</pre>
+        </div>
+      </section>
+    </script>
+
+    <script type="text/ng-template" id="commitModal.html">
+      <div class="modal-header">
+          <h3 class="modal-title">Commit</h3>
+      </div>
+      <div class="modal-body">
+        <p class"form-group">
+          <label for="message">Message</label>
+          <textarea name="message" id="message" class="form-control" ng-model="commit.message"></textarea>
+        </p>
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-primary" type="button" ng-click="ok()">OK</button>
+          <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
+      </div>
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-beta.2/angular-route.js"></script>
+    <script src="/ui-bootstrap-tpls-0.14.3.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>

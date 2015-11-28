@@ -1,0 +1,32 @@
+{
+  "name": "translator-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon --exec \"echo require('babel-core/register'); require('./index'); | node\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/intranslator/translator-app.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/intranslator/translator-app/issues"
+  },
+  "homepage": "https://github.com/intranslator/translator-app#readme",
+  "dependencies": {
+    "babel-core": "6.1.21",
+    "babel-plugin-syntax-async-functions": "6.1.18",
+    "babel-plugin-transform-async-to-generator": "6.1.18",
+    "babel-preset-es2015-node": "5.0.1",
+    "body-parser": "^1.14.1",
+    "express": "^4.13.3",
+    "nodegit": "^0.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.8.1"
+  }
+}
