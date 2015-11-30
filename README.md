@@ -3,7 +3,7 @@
 ## Install
 Clone from GitHub:
 ``` bash
-git clone git+ssh://git@github.com:jonatanpedersen/translator-app
+git clone git@github.com:jonatanpedersen/translator-app.git
 ```
 Install dependencies:
 ``` bash
