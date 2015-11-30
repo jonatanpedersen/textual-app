@@ -47,7 +47,7 @@
 	__webpack_require__(1);
 
 	var texts = __webpack_require__(5);
-	var getText = __webpack_require__(6)(texts, 'da-DK');
+	var getText = __webpack_require__(6)(texts, 'en-GB');
 
 	angular.module('app', ['ngRoute', 'ui.bootstrap']);
 
@@ -74,6 +74,10 @@
 	        templateUrl: 'license.html',
 	        controller: 'LicenseController'
 	      })
+	      .when('/repository/', {
+	        templateUrl: 'repository-list.html',
+	        controller: 'RepositoryListController'
+	      })
 	      .when('/repository/:repositoryName', {
 	        templateUrl: 'repository.html',
 	        controller: 'RepositoryController'
@@ -86,10 +90,11 @@
 	angular.module('app').controller('AboutController', [AboutController]);
 	angular.module('app').controller('CloneRepositoryController', ['$scope', '$location', 'RepositoryService', CloneRepositoryController]);
 	angular.module('app').controller('HelpController', [HelpController]);
-	angular.module('app').controller('IndexController', ['$scope', 'RepositoryService', IndexController]);
+	angular.module('app').controller('IndexController', [IndexController]);
 	angular.module('app').controller('LicenseController', [LicenseController]);
 	angular.module('app').controller('NavBarController', ['$scope', '$location', '$routeParams', 'RepositoryService', NavBarController]);
 	angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', RepositoryController]);
+	angular.module('app').controller('RepositoryListController', ['$scope', 'RepositoryService', RepositoryListController]);
 	angular.module('app').controller('CommitModalController', ['$scope', '$uibModalInstance', CommitModalController]);
 	angular.module('app').service('RepositoryService', ['$http', RepositoryService]);
 	angular.module('app').constant('getText', getText);
@@ -127,7 +132,10 @@
 	function HelpController () {
 	}
 
-	function IndexController ($scope, RepositoryService) {
+	function IndexController () {
+	}
+
+	function RepositoryListController ($scope, RepositoryService) {
 	  RepositoryService.getRepositoryNames().then(function(repositoryNames) {
 	    $scope.repositoryNames = repositoryNames;
 	  });
@@ -418,7 +426,7 @@
 
 
 	// module
-	exports.push([module.id, ".section { padding: 30px 0;}\r\n.section-default { }\r\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\r\n\r\n.toolbar + * { padding-top: 73px;}\r\n\r\n.btn-toolbar { margin: 15px -5px; }\r\n.btn-toolbar form { margin: 0; }\r\n.navbar-bottom { margin-bottom: 0;}\r\n.main { margin: 50px 0; }\r\npre {\r\n  margin: 0;\r\n  padding: 0;\r\n  background: none;\r\n  border: none;\r\n}\r\n\r\nbutton .glyphicon {\r\n  line-height: 1.4em;\r\n}\r\n\r\n.table-input > tbody > tr > td,\r\n.table-input > tfoot > tr > td {\r\n  padding: 0 !important;\r\n}\r\n\r\ntable input {\r\n  border: none !important;\r\n  box-shadow: none !important;\r\n}\r\n", ""]);
+	exports.push([module.id, ".section { padding: 30px 0;}\r\n.section-default { }\r\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\r\n\r\n.toolbar + * { padding-top: 73px;}\r\n\r\n.btn-toolbar { margin: 15px -5px; }\r\n.btn-toolbar form { margin: 0; }\r\n.navbar-bottom { margin-bottom: 0;}\r\n.main { margin: 50px 0; }\r\npre {\r\n  margin: 0;\r\n  padding: 0;\r\n  background: none;\r\n  border: none;\r\n}\r\n\r\nbutton .glyphicon {\r\n  line-height: 1.4em;\r\n}\r\n\r\n.table-input > tbody > tr > td,\r\n.table-input > tfoot > tr > td {\r\n  padding: 0 !important;\r\n}\r\n\r\ntable input {\r\n  border: none !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\n.table-texts td:last-child { width: 35px;}\r\n", ""]);
 
 	// exports
 
@@ -805,6 +813,10 @@
 		"search": {
 			"da-DK": "søg",
 			"en-GB": "search"
+		},
+		"Message": {
+			"en-GB": "Message",
+			"da-DK": "Besked"
 		}
 	};
 

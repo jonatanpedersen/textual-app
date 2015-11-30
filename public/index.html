@@ -1,27 +1,29 @@
 <html ng-app="app">
   <head>
-    <title text>Translator App</title>
+    <title>textual.io</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.6/cosmo/bootstrap.min.css">
   </head>
   <body>
-    <nav class="navbar navbar-default navbar-fixed-top" ng-controller="NavBarController">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a href="#/" class="navbar-brand" text>Translator App</a>
+    <script type="text/ng-template" id="navbar.html">
+      <nav class="navbar navbar-default navbar-fixed-top" ng-controller="NavBarController">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a href="#/" class="navbar-brand">textual.io</a>
+          </div>
+          <ul class="nav navbar-nav navbar-left">
+            <li class="dropdown" uib-dropdown>
+             <a href="#" uib-dropdown-toggle class="dropdown-toggle">{{ 'Repositories' | text }} <span class="caret"></span></a>
+             <ul class="dropdown-menu">
+               <li ng-repeat="repositoryName in repositoryNames" ng-class="{ active: repositoryName === currentRepositoryName }"><a href="/#/repository/{{repositoryName}}">{{repositoryName}}</a></li>
+               <li role="separator" class="divider"></li>
+               <li><a href="/#/clone-repository" text>Clone repository</a></li>
+             </ul>
+            </li>
+          </ul>
         </div>
-        <ul class="nav navbar-nav navbar-left">
-          <li class="dropdown" uib-dropdown>
-           <a href="#" uib-dropdown-toggle class="dropdown-toggle">{{ 'Repositories' | text }} <span class="caret"></span></a>
-           <ul class="dropdown-menu">
-             <li ng-repeat="repositoryName in repositoryNames" ng-class="{ active: repositoryName === currentRepositoryName }"><a href="/#/repository/{{repositoryName}}">{{repositoryName}}</a></li>
-             <li role="separator" class="divider"></li>
-             <li><a href="/#/clone-repository" text>Clone repository</a></li>
-           </ul>
-          </li>
-        </ul>
-      </div>
-    </nav>
+      </nav>
+    </script>
 
     <main ng-view class="main"></main>
 
@@ -38,6 +40,16 @@
 
     <script type="text/ng-template" id="index.html">
       <section class="section section-default">
+        <div class="container text-center">
+          <h1 style="font-size: 72pt;">textual.io</h1>
+          <p style="font-size: 16pt;">Take back control of your texts...</p>
+        </div>
+      </section>
+    </script>
+
+    <script type="text/ng-template" id="repository-list.html">
+      <div ng-include="'navbar.html'"></div>
+      <section class="section section-default">
         <div class="container">
           <h2 text>Repositories</h2>
           <menu class="list-group">
@@ -48,6 +60,7 @@
     </script>
 
     <script type="text/ng-template" id="clone-repository.html">
+      <div ng-include="'navbar.html'"></div>
       <section class="section section-default">
         <div class="container">
           <h2 text>Clone repository</h2>
@@ -71,9 +84,7 @@
     </script>
 
     <script type="text/ng-template" id="repository.html">
-    </script>
-
-    <script type="text/ng-template" id="repository.html">
+      <div ng-include="'navbar.html'"></div>
       <nav class="toolbar">
         <div class="container-fluid">
           <div class="btn-toolbar">
@@ -102,7 +113,7 @@
             <div class="btn-group">
               <form class="form-inline" role="search">
                 <div class="form-group">
-                  <input type="text" class="form-control" placeholder="Search" ng-model="searchText">
+                  <input type="text" class="form-control" placeholder="{{ 'search' | text }}" ng-model="searchText">
                 </div>
               </form>
             </div>
@@ -111,7 +122,7 @@
       </nav>
 
       <div>
-        <table class="table table-bordered table-condensed table-input">
+        <table class="table table-bordered table-condensed table-input table-texts">
           <thead>
             <tr>
               <th text>Key</th>

@@ -28,3 +28,5 @@ table input {
   border: none !important;
   box-shadow: none !important;
 }
+
+.table-texts td:last-child { width: 35px;}

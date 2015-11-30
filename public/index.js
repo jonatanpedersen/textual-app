@@ -1,7 +1,7 @@
 require('./index.css');
 
 var texts = require('json!translator-app-texts');
-var getText = require('get-text')(texts, 'da-DK');
+var getText = require('get-text')(texts, 'en-GB');
 
 angular.module('app', ['ngRoute', 'ui.bootstrap']);
 
@@ -28,6 +28,10 @@ angular.module('app').config(['$routeProvider',
         templateUrl: 'license.html',
         controller: 'LicenseController'
       })
+      .when('/repository/', {
+        templateUrl: 'repository-list.html',
+        controller: 'RepositoryListController'
+      })
       .when('/repository/:repositoryName', {
         templateUrl: 'repository.html',
         controller: 'RepositoryController'
@@ -40,10 +44,11 @@ angular.module('app').config(['$routeProvider',
 angular.module('app').controller('AboutController', [AboutController]);
 angular.module('app').controller('CloneRepositoryController', ['$scope', '$location', 'RepositoryService', CloneRepositoryController]);
 angular.module('app').controller('HelpController', [HelpController]);
-angular.module('app').controller('IndexController', ['$scope', 'RepositoryService', IndexController]);
+angular.module('app').controller('IndexController', [IndexController]);
 angular.module('app').controller('LicenseController', [LicenseController]);
 angular.module('app').controller('NavBarController', ['$scope', '$location', '$routeParams', 'RepositoryService', NavBarController]);
 angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', RepositoryController]);
+angular.module('app').controller('RepositoryListController', ['$scope', 'RepositoryService', RepositoryListController]);
 angular.module('app').controller('CommitModalController', ['$scope', '$uibModalInstance', CommitModalController]);
 angular.module('app').service('RepositoryService', ['$http', RepositoryService]);
 angular.module('app').constant('getText', getText);
@@ -81,7 +86,10 @@ function CloneRepositoryController ($scope, $location, RepositoryService) {
 function HelpController () {
 }
 
-function IndexController ($scope, RepositoryService) {
+function IndexController () {
+}
+
+function RepositoryListController ($scope, RepositoryService) {
   RepositoryService.getRepositoryNames().then(function(repositoryNames) {
     $scope.repositoryNames = repositoryNames;
   });
