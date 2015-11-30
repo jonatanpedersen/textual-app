@@ -148,4 +148,4 @@ app.post('/api/repository/:repositoryName/push', async (req, res) => {
 
 let httpServer = http.createServer(app);
 
-httpServer.listen(8080, () => { console.log('Listening on port 8080'); });
+httpServer.listen(80, () => { console.log('Listening on port 80'); });
