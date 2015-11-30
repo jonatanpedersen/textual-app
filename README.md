@@ -1,5 +1,37 @@
 # translator-app
 
+## Install
+Clone from GitHub:
+``` bash
+git clone git+ssh://git@github.com:intranslator/translator-app
+```
+Install dependencies:
+``` bash
+npm install
+```
+
+## Run
+
+``` bash
+webpack --watch
+```
+
+and
+
+``` bash
+npm start
+```
+
+Then open user interface http://localhost:8080.
+
+
+## Test
+
+``` bash
+npm test
+```
+
+
 ## Licence
 The MIT License (MIT)
 
