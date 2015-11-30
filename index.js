@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import fs from 'fs';
 import Git from 'nodegit';
 import path  from 'path';
+import simpleGit from 'simple-git';
 
 function getRepositoryPath(repositoryName) {
   return path.join('./data/', repositoryName);
@@ -61,72 +62,88 @@ app.post('/api/clone-repository', (req, res) => {
   let repositoryName = req.body.repositoryName;
   let repositoryPath = getRepositoryPath(repositoryName);
 
-  Git.Clone(repositoryUrl, repositoryPath).then((repository) => {
+  simpleGit().clone(repositoryUrl, repositoryPath, () => {
     res.end();
-  })
+  });
 });
 
-app.post('/api/repository/:repositoryName/pull', (req, res) => {
-  res.end();
+app.post('/api/repository/:repositoryName/pull', (req, res, next) => {
+  let repositoryName = req.params.repositoryName;
+  let repositoryPath = getRepositoryPath(repositoryName);
+
+  simpleGit(repositoryPath).pull((err) => {
+    if (err)
+      return next(err);
+
+    res.end();
+  });
 });
 
-app.post('/api/repository/:repositoryName/checkout', (req, res) => {
-  res.end();
+app.post('/api/repository/:repositoryName/sync', (req, res, next) => {
+  let repositoryName = req.params.repositoryName;
+  let repositoryPath = getRepositoryPath(repositoryName);
+
+  simpleGit(repositoryPath)
+    .pull()
+    .push('origin', 'master', (err) => {
+      if (err)
+        return next(err);
+
+      res.end();
+    });
+});
+
+app.post('/api/repository/:repositoryName/checkout', (req, res, next) => {
+  let repositoryName = req.params.repositoryName;
+  let repositoryPath = getRepositoryPath(repositoryName);
+
+  simpleGit(repositoryPath)
+    .checkout('./*', (err) => {
+      if (err)
+        return next(err);
+
+      res.end();
+    });
+});
+
+app.get('/api/repository/:repositoryName/status', (req, res, next) => {
+  let repositoryName = req.params.repositoryName;
+  let repositoryPath = getRepositoryPath(repositoryName);
+
+  simpleGit(repositoryPath)
+    .status((err, status) => {
+      if (err)
+        return next(err);
+
+      res.json(status);
+    });
 });
 
 app.post('/api/repository/:repositoryName/commit', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
   let repositoryPath = getRepositoryPath(repositoryName);
 
-  Git.Repository.open(repositoryPath).then(repository => {
-    let filesToAdd = ['texts.json'];
-    let author = Git.Signature.now('Jonatan Pedersen', 'jp@jonatanpedersen.com');
-    let committer = author;
-    let message = req.body.message;
+  simpleGit(repositoryPath)
+    .add('./*')
+    .commit(req.body.message, (err) => {
+      if (err)
+        res.json(err);
 
-    repository.createCommitOnHead(filesToAdd, author, committer, message).catch(err => { console.log(err); return next(err); }).then(function(oid) {
-      res.json(oid);
+      res.end();
     });
-  });
 });
 
 app.post('/api/repository/:repositoryName/push', async (req, res) => {
-  try {
-    let repositoryName = req.params.repositoryName;
-    let repositoryPath = getRepositoryPath(repositoryName);
+  let repositoryName = req.params.repositoryName;
+  let repositoryPath = getRepositoryPath(repositoryName);
 
-    let repository = await Git.Repository.open(repositoryPath);
-    console.log(repository);
+  simpleGit(repositoryPath)
+    .push('origin', 'master', (err) => {
+      if (err)
+        res.json(err);
 
-    let remotes = await Git.Remote.list(repository);
-    let remote = await repository.getRemote('origin');
-    console.log('remotes', remotes);
-
-
-    remote.initCallbacks({
-        credentials: function(url, userName) {
-            return Git.Cred.sshKeyFromAgent(userName);
-        }
+      res.end();
     });
-
-    await remote.connect(Git.Enums.DIRECTION.PUSH);
-
-    console.log('remote Connected?', remote.connected());
-
-    await remote.push(
-      ["refs/heads/master:refs/heads/master"],
-      null,
-      repo.defaultSignature(),
-      "Push to master"
-    );
-
-    console.log('remote Pushed!')
-  }
-  catch (ex) {
-    console.log(ex);
-
-    return next(ex);
-  }
 });
 
 let httpServer = http.createServer(app);

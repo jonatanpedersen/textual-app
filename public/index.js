@@ -1,3 +1,8 @@
+require('./index.css');
+
+var texts = require('json!translator-app-texts');
+var getText = require('get-text')(texts, 'da-DK');
+
 angular.module('app', ['ngRoute', 'ui.bootstrap']);
 
 angular.module('app').config(['$routeProvider',
@@ -27,14 +32,6 @@ angular.module('app').config(['$routeProvider',
         templateUrl: 'repository.html',
         controller: 'RepositoryController'
       })
-      .when('/repository/:repositoryName/design', {
-        templateUrl: 'design.html',
-        controller: 'DesignController'
-      })
-      .when('/repository/:repositoryName/source', {
-        templateUrl: 'source.html',
-        controller: 'SourceController'
-      })
       .otherwise({
         redirectTo: '/'
       });
@@ -46,11 +43,27 @@ angular.module('app').controller('HelpController', [HelpController]);
 angular.module('app').controller('IndexController', ['$scope', 'RepositoryService', IndexController]);
 angular.module('app').controller('LicenseController', [LicenseController]);
 angular.module('app').controller('NavBarController', ['$scope', '$location', '$routeParams', 'RepositoryService', NavBarController]);
-angular.module('app').controller('RepositoryController', ['$routeParams', '$location', RepositoryController]);
-angular.module('app').controller('DesignController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', DesignController]);
-angular.module('app').controller('SourceController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', SourceController]);
+angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', RepositoryController]);
 angular.module('app').controller('CommitModalController', ['$scope', '$uibModalInstance', CommitModalController]);
 angular.module('app').service('RepositoryService', ['$http', RepositoryService]);
+angular.module('app').constant('getText', getText);
+angular.module('app').filter('text', ['getText', textFilter]);
+angular.module('app').directive('text', ['getText', textDirective]);
+
+function textFilter(getText) {
+  return function(text) {
+    return getText(text);
+  }
+}
+
+function textDirective(getText) {
+  return {
+    restrict: 'A',
+    link: function (scope, elem, attrs) {
+        elem.html(getText(elem.html()));
+    }
+  }
+}
 
 function AboutController () {
 }
@@ -87,17 +100,24 @@ function NavBarController ($scope,  $location, $routeParams, RepositoryService) 
   });
 }
 
-function RepositoryController ($routeParams, $location) {
-  $location.path('/repository/' + $routeParams.repositoryName + '/design');
-}
-
-function DesignController ($scope, $routeParams, $location, $uibModal, RepositoryService) {
+function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryService) {
   $scope.repositoryName = $routeParams.repositoryName;
+
+  $scope.update = function () {
+    RepositoryService.getRepository($routeParams.repositoryName).then(function(repository) {
+      $scope.repository = repository;
+    });
+
+    RepositoryService.getRepositoryStatus($routeParams.repositoryName).then(function(repositoryStatus) {
+      $scope.repositoryStatus = repositoryStatus;
+    });
+  }
 
   $scope.allTexts = [];
 
-  RepositoryService.getRepository($routeParams.repositoryName).then(function(repository) {
-    $scope.repository = repository;
+  $scope.$watch('repository', function() {
+    if (!$scope.repository)
+      return;
 
     $scope.allTexts = Object.keys($scope.repository.texts).reduce(function(array, key) {
       var value = $scope.repository.texts[key];
@@ -108,12 +128,12 @@ function DesignController ($scope, $routeParams, $location, $uibModal, Repositor
 
       return array;
     }, []);
-  });
+  }, true);
 
   $scope.searchText = undefined;
 
   $scope.checkout = function() {
-    RepositoryService.checkoutRepository($routeParams.repositoryName);
+    RepositoryService.checkoutRepository($routeParams.repositoryName).then($scope.update);
   }
 
   $scope.commit = function() {
@@ -123,20 +143,24 @@ function DesignController ($scope, $routeParams, $location, $uibModal, Repositor
     });
 
     commitModal.result.then(function (message) {
-       RepositoryService.commitRepository($routeParams.repositoryName, message);
+       RepositoryService.commitRepository($routeParams.repositoryName, message).then($scope.update);
     });
   }
 
-  $scope.push = function() {
-    RepositoryService.pushRepository($routeParams.repositoryName);
+  $scope.pull = function() {
+    RepositoryService.pullRepository($routeParams.repositoryName).then($scope.update);
   }
 
-  $scope.source = function() {
-    $location.path('/repository/' + $routeParams.repositoryName + '/source');
+  $scope.push = function() {
+    RepositoryService.pushRepository($routeParams.repositoryName).then($scope.update);
+  }
+
+  $scope.sync = function() {
+    RepositoryService.syncRepository($routeParams.repositoryName).then($scope.update);
   }
 
   $scope.saveRepository = function() {
-    RepositoryService.saveRepository($routeParams.repositoryName, $scope.repository);
+    RepositoryService.saveRepository($routeParams.repositoryName, $scope.repository).then($scope.update);
   }
 
   $scope.availableColumns = ['da-DK', 'en-GB', 'fr-FR', 'de-DE', 'it-IT', 'es-ES'].sort();
@@ -185,37 +209,8 @@ function DesignController ($scope, $routeParams, $location, $uibModal, Repositor
 
     $scope.saveRepository();
   }
-}
 
-function SourceController ($scope, $routeParams, $location, $uibModal, RepositoryService) {
-  $scope.repositoryName = $routeParams.repositoryName;
-
-  RepositoryService.getRepository($routeParams.repositoryName).then(function(repository) {
-    $scope.repository = repository;
-  });
-
-  $scope.checkout = function() {
-    RepositoryService.checkoutRepository($routeParams.repositoryName);
-  }
-
-  $scope.commit = function() {
-    var commitModal = $uibModal.open({
-      templateUrl: 'commitModal.html',
-      controller: 'CommitModalController'
-    });
-
-    commitModal.result.then(function (message) {
-       RepositoryService.commitRepository($routeParams.repositoryName, message);
-    });
-  }
-
-  $scope.push = function() {
-    RepositoryService.pushRepository($routeParams.repositoryName);
-  }
-
-  $scope.design = function() {
-    $location.path('/repository/' + $routeParams.repositoryName + '/design');
-  }
+  $scope.update();
 }
 
 function CommitModalController ($scope, $uibModalInstance) {
@@ -242,6 +237,13 @@ function RepositoryService($http) {
     return $http({
       method: 'GET',
       url: '/api/repository/' + repositoryName
+    }).then(function(response) { return response.data; })
+  }
+
+  function getRepositoryStatus(repositoryName) {
+    return $http({
+      method: 'GET',
+      url: '/api/repository/' + repositoryName + '/status'
     }).then(function(response) { return response.data; })
   }
 
@@ -293,15 +295,24 @@ function RepositoryService($http) {
     }).then(function(response) { return response.data; })
   }
 
+  function syncRepository(repositoryName) {
+    return $http({
+      method: 'POST',
+      url: '/api/repository/' + repositoryName + '/sync',
+    }).then(function(response) { return response.data; })
+  }
+
   return {
     getRepositoryNames: getRepositoryNames,
     getRepository: getRepository,
+    getRepositoryStatus: getRepositoryStatus,
     saveRepository: saveRepository,
     cloneRepository: cloneRepository,
     pullRepository: pullRepository,
     checkoutRepository: checkoutRepository,
     commitRepository: commitRepository,
-    pushRepository: pushRepository
+    pushRepository: pushRepository,
+    syncRepository: syncRepository
   };
 }
 
