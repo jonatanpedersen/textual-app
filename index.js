@@ -155,7 +155,7 @@ app.get('/api/repository/:repositoryName', (req, res, next) => {
 app.post('/api/repository/:repositoryName', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
   let repositoryTextsPath = path.join('data', req.user.id, repositoryName, 'texts.json');
-  let data = JSON.stringify(req.body.texts);
+  let data = JSON.stringify(req.body.texts, null, 4);
 
   fs.writeFile(repositoryTextsPath, data, 'utf8', function (err) {
     if (err)
