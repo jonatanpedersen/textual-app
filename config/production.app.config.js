@@ -9,7 +9,7 @@ export default {
   github: {
     client_id: process.env.GITHUB_CLIENT_ID,
     client_secret: process.env.GITHUB_CLIENT_SECRET,
-    callback_url: '$(host)/auth/github/callback'
+    callback_url: process.env.HOST + '/auth/github/callback'
   },
   logger: {
     path: './log.txt'
