@@ -9,7 +9,7 @@ export default {
   github: {
     client_id: 'cf1635091c35b7fe1fb8',
     client_secret: 'f4bfb04353edd24e69fcda04aeae8e93def8f556',
-    callback_url: '$(host)/auth/github/callback'
+    callback_url: 'http://localhost/auth/github/callback'
   },
   logger: {
     path: './log.txt'
