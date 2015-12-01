@@ -8,10 +8,6 @@ angular.module('app', ['ngRoute', 'ui.bootstrap']);
 angular.module('app').config(['$routeProvider',
   function($routeProvider) {
     $routeProvider
-      .when('/', {
-        templateUrl: 'index.html',
-        controller: 'IndexController'
-      })
       .when('/about', {
         templateUrl: 'about.html',
         controller: 'AboutController'
@@ -28,7 +24,7 @@ angular.module('app').config(['$routeProvider',
         templateUrl: 'license.html',
         controller: 'LicenseController'
       })
-      .when('/repository/', {
+      .when('/', {
         templateUrl: 'repository-list.html',
         controller: 'RepositoryListController'
       })
@@ -46,11 +42,12 @@ angular.module('app').controller('CloneRepositoryController', ['$scope', '$locat
 angular.module('app').controller('HelpController', [HelpController]);
 angular.module('app').controller('IndexController', [IndexController]);
 angular.module('app').controller('LicenseController', [LicenseController]);
-angular.module('app').controller('NavBarController', ['$scope', '$location', '$routeParams', 'RepositoryService', NavBarController]);
+angular.module('app').controller('NavBarController', ['$scope', '$location', '$routeParams', 'RepositoryService', 'UserService', NavBarController]);
 angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', RepositoryController]);
 angular.module('app').controller('RepositoryListController', ['$scope', 'RepositoryService', RepositoryListController]);
 angular.module('app').controller('CommitModalController', ['$scope', '$uibModalInstance', CommitModalController]);
 angular.module('app').service('RepositoryService', ['$http', RepositoryService]);
+angular.module('app').service('UserService', ['$http', UserService]);
 angular.module('app').constant('getText', getText);
 angular.module('app').filter('text', ['getText', textFilter]);
 angular.module('app').directive('text', ['getText', textDirective]);
@@ -98,13 +95,17 @@ function RepositoryListController ($scope, RepositoryService) {
 function LicenseController () {
 }
 
-function NavBarController ($scope,  $location, $routeParams, RepositoryService) {
+function NavBarController ($scope,  $location, $routeParams, RepositoryService, UserService) {
   $scope.currentRepositoryName = function() {
     return  $routeParams.repositoryName;
   }
 
   RepositoryService.getRepositoryNames().then(function(repositoryNames) {
     $scope.repositoryNames = repositoryNames;
+  });
+
+  UserService.getUser().then(function(user) {
+    $scope.user = user;
   });
 }
 
@@ -321,6 +322,19 @@ function RepositoryService($http) {
     commitRepository: commitRepository,
     pushRepository: pushRepository,
     syncRepository: syncRepository
+  };
+}
+
+function UserService($http) {
+  function getUser() {
+    return $http({
+      method: 'GET',
+      url: '/api/user'
+    }).then(function(response) { return response.data; })
+  }
+
+  return {
+    getUser: getUser
   };
 }
 

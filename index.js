@@ -1,35 +1,143 @@
 import http from 'http';
 import express from 'express';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import logger from 'express-logger';
 import fs from 'fs';
-import Git from 'nodegit';
 import path  from 'path';
 import simpleGit from 'simple-git';
+import passport from 'passport';
+import { Strategy as GitHubStrategy } from 'passport-github';
+import config from 'cnf';
+import connectEnsureLogin from 'connect-ensure-login';
+import ejsLocals  from 'ejs-locals';
+import url from 'url';
+import mkdirp from 'mkdirp';
 
-function getRepositoryPath(repositoryName) {
-  return path.join('./data/', repositoryName);
-}
-
-function getRepositoryTextsPath(repositoryName) {
-  let repositoryPath = getRepositoryPath(repositoryName);
-
-  return path.join(repositoryPath, 'texts.json');
-}
+let users = {};
+let projects = {};
 
 let app = express();
-app.use(bodyParser.json());
 
-app.use('/', express.static('./public'));
+passport.serializeUser(function(user, callback) {
+  let userId = user.profile.id;
+
+  callback(null, userId);
+});
+
+passport.deserializeUser(function(userId, callback) {
+  let user = users[userId];
+
+  callback(null, user);
+});
+
+passport.use(new GitHubStrategy({
+    clientID: config.github.client_id,
+    clientSecret: config.github.client_secret,
+    callbackURL: config.github.callback_url
+  },
+  function(accessToken, refreshToken, profile, done) {
+    users[profile.id] = users[profile.id] || {
+      id: profile.id,
+      github: {
+        accessToken: accessToken,
+        refreshToken: refreshToken
+      },
+      profile: profile
+    };
+
+    return done(null, users[profile.id]);
+  }
+));
+
+// Use application-level middleware for common functionality, including
+// logging, parsing, and session handling.
+app.use(logger(config.logger));
+app.use(cookieParser());
+app.use(bodyParser.json());
+app.use(session(config.session));
+
+// Initialize Passport and restore authentication state, if any, from the
+// session.
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.engine('ejs', ejsLocals);
+app.set('view engine', 'ejs');
+
+app.get('/', function(req, res) {
+    res.render('index');
+});
+
+app.get('/about', function(req, res) {
+    res.render('about');
+});
+
+app.get('/features', function(req, res) {
+    res.render('features');
+});
+
+app.get('/help', function(req, res) {
+    res.render('help');
+});
+
+app.get('/license', function(req, res) {
+    res.render('license');
+});
+
+app.get('/pricing', function(req, res) {
+    res.render('pricing');
+});
+
+app.use('/app', express.static('./public'));
+app.use('/static', express.static('./static'));
+
+app.get('/auth/github',
+  passport.authenticate('github', { scope: 'repo' })
+);
+
+app.get('/auth/github/callback',
+  passport.authenticate('github', { failureRedirect: '/' }),
+  function(req, res) {
+    res.redirect('/app');
+  }
+);
+
+app.get('/login', (req, res) => {
+  res.redirect('/auth/github');
+});
+
+app.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
+});
+
+app.use('/api', connectEnsureLogin.ensureLoggedIn());
+
+app.get('/api/user', (req, res) => {
+  let user = req.user;
+
+  res.json(user.profile);
+});
 
 app.get('/api/repository', (req, res) => {
-  let repositoryNames = fs.readdirSync('./data/').filter(file => fs.statSync(path.join('./data/', file)).isDirectory());
+  let userPath = path.join('data', req.user.id);
 
-  res.json(repositoryNames);
+  mkdirp(userPath, (err) => {
+    if (err)
+      return next(err);
+
+      let repositoryNames = fs.readdirSync(userPath)
+        .filter(file => fs.statSync(path.join(userPath, file)).isDirectory());
+
+      res.json(repositoryNames);
+  });
 });
 
 app.get('/api/repository/:repositoryName', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
-  let repositoryTextsPath = getRepositoryTextsPath(repositoryName);
+  let repositoryTextsPath = path.join('data', req.user.id, repositoryName, 'texts.json');
 
   fs.readFile(repositoryTextsPath, 'utf8', function (err, data) {
     if (err)
@@ -46,7 +154,7 @@ app.get('/api/repository/:repositoryName', (req, res, next) => {
 
 app.post('/api/repository/:repositoryName', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
-  let repositoryTextsPath = getRepositoryTextsPath(repositoryName);
+  let repositoryTextsPath = path.join('data', req.user.id, repositoryName, 'texts.json');
   let data = JSON.stringify(req.body.texts);
 
   fs.writeFile(repositoryTextsPath, data, 'utf8', function (err) {
@@ -60,42 +168,80 @@ app.post('/api/repository/:repositoryName', (req, res, next) => {
 app.post('/api/clone-repository', (req, res) => {
   let repositoryUrl = req.body.repositoryUrl;
   let repositoryName = req.body.repositoryName;
-  let repositoryPath = getRepositoryPath(repositoryName);
+  let repositoryPath = path.join('data', req.user.id, repositoryName);
 
-  simpleGit().clone(repositoryUrl, repositoryPath, () => {
-    res.end();
+  let parsedRepositoryUrl = url.parse(repositoryUrl);
+  parsedRepositoryUrl.auth = req.user.github.accessToken;
+  let signedRepositoryUrl = url.format(parsedRepositoryUrl);
+
+  mkdirp(repositoryPath, (err) => {
+    if (err)
+      return next(err);
+
+    simpleGit(repositoryPath)
+      .init(false, (err) => {
+        if (err)
+          return next(err);
+      })
+      .pull(signedRepositoryUrl, 'master', (err) => {
+        if (err)
+          return next(err);
+
+        res.end();
+      });
   });
 });
 
 app.post('/api/repository/:repositoryName/pull', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
-  let repositoryPath = getRepositoryPath(repositoryName);
+  let repositoryPath = path.join('data', req.user.id, repositoryName);
 
-  simpleGit(repositoryPath).pull((err) => {
-    if (err)
-      return next(err);
+  let signedRepositoryUrl = '';
 
-    res.end();
-  });
+  simpleGit(repositoryPath)
+    .getRemotes(true, function(err, remotes) {
+      let originRemote = remotes.filter((remote) => remote.name === 'origin')[0];
+      let parsedRepositoryUrl = url.parse(originRemote.refs.push);
+      parsedRepositoryUrl.auth = req.user.github.accessToken;
+      signedRepositoryUrl = url.format(parsedRepositoryUrl);
+
+      simpleGit(repositoryPath)
+        .pull(signedRepositoryUrl, 'master', (err) => {
+          if (err)
+            return next(err);
+
+          res.end();
+        });
+    });
 });
 
 app.post('/api/repository/:repositoryName/sync', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
-  let repositoryPath = getRepositoryPath(repositoryName);
+  let repositoryPath = path.join('data', req.user.id, repositoryName);
+
+  let signedRepositoryUrl = '';
 
   simpleGit(repositoryPath)
-    .pull()
-    .push('origin', 'master', (err) => {
-      if (err)
-        return next(err);
+    .getRemotes(true, function(err, remotes) {
+      let originRemote = remotes.filter((remote) => remote.name === 'origin')[0];
+      let parsedRepositoryUrl = url.parse(originRemote.refs.push);
+      parsedRepositoryUrl.auth = req.user.github.accessToken;
+      signedRepositoryUrl = url.format(parsedRepositoryUrl);
 
-      res.end();
+      simpleGit(repositoryPath)
+        .pull(signedRepositoryUrl, 'master')
+        .push(signedRepositoryUrl, 'master', (err, other) => {
+          if (err)
+            return next(err);
+
+          res.end();
+        });
     });
 });
 
 app.post('/api/repository/:repositoryName/checkout', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
-  let repositoryPath = getRepositoryPath(repositoryName);
+  let repositoryPath = path.join('data', req.user.id, repositoryName);
 
   simpleGit(repositoryPath)
     .checkout('./*', (err) => {
@@ -108,7 +254,7 @@ app.post('/api/repository/:repositoryName/checkout', (req, res, next) => {
 
 app.get('/api/repository/:repositoryName/status', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
-  let repositoryPath = getRepositoryPath(repositoryName);
+  let repositoryPath = path.join('data', req.user.id, repositoryName);
 
   simpleGit(repositoryPath)
     .status((err, status) => {
@@ -121,7 +267,7 @@ app.get('/api/repository/:repositoryName/status', (req, res, next) => {
 
 app.post('/api/repository/:repositoryName/commit', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
-  let repositoryPath = getRepositoryPath(repositoryName);
+  let repositoryPath = path.join('data', req.user.id, repositoryName);
 
   simpleGit(repositoryPath)
     .add('./*')
@@ -135,17 +281,27 @@ app.post('/api/repository/:repositoryName/commit', (req, res, next) => {
 
 app.post('/api/repository/:repositoryName/push', async (req, res) => {
   let repositoryName = req.params.repositoryName;
-  let repositoryPath = getRepositoryPath(repositoryName);
+  let repositoryPath = path.join('data', req.user.id, repositoryName);
+
+  let signedRepositoryUrl = '';
 
   simpleGit(repositoryPath)
-    .push('origin', 'master', (err) => {
-      if (err)
-        res.json(err);
+    .getRemotes(true, function(err, remotes) {
+      let originRemote = remotes.filter((remote) => remote.name === 'origin')[0];
+      let parsedRepositoryUrl = url.parse(originRemote.refs.push);
+      parsedRepositoryUrl.auth = req.user.github.accessToken;
+      signedRepositoryUrl = url.format(parsedRepositoryUrl);
 
-      res.end();
+      simpleGit(repositoryPath)
+        .push(signedRepositoryUrl, 'master', (err, other) => {
+          if (err)
+            return next(err);
+
+          res.end();
+        });
     });
 });
 
 let httpServer = http.createServer(app);
 
-httpServer.listen(80, () => { console.log('Listening on port 80'); });
+httpServer.listen(config.port, () => { console.log(`Listening on port ${config.port}`); });

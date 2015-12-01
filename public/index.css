@@ -1,5 +1,33 @@
 .section { padding: 30px 0;}
 .section-default { }
+.section-primary { background-color: #eee; }
+
+.jumbotron  {
+    background-color: #2780e3;
+    color: #fff;
+}
+
+.beta {
+  background-color: #333;
+  color: #ccc;
+  border-radius: 3px;
+  padding: 2px 5px;
+}
+
+.jumbotron h1 {
+    font-size: 12rem;
+}
+
+.jumbotron .lead {
+    margin-bottom: 4rem;
+}
+
+.jumbotron .btn-primary {
+    background-color: #1967be;
+    border-color: #1862b5;
+    font-size: 4rem;
+}
+
 .toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }
 
 .toolbar + * { padding-top: 73px;}
@@ -8,6 +36,13 @@
 .btn-toolbar form { margin: 0; }
 .navbar-bottom { margin-bottom: 0;}
 .main { margin: 50px 0; }
+
+.navbar-text {
+  margin-left: 0;
+}
+
+
+
 pre {
   margin: 0;
   padding: 0;
