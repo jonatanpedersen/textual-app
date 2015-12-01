@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "forever start start.js",
-    "start-dev": "nodemon --watch index.js --exec \"echo require('babel-core/register'); require('./index'); | node\"",
+    "start-dev": "nodemon start.js --watch index.js",
     "test": "mocha"
   },
   "repository": {
