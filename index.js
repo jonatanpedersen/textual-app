@@ -183,6 +183,7 @@ app.post('/api/clone-repository', (req, res) => {
         if (err)
           return next(err);
       })
+      .addRemote('origin', repositoryUrl)
       .pull(signedRepositoryUrl, 'master', (err) => {
         if (err)
           return next(err);
