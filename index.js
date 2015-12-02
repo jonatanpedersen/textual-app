@@ -199,28 +199,28 @@ app.post('/api/clone-repository', (req, res, next) => {
   });
 });
 
-app.post('/api/repository/:repositoryName/pull', (req, res, next) => {
-  let repositoryName = req.params.repositoryName;
-  let repositoryPath = path.join('data', req.user.id, repositoryName);
-
-  let signedRepositoryUrl = '';
-
-  simpleGit(repositoryPath)
-    .getRemotes(true, function(err, remotes) {
-      let originRemote = remotes.filter((remote) => remote.name === 'origin')[0];
-      let parsedRepositoryUrl = url.parse(originRemote.refs.push);
-      parsedRepositoryUrl.auth = req.user.github.accessToken;
-      signedRepositoryUrl = url.format(parsedRepositoryUrl);
-
-      simpleGit(repositoryPath)
-        .pull(signedRepositoryUrl, 'master', (err) => {
-          if (err)
-            return next(err);
-
-          res.end();
-        });
-    });
-});
+// app.post('/api/repository/:repositoryName/pull', (req, res, next) => {
+//   let repositoryName = req.params.repositoryName;
+//   let repositoryPath = path.join('data', req.user.id, repositoryName);
+//
+//   let signedRepositoryUrl = '';
+//
+//   simpleGit(repositoryPath)
+//     .getRemotes(true, function(err, remotes) {
+//       let originRemote = remotes.filter((remote) => remote.name === 'origin')[0];
+//       let parsedRepositoryUrl = url.parse(originRemote.refs.push);
+//       parsedRepositoryUrl.auth = req.user.github.accessToken;
+//       signedRepositoryUrl = url.format(parsedRepositoryUrl);
+//
+//       simpleGit(repositoryPath)
+//         .pull(signedRepositoryUrl, 'master', (err) => {
+//           if (err)
+//             return next(err);
+//
+//           res.end();
+//         });
+//     });
+// });
 
 app.post('/api/repository/:repositoryName/sync', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
@@ -237,7 +237,7 @@ app.post('/api/repository/:repositoryName/sync', (req, res, next) => {
 
       simpleGit(repositoryPath)
         .add('./*')
-        .commit(req.body.message, (err) => {
+        .commit('updated texts', (err) => {
           if (err)
             return next(err);
         })
@@ -254,18 +254,18 @@ app.post('/api/repository/:repositoryName/sync', (req, res, next) => {
     });
 });
 
-app.post('/api/repository/:repositoryName/checkout', (req, res, next) => {
-  let repositoryName = req.params.repositoryName;
-  let repositoryPath = path.join('data', req.user.id, repositoryName);
-
-  simpleGit(repositoryPath)
-    .checkout('./*', (err) => {
-      if (err)
-        return next(err);
-
-      res.end();
-    });
-});
+// app.post('/api/repository/:repositoryName/checkout', (req, res, next) => {
+//   let repositoryName = req.params.repositoryName;
+//   let repositoryPath = path.join('data', req.user.id, repositoryName);
+//
+//   simpleGit(repositoryPath)
+//     .checkout('./*', (err) => {
+//       if (err)
+//         return next(err);
+//
+//       res.end();
+//     });
+// });
 
 app.get('/api/repository/:repositoryName/status', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
@@ -280,42 +280,42 @@ app.get('/api/repository/:repositoryName/status', (req, res, next) => {
     });
 });
 
-app.post('/api/repository/:repositoryName/commit', (req, res, next) => {
-  let repositoryName = req.params.repositoryName;
-  let repositoryPath = path.join('data', req.user.id, repositoryName);
-
-  simpleGit(repositoryPath)
-    .add('./*')
-    .commit(req.body.message, (err) => {
-      if (err)
-        res.json(err);
-
-      res.end();
-    });
-});
-
-app.post('/api/repository/:repositoryName/push', async (req, res, next) => {
-  let repositoryName = req.params.repositoryName;
-  let repositoryPath = path.join('data', req.user.id, repositoryName);
-
-  let signedRepositoryUrl = '';
-
-  simpleGit(repositoryPath)
-    .getRemotes(true, function(err, remotes) {
-      let originRemote = remotes.filter((remote) => remote.name === 'origin')[0];
-      let parsedRepositoryUrl = url.parse(originRemote.refs.push);
-      parsedRepositoryUrl.auth = req.user.github.accessToken;
-      signedRepositoryUrl = url.format(parsedRepositoryUrl);
-
-      simpleGit(repositoryPath)
-        .push(signedRepositoryUrl, 'master', (err, other) => {
-          if (err)
-            return next(err);
-
-          res.end();
-        });
-    });
-});
+// app.post('/api/repository/:repositoryName/commit', (req, res, next) => {
+//   let repositoryName = req.params.repositoryName;
+//   let repositoryPath = path.join('data', req.user.id, repositoryName);
+//
+//   simpleGit(repositoryPath)
+//     .add('./*')
+//     .commit(req.body.message, (err) => {
+//       if (err)
+//         res.json(err);
+//
+//       res.end();
+//     });
+// });
+//
+// app.post('/api/repository/:repositoryName/push', async (req, res, next) => {
+//   let repositoryName = req.params.repositoryName;
+//   let repositoryPath = path.join('data', req.user.id, repositoryName);
+//
+//   let signedRepositoryUrl = '';
+//
+//   simpleGit(repositoryPath)
+//     .getRemotes(true, function(err, remotes) {
+//       let originRemote = remotes.filter((remote) => remote.name === 'origin')[0];
+//       let parsedRepositoryUrl = url.parse(originRemote.refs.push);
+//       parsedRepositoryUrl.auth = req.user.github.accessToken;
+//       signedRepositoryUrl = url.format(parsedRepositoryUrl);
+//
+//       simpleGit(repositoryPath)
+//         .push(signedRepositoryUrl, 'master', (err, other) => {
+//           if (err)
+//             return next(err);
+//
+//           res.end();
+//         });
+//     });
+// });
 
 app.use(async (err, req, res, next) => {
   console.error(err);
