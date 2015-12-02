@@ -46,8 +46,9 @@ angular.module('app').controller('NavBarController', ['$scope', '$location', '$r
 angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', RepositoryController]);
 angular.module('app').controller('RepositoryListController', ['$scope', 'RepositoryService', RepositoryListController]);
 angular.module('app').controller('CommitModalController', ['$scope', '$uibModalInstance', CommitModalController]);
-angular.module('app').service('RepositoryService', ['$http', RepositoryService]);
-angular.module('app').service('UserService', ['$http', UserService]);
+angular.module('app').controller('ErrorModalController', ['$scope', '$uibModalInstance', ErrorModalController]);
+angular.module('app').service('RepositoryService', ['$http', '$q', RepositoryService]);
+angular.module('app').service('UserService', ['$http', '$q', UserService]);
 angular.module('app').constant('getText', getText);
 angular.module('app').filter('text', ['getText', textFilter]);
 angular.module('app').directive('text', ['getText', textDirective]);
@@ -116,10 +117,6 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
     RepositoryService.getRepository($routeParams.repositoryName).then(function(repository) {
       $scope.repository = repository;
     });
-
-    RepositoryService.getRepositoryStatus($routeParams.repositoryName).then(function(repositoryStatus) {
-      $scope.repositoryStatus = repositoryStatus;
-    });
   }
 
   $scope.allTexts = [];
@@ -142,7 +139,7 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
   $scope.searchText = undefined;
 
   $scope.checkout = function() {
-    RepositoryService.checkoutRepository($routeParams.repositoryName).then($scope.update);
+    RepositoryService.checkoutRepository($routeParams.repositoryName).then($scope.update, $scope.error);
   }
 
   $scope.commit = function() {
@@ -152,24 +149,37 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
     });
 
     commitModal.result.then(function (message) {
-       RepositoryService.commitRepository($routeParams.repositoryName, message).then($scope.update);
+       RepositoryService.commitRepository($routeParams.repositoryName, message).then($scope.update, $scope.error);
+    });
+  }
+
+  $scope.error = function(message) {
+    console.log(message);
+    var errorModal = $uibModal.open({
+      templateUrl: 'errorModal.html',
+      controller: 'ErrorModalController',
+      resolve: {
+           message: function () {
+               return message;
+           }
+       }
     });
   }
 
   $scope.pull = function() {
-    RepositoryService.pullRepository($routeParams.repositoryName).then($scope.update);
+    RepositoryService.pullRepository($routeParams.repositoryName).then($scope.update, $scope.error);
   }
 
   $scope.push = function() {
-    RepositoryService.pushRepository($routeParams.repositoryName).then($scope.update);
+    RepositoryService.pushRepository($routeParams.repositoryName).then($scope.update, $scope.error);
   }
 
   $scope.sync = function() {
-    RepositoryService.syncRepository($routeParams.repositoryName).then($scope.update);
+    RepositoryService.syncRepository($routeParams.repositoryName).then($scope.update, $scope.error);
   }
 
   $scope.saveRepository = function() {
-    RepositoryService.saveRepository($routeParams.repositoryName, $scope.repository).then($scope.update);
+    RepositoryService.saveRepository($routeParams.repositoryName, $scope.repository).then($scope.update, $scope.error);
   }
 
   $scope.availableColumns = ['da-DK', 'en-GB', 'fr-FR', 'de-DE', 'it-IT', 'es-ES'].sort();
@@ -234,26 +244,44 @@ function CommitModalController ($scope, $uibModalInstance) {
   };
 }
 
-function RepositoryService($http) {
+function ErrorModalController ($scope, $uibModalInstance, message) {
+  $scope.message = message;
+  $scope.ok = function () {
+    $uibModalInstance.close();
+  };
+}
+
+function RepositoryService($http, $q) {
+  function getResponseData(response) {
+    return response.data;
+  }
+
+  function getResponseStatusCode(response) {
+    return $q.reject(response.status);
+  }
+
   function getRepositoryNames() {
     return $http({
       method: 'GET',
       url: '/api/repository'
-    }).then(function(response) { return response.data; })
+    })
+    .then(getResponseData, getResponseStatusCode)
   }
 
   function getRepository(repositoryName) {
     return $http({
       method: 'GET',
       url: '/api/repository/' + repositoryName
-    }).then(function(response) { return response.data; })
+    })
+    .then(getResponseData, getResponseStatusCode)
   }
 
   function getRepositoryStatus(repositoryName) {
     return $http({
       method: 'GET',
       url: '/api/repository/' + repositoryName + '/status'
-    }).then(function(response) { return response.data; })
+    })
+    .then(getResponseData, getResponseStatusCode)
   }
 
   function saveRepository(repositoryName, repository) {
@@ -261,7 +289,8 @@ function RepositoryService($http) {
       method: 'POST',
       url: '/api/repository/' + repositoryName,
       data: repository
-    }).then(function(response) { return response.data; })
+    })
+    .then(getResponseData, getResponseStatusCode)
   }
 
   function cloneRepository(repositoryUrl, repositoryName) {
@@ -272,21 +301,24 @@ function RepositoryService($http) {
         repositoryUrl: repositoryUrl,
         repositoryName: repositoryName
       }
-    }).then(function(response) { return response.data; })
+    })
+    .then(getResponseData, getResponseStatusCode)
   }
 
   function pullRepository(repositoryName) {
     return $http({
       method: 'POST',
       url: '/api/repository/' + repositoryName + '/pull'
-    }).then(function(response) { return response.data; })
+    })
+    .then(getResponseData, getResponseStatusCode)
   }
 
   function checkoutRepository(repositoryName) {
     return $http({
       method: 'POST',
       url: '/api/repository/' + repositoryName + '/checkout'
-    }).then(function(response) { return response.data; })
+    })
+    .then(getResponseData, getResponseStatusCode)
   }
 
   function commitRepository(repositoryName, message) {
@@ -294,21 +326,24 @@ function RepositoryService($http) {
       method: 'POST',
       url: '/api/repository/' + repositoryName + '/commit',
       data: { message: message }
-    }).then(function(response) { return response.data; })
+    })
+    .then(getResponseData, getResponseStatusCode)
   }
 
   function pushRepository(repositoryName) {
     return $http({
       method: 'POST',
       url: '/api/repository/' + repositoryName + '/push',
-    }).then(function(response) { return response.data; })
+    })
+    .then(getResponseData, getResponseStatusCode)
   }
 
   function syncRepository(repositoryName) {
     return $http({
       method: 'POST',
       url: '/api/repository/' + repositoryName + '/sync',
-    }).then(function(response) { return response.data; })
+    })
+    .then(getResponseData, getResponseStatusCode)
   }
 
   return {
@@ -325,12 +360,20 @@ function RepositoryService($http) {
   };
 }
 
-function UserService($http) {
+function UserService($http, $q) {
+  function getResponseData(response) {
+    return response.data;
+  }
+
+  function getResponseStatusCode(response) {
+    return $q.reject(response.status);
+  }
+
   function getUser() {
     return $http({
       method: 'GET',
       url: '/api/user'
-    }).then(function(response) { return response.data; })
+    }).then(getResponseData, getResponseStatusCode)
   }
 
   return {

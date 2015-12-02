@@ -113,7 +113,13 @@ app.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
-app.use('/api', connectEnsureLogin.ensureLoggedIn());
+app.use('/api', (req, res, next) => {
+  if (!req.isAuthenticated || !req.isAuthenticated()) {
+    return res.status(401).end();
+  }
+
+  next();
+});
 
 app.get('/api/user', (req, res) => {
   let user = req.user;
@@ -121,7 +127,7 @@ app.get('/api/user', (req, res) => {
   res.json(user.profile);
 });
 
-app.get('/api/repository', (req, res) => {
+app.get('/api/repository', (req, res, next) => {
   let userPath = path.join('data', req.user.id);
 
   mkdirp(userPath, (err) => {
@@ -165,7 +171,7 @@ app.post('/api/repository/:repositoryName', (req, res, next) => {
   });
 });
 
-app.post('/api/clone-repository', (req, res) => {
+app.post('/api/clone-repository', (req, res, next) => {
   let repositoryUrl = req.body.repositoryUrl;
   let repositoryName = req.body.repositoryName;
   let repositoryPath = path.join('data', req.user.id, repositoryName);
@@ -230,7 +236,15 @@ app.post('/api/repository/:repositoryName/sync', (req, res, next) => {
       signedRepositoryUrl = url.format(parsedRepositoryUrl);
 
       simpleGit(repositoryPath)
-        .pull(signedRepositoryUrl, 'master')
+        .add('./*')
+        .commit(req.body.message, (err) => {
+          if (err)
+            return next(err);
+        })
+        .pull(signedRepositoryUrl, 'master', (err, other) => {
+          if (err)
+            return next(err);
+        })
         .push(signedRepositoryUrl, 'master', (err, other) => {
           if (err)
             return next(err);
@@ -280,7 +294,7 @@ app.post('/api/repository/:repositoryName/commit', (req, res, next) => {
     });
 });
 
-app.post('/api/repository/:repositoryName/push', async (req, res) => {
+app.post('/api/repository/:repositoryName/push', async (req, res, next) => {
   let repositoryName = req.params.repositoryName;
   let repositoryPath = path.join('data', req.user.id, repositoryName);
 
@@ -301,6 +315,11 @@ app.post('/api/repository/:repositoryName/push', async (req, res) => {
           res.end();
         });
     });
+});
+
+app.use(async (err, req, res, next) => {
+  console.error(err);
+  res.status(500).send(err);
 });
 
 let httpServer = http.createServer(app);

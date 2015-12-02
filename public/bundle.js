@@ -92,8 +92,9 @@
 	angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', RepositoryController]);
 	angular.module('app').controller('RepositoryListController', ['$scope', 'RepositoryService', RepositoryListController]);
 	angular.module('app').controller('CommitModalController', ['$scope', '$uibModalInstance', CommitModalController]);
-	angular.module('app').service('RepositoryService', ['$http', RepositoryService]);
-	angular.module('app').service('UserService', ['$http', UserService]);
+	angular.module('app').controller('ErrorModalController', ['$scope', '$uibModalInstance', ErrorModalController]);
+	angular.module('app').service('RepositoryService', ['$http', '$q', RepositoryService]);
+	angular.module('app').service('UserService', ['$http', '$q', UserService]);
 	angular.module('app').constant('getText', getText);
 	angular.module('app').filter('text', ['getText', textFilter]);
 	angular.module('app').directive('text', ['getText', textDirective]);
@@ -162,10 +163,6 @@
 	    RepositoryService.getRepository($routeParams.repositoryName).then(function(repository) {
 	      $scope.repository = repository;
 	    });
-
-	    RepositoryService.getRepositoryStatus($routeParams.repositoryName).then(function(repositoryStatus) {
-	      $scope.repositoryStatus = repositoryStatus;
-	    });
 	  }
 
 	  $scope.allTexts = [];
@@ -188,7 +185,7 @@
 	  $scope.searchText = undefined;
 
 	  $scope.checkout = function() {
-	    RepositoryService.checkoutRepository($routeParams.repositoryName).then($scope.update);
+	    RepositoryService.checkoutRepository($routeParams.repositoryName).then($scope.update, $scope.error);
 	  }
 
 	  $scope.commit = function() {
@@ -198,24 +195,37 @@
 	    });
 
 	    commitModal.result.then(function (message) {
-	       RepositoryService.commitRepository($routeParams.repositoryName, message).then($scope.update);
+	       RepositoryService.commitRepository($routeParams.repositoryName, message).then($scope.update, $scope.error);
+	    });
+	  }
+
+	  $scope.error = function(message) {
+	    console.log(message);
+	    var errorModal = $uibModal.open({
+	      templateUrl: 'errorModal.html',
+	      controller: 'ErrorModalController',
+	      resolve: {
+	           message: function () {
+	               return message;
+	           }
+	       }
 	    });
 	  }
 
 	  $scope.pull = function() {
-	    RepositoryService.pullRepository($routeParams.repositoryName).then($scope.update);
+	    RepositoryService.pullRepository($routeParams.repositoryName).then($scope.update, $scope.error);
 	  }
 
 	  $scope.push = function() {
-	    RepositoryService.pushRepository($routeParams.repositoryName).then($scope.update);
+	    RepositoryService.pushRepository($routeParams.repositoryName).then($scope.update, $scope.error);
 	  }
 
 	  $scope.sync = function() {
-	    RepositoryService.syncRepository($routeParams.repositoryName).then($scope.update);
+	    RepositoryService.syncRepository($routeParams.repositoryName).then($scope.update, $scope.error);
 	  }
 
 	  $scope.saveRepository = function() {
-	    RepositoryService.saveRepository($routeParams.repositoryName, $scope.repository).then($scope.update);
+	    RepositoryService.saveRepository($routeParams.repositoryName, $scope.repository).then($scope.update, $scope.error);
 	  }
 
 	  $scope.availableColumns = ['da-DK', 'en-GB', 'fr-FR', 'de-DE', 'it-IT', 'es-ES'].sort();
@@ -280,26 +290,44 @@
 	  };
 	}
 
-	function RepositoryService($http) {
+	function ErrorModalController ($scope, $uibModalInstance, message) {
+	  $scope.message = message;
+	  $scope.ok = function () {
+	    $uibModalInstance.close();
+	  };
+	}
+
+	function RepositoryService($http, $q) {
+	  function getResponseData(response) {
+	    return response.data;
+	  }
+
+	  function getResponseStatusCode(response) {
+	    return $q.reject(response.status);
+	  }
+
 	  function getRepositoryNames() {
 	    return $http({
 	      method: 'GET',
 	      url: '/api/repository'
-	    }).then(function(response) { return response.data; })
+	    })
+	    .then(getResponseData, getResponseStatusCode)
 	  }
 
 	  function getRepository(repositoryName) {
 	    return $http({
 	      method: 'GET',
 	      url: '/api/repository/' + repositoryName
-	    }).then(function(response) { return response.data; })
+	    })
+	    .then(getResponseData, getResponseStatusCode)
 	  }
 
 	  function getRepositoryStatus(repositoryName) {
 	    return $http({
 	      method: 'GET',
 	      url: '/api/repository/' + repositoryName + '/status'
-	    }).then(function(response) { return response.data; })
+	    })
+	    .then(getResponseData, getResponseStatusCode)
 	  }
 
 	  function saveRepository(repositoryName, repository) {
@@ -307,7 +335,8 @@
 	      method: 'POST',
 	      url: '/api/repository/' + repositoryName,
 	      data: repository
-	    }).then(function(response) { return response.data; })
+	    })
+	    .then(getResponseData, getResponseStatusCode)
 	  }
 
 	  function cloneRepository(repositoryUrl, repositoryName) {
@@ -318,21 +347,24 @@
 	        repositoryUrl: repositoryUrl,
 	        repositoryName: repositoryName
 	      }
-	    }).then(function(response) { return response.data; })
+	    })
+	    .then(getResponseData, getResponseStatusCode)
 	  }
 
 	  function pullRepository(repositoryName) {
 	    return $http({
 	      method: 'POST',
 	      url: '/api/repository/' + repositoryName + '/pull'
-	    }).then(function(response) { return response.data; })
+	    })
+	    .then(getResponseData, getResponseStatusCode)
 	  }
 
 	  function checkoutRepository(repositoryName) {
 	    return $http({
 	      method: 'POST',
 	      url: '/api/repository/' + repositoryName + '/checkout'
-	    }).then(function(response) { return response.data; })
+	    })
+	    .then(getResponseData, getResponseStatusCode)
 	  }
 
 	  function commitRepository(repositoryName, message) {
@@ -340,21 +372,24 @@
 	      method: 'POST',
 	      url: '/api/repository/' + repositoryName + '/commit',
 	      data: { message: message }
-	    }).then(function(response) { return response.data; })
+	    })
+	    .then(getResponseData, getResponseStatusCode)
 	  }
 
 	  function pushRepository(repositoryName) {
 	    return $http({
 	      method: 'POST',
 	      url: '/api/repository/' + repositoryName + '/push',
-	    }).then(function(response) { return response.data; })
+	    })
+	    .then(getResponseData, getResponseStatusCode)
 	  }
 
 	  function syncRepository(repositoryName) {
 	    return $http({
 	      method: 'POST',
 	      url: '/api/repository/' + repositoryName + '/sync',
-	    }).then(function(response) { return response.data; })
+	    })
+	    .then(getResponseData, getResponseStatusCode)
 	  }
 
 	  return {
@@ -371,12 +406,20 @@
 	  };
 	}
 
-	function UserService($http) {
+	function UserService($http, $q) {
+	  function getResponseData(response) {
+	    return response.data;
+	  }
+
+	  function getResponseStatusCode(response) {
+	    return $q.reject(response.status);
+	  }
+
 	  function getUser() {
 	    return $http({
 	      method: 'GET',
 	      url: '/api/user'
-	    }).then(function(response) { return response.data; })
+	    }).then(getResponseData, getResponseStatusCode)
 	  }
 
 	  return {
@@ -440,7 +483,7 @@
 
 
 	// module
-	exports.push([module.id, ".section { padding: 30px 0;}\r\n.section-default { }\r\n.section-primary { background-color: #eee; }\r\n\r\n.jumbotron  {\r\n    background-color: #2780e3;\r\n    color: #fff;\r\n}\r\n\r\n.beta {\r\n  background-color: #333;\r\n  color: #ccc;\r\n  border-radius: 3px;\r\n  padding: 2px 5px;\r\n}\r\n\r\n.jumbotron h1 {\r\n    font-size: 12rem;\r\n}\r\n\r\n.jumbotron .lead {\r\n    margin-bottom: 4rem;\r\n}\r\n\r\n.jumbotron .btn-primary {\r\n    background-color: #1967be;\r\n    border-color: #1862b5;\r\n    font-size: 4rem;\r\n}\r\n\r\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\r\n\r\n.toolbar + * { padding-top: 73px;}\r\n\r\n.btn-toolbar { margin: 15px -5px; }\r\n.btn-toolbar form { margin: 0; }\r\n.navbar-bottom { margin-bottom: 0;}\r\n.main { margin: 50px 0; }\r\n\r\n.navbar-text {\r\n  margin-left: 0;\r\n}\r\n\r\n\r\n\r\npre {\r\n  margin: 0;\r\n  padding: 0;\r\n  background: none;\r\n  border: none;\r\n}\r\n\r\nbutton .glyphicon {\r\n  line-height: 1.4em;\r\n}\r\n\r\n.table-input > tbody > tr > td,\r\n.table-input > tfoot > tr > td {\r\n  padding: 0 !important;\r\n}\r\n\r\ntable input {\r\n  border: none !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\n.table-texts td:last-child { width: 35px;}\r\n", ""]);
+	exports.push([module.id, ".section { padding: 30px 0;}\r\n.section-default { }\r\n.section-primary { background-color: #eee; }\r\n\r\n.jumbotron  {\r\n    background-color: #2780e3;\r\n    color: #fff;\r\n}\r\n\r\n.beta {\r\n  background-color: #333;\r\n  color: #ccc;\r\n  border-radius: 3px;\r\n  padding: 2px 5px;\r\n}\r\n\r\n.jumbotron h1 {\r\n    font-size: 12rem;\r\n}\r\n\r\n.jumbotron .lead {\r\n    margin-bottom: 4rem;\r\n}\r\n\r\n.jumbotron .btn-primary {\r\n    background-color: #1967be;\r\n    border-color: #1862b5;\r\n    font-size: 4rem;\r\n}\r\n\r\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\r\n\r\n.toolbar + * { padding-top: 73px;}\r\n\r\n.btn-toolbar { margin: 15px -5px; }\r\n.btn-toolbar form { margin: 0; }\r\n.navbar-bottom { margin-bottom: 0;}\r\n.main { margin: 50px 0; }\r\n\r\n.navbar-text {\r\n  margin-left: 0;\r\n}\r\n\r\npre {\r\n  margin: 0;\r\n  padding: 0;\r\n  background: none;\r\n  border: none;\r\n}\r\n\r\nbutton .glyphicon {\r\n  line-height: 1.4em;\r\n}\r\n\r\n.table-input > tbody > tr > td,\r\n.table-input > tfoot > tr > td {\r\n  padding: 0 !important;\r\n}\r\n\r\ntable input {\r\n  border: none !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\n.table-texts td:last-child { width: 35px;}\r\n", ""]);
 
 	// exports
 
