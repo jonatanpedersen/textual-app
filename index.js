@@ -128,7 +128,7 @@ app.get('/api/user', (req, res) => {
 });
 
 app.get('/api/repository', (req, res, next) => {
-  let userPath = path.join('data', req.user.id);
+  let userPath = path.join(config.data, req.user.id);
 
   mkdirp(userPath, (err) => {
     if (err)
