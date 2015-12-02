@@ -1,4 +1,5 @@
 # translator-app
+[![Deployment status from DeployBot](https://jonatanpedersen.deploybot.com/badge/23779030034315/55643.svg)](http://deploybot.com)
 
 ## Install
 Clone from GitHub:
