@@ -174,7 +174,7 @@ app.post('/api/repository/:repositoryName', (req, res, next) => {
 app.post('/api/clone-repository', (req, res, next) => {
   let repositoryUrl = req.body.repositoryUrl;
   let repositoryName = req.body.repositoryName;
-  let repositoryPath = path.join('data', req.user.id, repositoryName);
+  let repositoryPath = path.join(config.data, req.user.id, repositoryName);
 
   let parsedRepositoryUrl = url.parse(repositoryUrl);
   parsedRepositoryUrl.auth = req.user.github.accessToken;
