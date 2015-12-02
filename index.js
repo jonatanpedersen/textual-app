@@ -143,7 +143,7 @@ app.get('/api/repository', (req, res, next) => {
 
 app.get('/api/repository/:repositoryName', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
-  let repositoryTextsPath = path.join('data', req.user.id, repositoryName, 'texts.json');
+  let repositoryTextsPath = path.join(config.data, req.user.id, repositoryName, 'texts.json');
 
   fs.readFile(repositoryTextsPath, 'utf8', function (err, data) {
     if (err)
@@ -160,7 +160,7 @@ app.get('/api/repository/:repositoryName', (req, res, next) => {
 
 app.post('/api/repository/:repositoryName', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
-  let repositoryTextsPath = path.join('data', req.user.id, repositoryName, 'texts.json');
+  let repositoryTextsPath = path.join(config.data, req.user.id, repositoryName, 'texts.json');
   let data = JSON.stringify(req.body.texts, null, 4);
 
   fs.writeFile(repositoryTextsPath, data, 'utf8', function (err) {
@@ -201,7 +201,7 @@ app.post('/api/clone-repository', (req, res, next) => {
 
 // app.post('/api/repository/:repositoryName/pull', (req, res, next) => {
 //   let repositoryName = req.params.repositoryName;
-//   let repositoryPath = path.join('data', req.user.id, repositoryName);
+//   let repositoryPath = path.join(config.data, req.user.id, repositoryName);
 //
 //   let signedRepositoryUrl = '';
 //
@@ -224,7 +224,7 @@ app.post('/api/clone-repository', (req, res, next) => {
 
 app.post('/api/repository/:repositoryName/sync', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
-  let repositoryPath = path.join('data', req.user.id, repositoryName);
+  let repositoryPath = path.join(config.data, req.user.id, repositoryName);
 
   let signedRepositoryUrl = '';
 
@@ -269,7 +269,7 @@ app.post('/api/repository/:repositoryName/sync', (req, res, next) => {
 
 app.get('/api/repository/:repositoryName/status', (req, res, next) => {
   let repositoryName = req.params.repositoryName;
-  let repositoryPath = path.join('data', req.user.id, repositoryName);
+  let repositoryPath = path.join(config.data, req.user.id, repositoryName);
 
   simpleGit(repositoryPath)
     .status((err, status) => {
@@ -282,7 +282,7 @@ app.get('/api/repository/:repositoryName/status', (req, res, next) => {
 
 // app.post('/api/repository/:repositoryName/commit', (req, res, next) => {
 //   let repositoryName = req.params.repositoryName;
-//   let repositoryPath = path.join('data', req.user.id, repositoryName);
+//   let repositoryPath = path.join(config.data, req.user.id, repositoryName);
 //
 //   simpleGit(repositoryPath)
 //     .add('./*')
@@ -296,7 +296,7 @@ app.get('/api/repository/:repositoryName/status', (req, res, next) => {
 //
 // app.post('/api/repository/:repositoryName/push', async (req, res, next) => {
 //   let repositoryName = req.params.repositoryName;
-//   let repositoryPath = path.join('data', req.user.id, repositoryName);
+//   let repositoryPath = path.join(config.data, req.user.id, repositoryName);
 //
 //   let signedRepositoryUrl = '';
 //

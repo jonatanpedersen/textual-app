@@ -1,4 +1,5 @@
 export default {
+  data: process.env.DATA,
   host: process.env.HOST,
   port: process.env.PORT,
   session: {
@@ -12,6 +13,6 @@ export default {
     callback_url: process.env.HOST + '/auth/github/callback'
   },
   logger: {
-    path: './log.txt'
+    path: process.env.LOG
   }
 }

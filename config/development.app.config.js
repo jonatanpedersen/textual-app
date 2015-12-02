@@ -1,4 +1,5 @@
 export default {
+  data: './data',
   host: 'http://localhost',
   port: 80,
   session: {
