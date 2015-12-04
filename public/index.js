@@ -47,6 +47,26 @@ angular.module('app').constant('getText', getText);
 angular.module('app').filter('text', ['getText', textFilter]);
 angular.module('app').directive('text', ['getText', textDirective]);
 
+angular.module('app').config(['$httpProvider', handle401]);
+
+function handle401($httpProvider) {
+    $httpProvider.interceptors.push(function($q) {
+        return {
+            'responseError': function(rejection){
+                var defer = $q.defer();
+
+                if(rejection.status == 401){
+                    window.location.href = '/';
+                }
+
+                defer.reject(rejection);
+
+                return defer.promise;
+            }
+        };
+    });
+}
+
 function textFilter(getText) {
   return function(text) {
     return getText(text);
@@ -88,6 +108,12 @@ function UserSettingsController ($scope, UserService) {
   UserService.getUserSettings().then(function(userSettings) {
     $scope.userSettings = userSettings;
   });
+
+  $scope.submitUserSettingsForm = function() {
+    if($scope.userSettingsForm.$valid) {
+      UserService.setUserSettings($scope.userSettings);
+    }
+  }
 }
 
 function RepositoryListController ($scope, RepositoryService) {
@@ -115,6 +141,7 @@ function NavBarController ($scope,  $location, $routeParams, RepositoryService, 
 
 function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryService, UserService) {
   $scope.repositoryName = $routeParams.repositoryName;
+  $scope.userSettings = { columns: [] };
 
   $scope.update = function () {
     RepositoryService.getRepository($routeParams.repositoryName).then(function(repository) {
@@ -190,16 +217,17 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
   }
 
   $scope.availableColumns = ['da-DK', 'en-GB', 'fr-FR', 'de-DE', 'it-IT', 'es-ES'].sort();
-  $scope.selectedColumns = ['da-DK', 'en-GB', 'de-DE'].sort();
 
   $scope.toggleColumn = function(column) {
-    var indexOfColumn = $scope.selectedColumns.indexOf(column);
+    var indexOfColumn = $scope.userSettings.columns.indexOf(column);
 
     if (indexOfColumn > -1) {
-      $scope.selectedColumns.splice(indexOfColumn, 1);
+      $scope.userSettings.columns.splice(indexOfColumn, 1);
     } else {
-      $scope.selectedColumns.push(column);
-      $scope.selectedColumns.sort();
+      $scope.userSettings.columns.push(column);
+      $scope.userSettings.columns.sort();
+
+      UserService.setUserSettings($scope.userSettings);
     }
   };
 

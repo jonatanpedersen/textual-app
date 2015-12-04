@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "forever start start.js",
-    "start-dev": "nodemon start.js --watch index.js",
+    "start": "webpack --watch & nodemon start.js",
     "test": "mocha"
   },
   "repository": {

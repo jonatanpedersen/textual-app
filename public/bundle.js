@@ -93,6 +93,26 @@
 	angular.module('app').filter('text', ['getText', textFilter]);
 	angular.module('app').directive('text', ['getText', textDirective]);
 
+	angular.module('app').config(['$httpProvider', handle401]);
+
+	function handle401($httpProvider) {
+	    $httpProvider.interceptors.push(function($q) {
+	        return {
+	            'responseError': function(rejection){
+	                var defer = $q.defer();
+
+	                if(rejection.status == 401){
+	                    window.location.href = '/';
+	                }
+
+	                defer.reject(rejection);
+
+	                return defer.promise;
+	            }
+	        };
+	    });
+	}
+
 	function textFilter(getText) {
 	  return function(text) {
 	    return getText(text);
@@ -134,6 +154,12 @@
 	  UserService.getUserSettings().then(function(userSettings) {
 	    $scope.userSettings = userSettings;
 	  });
+
+	  $scope.submitUserSettingsForm = function() {
+	    if($scope.userSettingsForm.$valid) {
+	      UserService.setUserSettings($scope.userSettings);
+	    }
+	  }
 	}
 
 	function RepositoryListController ($scope, RepositoryService) {
@@ -161,6 +187,7 @@
 
 	function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryService, UserService) {
 	  $scope.repositoryName = $routeParams.repositoryName;
+	  $scope.userSettings = { columns: [] };
 
 	  $scope.update = function () {
 	    RepositoryService.getRepository($routeParams.repositoryName).then(function(repository) {
@@ -236,16 +263,17 @@
 	  }
 
 	  $scope.availableColumns = ['da-DK', 'en-GB', 'fr-FR', 'de-DE', 'it-IT', 'es-ES'].sort();
-	  $scope.selectedColumns = ['da-DK', 'en-GB', 'de-DE'].sort();
 
 	  $scope.toggleColumn = function(column) {
-	    var indexOfColumn = $scope.selectedColumns.indexOf(column);
+	    var indexOfColumn = $scope.userSettings.columns.indexOf(column);
 
 	    if (indexOfColumn > -1) {
-	      $scope.selectedColumns.splice(indexOfColumn, 1);
+	      $scope.userSettings.columns.splice(indexOfColumn, 1);
 	    } else {
-	      $scope.selectedColumns.push(column);
-	      $scope.selectedColumns.sort();
+	      $scope.userSettings.columns.push(column);
+	      $scope.userSettings.columns.sort();
+
+	      UserService.setUserSettings($scope.userSettings);
 	    }
 	  };
 
@@ -516,7 +544,7 @@
 
 
 	// module
-	exports.push([module.id, ".section { padding: 30px 0;}\n.section-default { }\n.section-primary { background-color: #eee; }\n\n.jumbotron  {\n    background-color: #2780e3;\n    color: #fff;\n}\n\n.beta {\n  background-color: #333;\n  color: #ccc;\n  border-radius: 3px;\n  padding: 2px 5px;\n}\n\n.jumbotron h1 {\n    font-size: 12rem;\n}\n\n.jumbotron .lead {\n    margin-bottom: 4rem;\n}\n\n.jumbotron .btn-primary {\n    background-color: #1967be;\n    border-color: #1862b5;\n    font-size: 4rem;\n}\n\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\n\n.toolbar + * { padding-top: 73px;}\n\n.btn-toolbar { margin: 15px -5px; }\n.btn-toolbar form { margin: 0; }\n.navbar-bottom { margin-bottom: 0;}\n.main { margin: 50px 0; }\n\n.navbar-text {\n  margin-left: 0;\n}\n\npre {\n  margin: 0;\n  padding: 0;\n  background: none;\n  border: none;\n}\n\nbutton .glyphicon {\n  line-height: 1.4em;\n}\n\n.table-input > tbody > tr > td,\n.table-input > tfoot > tr > td {\n  padding: 0 !important;\n}\n\ntable input {\n  border: none !important;\n  box-shadow: none !important;\n}\n\n.table-texts td:last-child { width: 35px;}\n", ""]);
+	exports.push([module.id, "* {\n    box-sizing: border-box;\n}\n\nhtml, body, .main {\n  margin:0;\n  height:100%;\n  min-height:100%;\n}\n\n.main {\n  padding-top: 50px;\n  padding-bottom: 50px;\n}\n\n.section { padding: 30px 0;}\n.section-default { }\n.section-primary { background-color: #eee; }\n\n.jumbotron  {\n    background-color: #2780e3;\n    color: #fff;\n}\n\n.beta {\n  background-color: #333;\n  color: #ccc;\n  border-radius: 3px;\n  padding: 2px 5px;\n}\n\n.jumbotron h1 {\n    font-size: 12rem;\n}\n\n.jumbotron .lead {\n    margin-bottom: 4rem;\n}\n\n.jumbotron .btn-primary {\n    background-color: #1967be;\n    border-color: #1862b5;\n    font-size: 4rem;\n}\n\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\n\n.toolbar + * { padding-top: 73px; }\n\n.btn-toolbar { margin: 15px -5px; }\n.btn-toolbar form { margin: 0; }\n.navbar-bottom { margin-bottom: 0;}\n\n.navbar-text {\n  margin-left: 0;\n}\n\npre {\n  margin: 0;\n  padding: 0;\n  background: none;\n  border: none;\n}\n\nbutton .glyphicon {\n  line-height: 1.4em;\n}\n\n.table-flex {\n  height:100%;\n  min-height:100%;\n  display: flex;\n  flex-direction: column;\n}\n\n.table-flex .table-header,\n.table-flex .table-body,\n.table-flex .table-footer {\n  border-top: 1px solid #ccc;\n}\n\n.table-flex .table-header .table-column  {\n  border-left: 1px solid #ccc;\n}\n\n.table-flex .table-body .table-column  {\n  border-width: 0;\n}\n\n.table-flex .table-header,\n.table-flex .table-footer {\n  background-color: #eee;\n  flex: 0 0 32px;\n  margin-right: 15px;\n}\n\n.table-flex .table-body {\n   flex: 1;\n   overflow-y: scroll;\n}\n\n.table-flex .table-header .table-column {\n  padding: 5px 10px;\n  font-weight: bold;\n}\n\n.table-flex .table-row {\n  display: flex;\n  flex-direction: row;\n}\n\n.table-flex .table-column {\n  flex: 1;\n}\n\n.table-flex .table-column:hover {\n  background-color: #eee;\n}\n\n\n.table-flex .table-column input {\n  font-size: 1.1em;\n  border-top-width: 0;\n  border-right-width: 0;\n  background: transparent;\n}\n\n.table-flex .table-column:first-child {\n  flex: 0 0 250px;\n}\n\n.table-flex .table-column:last-child {\n  flex: 0 0 36px;\n}\n", ""]);
 
 	// exports
 

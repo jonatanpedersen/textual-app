@@ -231,6 +231,8 @@ async function main() {
 
   app.get('/api/user/settings', (req, res) => {
     let user = req.user;
+    user.settings = user.settings || {};
+    user.settings.columns = user.settings.columns || [];
 
     res.json(user.settings);
   });
