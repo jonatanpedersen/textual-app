@@ -54,42 +54,36 @@
 	angular.module('app').config(['$routeProvider',
 	  function($routeProvider) {
 	    $routeProvider
-	      .when('/about', {
-	        templateUrl: 'about.html',
-	        controller: 'AboutController'
+	      .when('/', {
+	        templateUrl: 'repository-list.html',
+	        controller: 'RepositoryListController'
 	      })
 	      .when('/clone-repository', {
 	        templateUrl: 'clone-repository.html',
 	        controller: 'CloneRepositoryController'
 	      })
-	      .when('/help', {
-	        templateUrl: 'help.html',
-	        controller: 'HelpController'
-	      })
-	      .when('/license', {
-	        templateUrl: 'license.html',
-	        controller: 'LicenseController'
-	      })
-	      .when('/', {
-	        templateUrl: 'repository-list.html',
-	        controller: 'RepositoryListController'
-	      })
 	      .when('/repository/:repositoryName', {
 	        templateUrl: 'repository.html',
 	        controller: 'RepositoryController'
+	      })
+	      .when('/user/profile', {
+	        templateUrl: 'user-profile.html',
+	        controller: 'UserProfileController'
+	      })
+	      .when('/user/settings', {
+	        templateUrl: 'user-settings.html',
+	        controller: 'UserSettingsController'
 	      })
 	      .otherwise({
 	        redirectTo: '/'
 	      });
 	  }]);
 
-	angular.module('app').controller('AboutController', [AboutController]);
 	angular.module('app').controller('CloneRepositoryController', ['$scope', '$location', 'RepositoryService', CloneRepositoryController]);
-	angular.module('app').controller('HelpController', [HelpController]);
-	angular.module('app').controller('IndexController', [IndexController]);
-	angular.module('app').controller('LicenseController', [LicenseController]);
+	angular.module('app').controller('UserProfileController', ['$scope', 'UserService', UserProfileController]);
+	angular.module('app').controller('UserSettingsController', ['$scope', 'UserService', UserSettingsController]);
 	angular.module('app').controller('NavBarController', ['$scope', '$location', '$routeParams', 'RepositoryService', 'UserService', NavBarController]);
-	angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', RepositoryController]);
+	angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', 'UserService', RepositoryController]);
 	angular.module('app').controller('RepositoryListController', ['$scope', 'RepositoryService', RepositoryListController]);
 	angular.module('app').controller('CommitModalController', ['$scope', '$uibModalInstance', CommitModalController]);
 	angular.module('app').controller('ErrorModalController', ['$scope', '$uibModalInstance', ErrorModalController]);
@@ -98,6 +92,26 @@
 	angular.module('app').constant('getText', getText);
 	angular.module('app').filter('text', ['getText', textFilter]);
 	angular.module('app').directive('text', ['getText', textDirective]);
+
+	angular.module('app').config(['$httpProvider', handle401]);
+
+	function handle401($httpProvider) {
+	    $httpProvider.interceptors.push(function($q) {
+	        return {
+	            'responseError': function(rejection){
+	                var defer = $q.defer();
+
+	                if(rejection.status == 401){
+	                    window.location.href = '/';
+	                }
+
+	                defer.reject(rejection);
+
+	                return defer.promise;
+	            }
+	        };
+	    });
+	}
 
 	function textFilter(getText) {
 	  return function(text) {
@@ -114,9 +128,6 @@
 	  }
 	}
 
-	function AboutController () {
-	}
-
 	function CloneRepositoryController ($scope, $location, RepositoryService) {
 	  $scope.cloneRepositoryFormData = { };
 
@@ -127,10 +138,28 @@
 	  }
 	}
 
-	function HelpController () {
+	function UserProfileController ($scope, UserService) {
+	  UserService.getUserProfile().then(function(userProfile) {
+	    $scope.userProfile = userProfile;
+	  });
+
+	  $scope.submitUserProfileForm = function() {
+	    if($scope.userProfileForm.$valid) {
+	      UserService.updateUserProfile($scope.userProfile);
+	    }
+	  }
 	}
 
-	function IndexController () {
+	function UserSettingsController ($scope, UserService) {
+	  UserService.getUserSettings().then(function(userSettings) {
+	    $scope.userSettings = userSettings;
+	  });
+
+	  $scope.submitUserSettingsForm = function() {
+	    if($scope.userSettingsForm.$valid) {
+	      UserService.setUserSettings($scope.userSettings);
+	    }
+	  }
 	}
 
 	function RepositoryListController ($scope, RepositoryService) {
@@ -151,17 +180,22 @@
 	    $scope.repositoryNames = repositoryNames;
 	  });
 
-	  UserService.getUser().then(function(user) {
-	    $scope.user = user;
+	  UserService.getUserProfile().then(function(userProfile) {
+	    $scope.userProfile = userProfile;
 	  });
 	}
 
-	function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryService) {
+	function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryService, UserService) {
 	  $scope.repositoryName = $routeParams.repositoryName;
+	  $scope.userSettings = { columns: [] };
 
 	  $scope.update = function () {
 	    RepositoryService.getRepository($routeParams.repositoryName).then(function(repository) {
 	      $scope.repository = repository;
+	    });
+
+	    UserService.getUserSettings().then(function(userSettings) {
+	      $scope.userSettings = userSettings;
 	    });
 	  }
 
@@ -229,17 +263,18 @@
 	  }
 
 	  $scope.availableColumns = ['da-DK', 'en-GB', 'fr-FR', 'de-DE', 'it-IT', 'es-ES'].sort();
-	  $scope.selectedColumns = ['da-DK', 'en-GB', 'de-DE'].sort();
 
 	  $scope.toggleColumn = function(column) {
-	    var indexOfColumn = $scope.selectedColumns.indexOf(column);
+	    var indexOfColumn = $scope.userSettings.columns.indexOf(column);
 
 	    if (indexOfColumn > -1) {
-	      $scope.selectedColumns.splice(indexOfColumn, 1);
+	      $scope.userSettings.columns.splice(indexOfColumn, 1);
 	    } else {
-	      $scope.selectedColumns.push(column);
-	      $scope.selectedColumns.sort();
+	      $scope.userSettings.columns.push(column);
+	      $scope.userSettings.columns.sort();
 	    }
+
+	    UserService.setUserSettings($scope.userSettings);
 	  };
 
 	  $scope.orderByColumn = function(column) {
@@ -415,15 +450,41 @@
 	    return $q.reject(response.status);
 	  }
 
-	  function getUser() {
+	  function getUserProfile() {
 	    return $http({
 	      method: 'GET',
-	      url: '/api/user'
+	      url: '/api/user/profile'
+	    }).then(getResponseData, getResponseStatusCode)
+	  }
+
+	  function updateUserProfile(userProfile) {
+	    return $http({
+	      method: 'POST',
+	      url: '/api/user/profile',
+	      data: userProfile
+	    }).then(getResponseData, getResponseStatusCode)
+	  }
+
+	  function getUserSettings() {
+	    return $http({
+	      method: 'GET',
+	      url: '/api/user/settings'
+	    }).then(getResponseData, getResponseStatusCode)
+	  }
+
+	  function setUserSettings(userSettings) {
+	    return $http({
+	      method: 'POST',
+	      url: '/api/user/settings',
+	      data: userSettings
 	    }).then(getResponseData, getResponseStatusCode)
 	  }
 
 	  return {
-	    getUser: getUser
+	    getUserProfile: getUserProfile,
+	    updateUserProfile: updateUserProfile,
+	    getUserSettings: getUserSettings,
+	    setUserSettings: setUserSettings
 	  };
 	}
 
@@ -483,7 +544,7 @@
 
 
 	// module
-	exports.push([module.id, ".section { padding: 30px 0;}\r\n.section-default { }\r\n.section-primary { background-color: #eee; }\r\n\r\n.jumbotron  {\r\n    background-color: #2780e3;\r\n    color: #fff;\r\n}\r\n\r\n.beta {\r\n  background-color: #333;\r\n  color: #ccc;\r\n  border-radius: 3px;\r\n  padding: 2px 5px;\r\n}\r\n\r\n.jumbotron h1 {\r\n    font-size: 12rem;\r\n}\r\n\r\n.jumbotron .lead {\r\n    margin-bottom: 4rem;\r\n}\r\n\r\n.jumbotron .btn-primary {\r\n    background-color: #1967be;\r\n    border-color: #1862b5;\r\n    font-size: 4rem;\r\n}\r\n\r\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\r\n\r\n.toolbar + * { padding-top: 73px;}\r\n\r\n.btn-toolbar { margin: 15px -5px; }\r\n.btn-toolbar form { margin: 0; }\r\n.navbar-bottom { margin-bottom: 0;}\r\n.main { margin: 50px 0; }\r\n\r\n.navbar-text {\r\n  margin-left: 0;\r\n}\r\n\r\npre {\r\n  margin: 0;\r\n  padding: 0;\r\n  background: none;\r\n  border: none;\r\n}\r\n\r\nbutton .glyphicon {\r\n  line-height: 1.4em;\r\n}\r\n\r\n.table-input > tbody > tr > td,\r\n.table-input > tfoot > tr > td {\r\n  padding: 0 !important;\r\n}\r\n\r\ntable input {\r\n  border: none !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\n.table-texts td:last-child { width: 35px;}\r\n", ""]);
+	exports.push([module.id, "* {\r\n    box-sizing: border-box;\r\n}\r\n\r\nhtml, body, .main {\r\n  margin:0;\r\n  height:100%;\r\n  min-height:100%;\r\n}\r\n\r\n.main {\r\n  padding-top: 50px;\r\n  padding-bottom: 50px;\r\n}\r\n\r\n.section { padding: 30px 0;}\r\n.section-default { }\r\n.section-primary { background-color: #eee; }\r\n\r\n.jumbotron  {\r\n    background-color: #2780e3;\r\n    color: #fff;\r\n}\r\n\r\n.beta {\r\n  background-color: #333;\r\n  color: #ccc;\r\n  border-radius: 3px;\r\n  padding: 2px 5px;\r\n}\r\n\r\n.jumbotron h1 {\r\n    font-size: 12rem;\r\n}\r\n\r\n.jumbotron .lead {\r\n    margin-bottom: 4rem;\r\n}\r\n\r\n.jumbotron .btn-primary {\r\n    background-color: #1967be;\r\n    border-color: #1862b5;\r\n    font-size: 4rem;\r\n}\r\n\r\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\r\n\r\n.toolbar + * { padding-top: 73px; }\r\n\r\n.btn-toolbar { margin: 15px -5px; }\r\n.btn-toolbar form { margin: 0; }\r\n.navbar-bottom { margin-bottom: 0;}\r\n\r\n.navbar-text {\r\n  margin-left: 0;\r\n}\r\n\r\npre {\r\n  margin: 0;\r\n  padding: 0;\r\n  background: none;\r\n  border: none;\r\n}\r\n\r\nbutton .glyphicon {\r\n  line-height: 1.4em;\r\n}\r\n\r\n.table-flex {\r\n  height:100%;\r\n  min-height:100%;\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.table-flex .table-header,\r\n.table-flex .table-body,\r\n.table-flex .table-footer {\r\n  border-top: 1px solid #ccc;\r\n}\r\n\r\n.table-flex .table-header .table-column  {\r\n  border-left: 1px solid #ccc;\r\n}\r\n\r\n.table-flex .table-body .table-column  {\r\n  border-width: 0;\r\n}\r\n\r\n.table-flex .table-header,\r\n.table-flex .table-footer {\r\n  background-color: #eee;\r\n  flex: 0 0 32px;\r\n  padding-right: 15px;\r\n}\r\n\r\n.table-flex .table-body {\r\n   flex: 1;\r\n   overflow-y: scroll;\r\n}\r\n\r\n.table-flex .table-header .table-column {\r\n  padding: 5px 10px;\r\n  font-weight: bold;\r\n}\r\n\r\n.table-flex .table-row {\r\n  display: flex;\r\n  flex-direction: row;\r\n}\r\n\r\n.table-flex .table-column {\r\n  flex: 1;\r\n}\r\n\r\n.table-flex .table-column:hover {\r\n  background-color: #eee;\r\n}\r\n\r\n\r\n.table-flex .table-column input {\r\n  font-size: 1.1em;\r\n  border-top-width: 0;\r\n  border-right-width: 0;\r\n  background: transparent;\r\n}\r\n\r\n.table-flex .table-column:first-child {\r\n  flex: 0 0 250px;\r\n}\r\n\r\n.table-flex .table-column:last-child {\r\n  flex: 0 0 36px;\r\n}\r\n", ""]);
 
 	// exports
 
