@@ -40,19 +40,6 @@ async function getUser(db, userId) {
   });
 }
 
-async function getUserByGitHubUserId(db, gitHubUserId) {
-  let users = db.collection('users');
-
-  return new Promise(function(resolve, reject) {
-    users.findOne({ 'github.userId': gitHubUserId }, (err, user) => {
-      if (err)
-        reject(err);
-
-      resolve(user);
-    });
-  });
-}
-
 async function updateUserGitHub(db, gitHubUserId, github) {
   let users = db.collection('users');
 
@@ -80,15 +67,13 @@ async function main() {
 
   passport.serializeUser((user, callback) => {
     let userId = user._id;
-console.log(userId);
     callback(null, userId);
   });
 
   passport.deserializeUser(async (userId, callback) => {
     try {
-      console.log(userId);
       let user = await getUser(db, userId);
-console.log(user);
+
       callback(null, user);
     } catch (ex) {
       callback(ex);
