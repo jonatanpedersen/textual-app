@@ -23,8 +23,11 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li class="dropdown" uib-dropdown>
-           <a href="" uib-dropdown-toggle class="dropdown-toggle"><i class="glyphicon glyphicon-user"></i> {{ user.displayName }} <span class="caret"></span></a>
+           <a href="" uib-dropdown-toggle class="dropdown-toggle"><i class="glyphicon glyphicon-user"></i> {{ userProfile.displayName }} <span class="caret"></span></a>
            <ul class="dropdown-menu">
+             <li><a href="#/user/profile" text>Profile</a></li>
+             <li><a href="#/user/settings" text>Settings</a></li>
+             <li class="divider"></li>
              <li><a href="/logout" text>Log out</a></li>
            </ul>
           </li>
@@ -178,6 +181,32 @@
       <div class="modal-footer">
           <button class="btn btn-primary" type="button" ng-click="ok()" text>OK</button>
       </div>
+    </script>
+
+    <script type="text/ng-template" id="user-profile.html">
+      <section class="section section-default">
+        <div class="container">
+          <h2 text>User profile</h2>
+          <form name="userProfileForm" ng-submit="submitUserProfileForm()">
+            <p class="form-group">
+              <label for="displayName" text>Dislay name</label>
+              <input type="text" ng-model="userProfile.displayName" required class="form-control" />
+            </p>
+            <p class="form-group">
+              <button type="submit" class="btn btn-primary" ng-disabled="userProfileForm.$invalid" text>Submit</button>
+            </p>
+          </form>
+        </div>
+      </section>
+    </script>
+
+    <script type="text/ng-template" id="user-settings.html">
+      <section class="section section-default">
+        <div class="container">
+          <h2 text>User settings</h2>
+          {{userSettings}}
+        </div>
+      </section>
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.js"></script>

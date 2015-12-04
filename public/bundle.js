@@ -54,42 +54,36 @@
 	angular.module('app').config(['$routeProvider',
 	  function($routeProvider) {
 	    $routeProvider
-	      .when('/about', {
-	        templateUrl: 'about.html',
-	        controller: 'AboutController'
+	      .when('/', {
+	        templateUrl: 'repository-list.html',
+	        controller: 'RepositoryListController'
 	      })
 	      .when('/clone-repository', {
 	        templateUrl: 'clone-repository.html',
 	        controller: 'CloneRepositoryController'
 	      })
-	      .when('/help', {
-	        templateUrl: 'help.html',
-	        controller: 'HelpController'
-	      })
-	      .when('/license', {
-	        templateUrl: 'license.html',
-	        controller: 'LicenseController'
-	      })
-	      .when('/', {
-	        templateUrl: 'repository-list.html',
-	        controller: 'RepositoryListController'
-	      })
 	      .when('/repository/:repositoryName', {
 	        templateUrl: 'repository.html',
 	        controller: 'RepositoryController'
+	      })
+	      .when('/user/profile', {
+	        templateUrl: 'user-profile.html',
+	        controller: 'UserProfileController'
+	      })
+	      .when('/user/settings', {
+	        templateUrl: 'user-settings.html',
+	        controller: 'UserSettingsController'
 	      })
 	      .otherwise({
 	        redirectTo: '/'
 	      });
 	  }]);
 
-	angular.module('app').controller('AboutController', [AboutController]);
 	angular.module('app').controller('CloneRepositoryController', ['$scope', '$location', 'RepositoryService', CloneRepositoryController]);
-	angular.module('app').controller('HelpController', [HelpController]);
-	angular.module('app').controller('IndexController', [IndexController]);
-	angular.module('app').controller('LicenseController', [LicenseController]);
+	angular.module('app').controller('UserProfileController', ['$scope', 'UserService', UserProfileController]);
+	angular.module('app').controller('UserSettingsController', ['$scope', 'UserService', UserSettingsController]);
 	angular.module('app').controller('NavBarController', ['$scope', '$location', '$routeParams', 'RepositoryService', 'UserService', NavBarController]);
-	angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', RepositoryController]);
+	angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', 'UserService', RepositoryController]);
 	angular.module('app').controller('RepositoryListController', ['$scope', 'RepositoryService', RepositoryListController]);
 	angular.module('app').controller('CommitModalController', ['$scope', '$uibModalInstance', CommitModalController]);
 	angular.module('app').controller('ErrorModalController', ['$scope', '$uibModalInstance', ErrorModalController]);
@@ -114,9 +108,6 @@
 	  }
 	}
 
-	function AboutController () {
-	}
-
 	function CloneRepositoryController ($scope, $location, RepositoryService) {
 	  $scope.cloneRepositoryFormData = { };
 
@@ -127,10 +118,22 @@
 	  }
 	}
 
-	function HelpController () {
+	function UserProfileController ($scope, UserService) {
+	  UserService.getUserProfile().then(function(userProfile) {
+	    $scope.userProfile = userProfile;
+	  });
+
+	  $scope.submitUserProfileForm = function() {
+	    if($scope.userProfileForm.$valid) {
+	      UserService.updateUserProfile($scope.userProfile);
+	    }
+	  }
 	}
 
-	function IndexController () {
+	function UserSettingsController ($scope, UserService) {
+	  UserService.getUserSettings().then(function(userSettings) {
+	    $scope.userSettings = userSettings;
+	  });
 	}
 
 	function RepositoryListController ($scope, RepositoryService) {
@@ -151,17 +154,21 @@
 	    $scope.repositoryNames = repositoryNames;
 	  });
 
-	  UserService.getUser().then(function(user) {
-	    $scope.user = user;
+	  UserService.getUserProfile().then(function(userProfile) {
+	    $scope.userProfile = userProfile;
 	  });
 	}
 
-	function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryService) {
+	function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryService, UserService) {
 	  $scope.repositoryName = $routeParams.repositoryName;
 
 	  $scope.update = function () {
 	    RepositoryService.getRepository($routeParams.repositoryName).then(function(repository) {
 	      $scope.repository = repository;
+	    });
+
+	    UserService.getUserSettings().then(function(userSettings) {
+	      $scope.userSettings = userSettings;
 	    });
 	  }
 
@@ -415,15 +422,41 @@
 	    return $q.reject(response.status);
 	  }
 
-	  function getUser() {
+	  function getUserProfile() {
 	    return $http({
 	      method: 'GET',
-	      url: '/api/user'
+	      url: '/api/user/profile'
+	    }).then(getResponseData, getResponseStatusCode)
+	  }
+
+	  function updateUserProfile(userProfile) {
+	    return $http({
+	      method: 'POST',
+	      url: '/api/user/profile',
+	      data: userProfile
+	    }).then(getResponseData, getResponseStatusCode)
+	  }
+
+	  function getUserSettings() {
+	    return $http({
+	      method: 'GET',
+	      url: '/api/user/settings'
+	    }).then(getResponseData, getResponseStatusCode)
+	  }
+
+	  function setUserSettings(userSettings) {
+	    return $http({
+	      method: 'POST',
+	      url: '/api/user/settings',
+	      data: userSettings
 	    }).then(getResponseData, getResponseStatusCode)
 	  }
 
 	  return {
-	    getUser: getUser
+	    getUserProfile: getUserProfile,
+	    updateUserProfile: updateUserProfile,
+	    getUserSettings: getUserSettings,
+	    setUserSettings: setUserSettings
 	  };
 	}
 
@@ -483,7 +516,7 @@
 
 
 	// module
-	exports.push([module.id, ".section { padding: 30px 0;}\r\n.section-default { }\r\n.section-primary { background-color: #eee; }\r\n\r\n.jumbotron  {\r\n    background-color: #2780e3;\r\n    color: #fff;\r\n}\r\n\r\n.beta {\r\n  background-color: #333;\r\n  color: #ccc;\r\n  border-radius: 3px;\r\n  padding: 2px 5px;\r\n}\r\n\r\n.jumbotron h1 {\r\n    font-size: 12rem;\r\n}\r\n\r\n.jumbotron .lead {\r\n    margin-bottom: 4rem;\r\n}\r\n\r\n.jumbotron .btn-primary {\r\n    background-color: #1967be;\r\n    border-color: #1862b5;\r\n    font-size: 4rem;\r\n}\r\n\r\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\r\n\r\n.toolbar + * { padding-top: 73px;}\r\n\r\n.btn-toolbar { margin: 15px -5px; }\r\n.btn-toolbar form { margin: 0; }\r\n.navbar-bottom { margin-bottom: 0;}\r\n.main { margin: 50px 0; }\r\n\r\n.navbar-text {\r\n  margin-left: 0;\r\n}\r\n\r\npre {\r\n  margin: 0;\r\n  padding: 0;\r\n  background: none;\r\n  border: none;\r\n}\r\n\r\nbutton .glyphicon {\r\n  line-height: 1.4em;\r\n}\r\n\r\n.table-input > tbody > tr > td,\r\n.table-input > tfoot > tr > td {\r\n  padding: 0 !important;\r\n}\r\n\r\ntable input {\r\n  border: none !important;\r\n  box-shadow: none !important;\r\n}\r\n\r\n.table-texts td:last-child { width: 35px;}\r\n", ""]);
+	exports.push([module.id, ".section { padding: 30px 0;}\n.section-default { }\n.section-primary { background-color: #eee; }\n\n.jumbotron  {\n    background-color: #2780e3;\n    color: #fff;\n}\n\n.beta {\n  background-color: #333;\n  color: #ccc;\n  border-radius: 3px;\n  padding: 2px 5px;\n}\n\n.jumbotron h1 {\n    font-size: 12rem;\n}\n\n.jumbotron .lead {\n    margin-bottom: 4rem;\n}\n\n.jumbotron .btn-primary {\n    background-color: #1967be;\n    border-color: #1862b5;\n    font-size: 4rem;\n}\n\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\n\n.toolbar + * { padding-top: 73px;}\n\n.btn-toolbar { margin: 15px -5px; }\n.btn-toolbar form { margin: 0; }\n.navbar-bottom { margin-bottom: 0;}\n.main { margin: 50px 0; }\n\n.navbar-text {\n  margin-left: 0;\n}\n\npre {\n  margin: 0;\n  padding: 0;\n  background: none;\n  border: none;\n}\n\nbutton .glyphicon {\n  line-height: 1.4em;\n}\n\n.table-input > tbody > tr > td,\n.table-input > tfoot > tr > td {\n  padding: 0 !important;\n}\n\ntable input {\n  border: none !important;\n  box-shadow: none !important;\n}\n\n.table-texts td:last-child { width: 35px;}\n", ""]);
 
 	// exports
 
@@ -825,7 +858,7 @@
 		},
 		"License": {
 			"en-GB": "License",
-			"da-DK": "Licens"
+			"da-DK": "License"
 		},
 		"OK": {
 			"en-GB": "Ok",
@@ -874,16 +907,6 @@
 		"Message": {
 			"en-GB": "Message",
 			"da-DK": "Besked"
-		},
-		"Test": {
-			"da-DK": "Test",
-			"de-DE": "Test",
-			"en-GB": "Test"
-		},
-		"Test2": {
-			"da-DK": "Test2",
-			"de-DE": "Test2",
-			"en-GB": "Test2"
 		}
 	};
 

@@ -40,14 +40,17 @@ async function getUser(db, userId) {
   });
 }
 
-async function updateUserGitHub(db, gitHubUserId, github) {
+async function updateUserGitHub(db, github) {
   let users = db.collection('users');
 
   return new Promise(function(resolve, reject) {
     users.findAndModify(
-      { 'github.userId': gitHubUserId },
+      { 'github.userId': github.userId },
       [],
-      { $set: { github: github, 'profile.displayName': github.profile.displayName } },
+      { $set: {
+        github: github,
+        'profile.displayName': github.profile.displayName }
+      },
       { new: true, upsert: true },
       (err, updatedUsers) => {
         let updatedUser = updatedUsers.value;
@@ -61,6 +64,45 @@ async function updateUserGitHub(db, gitHubUserId, github) {
   });
 }
 
+async function updateUserProfile(db, userId, userProfile) {
+  let users = db.collection('users');
+
+  return new Promise(function(resolve, reject) {
+    users.findAndModify(
+      { _id: mongodb.ObjectId(userId)},
+      [],
+      { $set: { profile: userProfile } },
+      {},
+      (err) => {
+        if (err)
+          reject(err);
+
+        resolve();
+      }
+    );
+  });
+}
+
+async function updateUserSettings(db, userId, userSettings) {
+  let users = db.collection('users');
+
+  return new Promise(function(resolve, reject) {
+    users.findAndModify(
+      { _id: mongodb.ObjectId(userId)},
+      [],
+      { $set: { settings: userSettings } },
+      {},
+      (err) => {
+        if (err)
+          reject(err);
+
+        resolve();
+      }
+    );
+  });
+}
+
+
 async function main() {
   let db = await connectToMongoDB(config.mongodb.connectionString);
   let app = express();
@@ -73,6 +115,7 @@ async function main() {
   passport.deserializeUser(async (userId, callback) => {
     try {
       let user = await getUser(db, userId);
+      user.id = user._id.toString();
 
       callback(null, user);
     } catch (ex) {
@@ -87,7 +130,7 @@ async function main() {
     },
     async function(accessToken, refreshToken, profile, done) {
       try {
-        let user = await updateUserGitHub(db, profile.id, {
+        let user = await updateUserGitHub(db, {
           userId: profile.id,
           profile: profile,
           accessToken: accessToken,
@@ -171,10 +214,34 @@ async function main() {
     next();
   });
 
-  app.get('/api/user', (req, res) => {
+  app.get('/api/user/profile', (req, res) => {
     let user = req.user;
 
     res.json(user.profile);
+  });
+
+  app.post('/api/user/profile', async (req, res, next) => {
+    try {
+      await updateUserProfile(db, req.user.id, req.body);
+      res.end();
+    } catch (ex) {
+      next(ex);
+    }
+  });
+
+  app.get('/api/user/settings', (req, res) => {
+    let user = req.user;
+
+    res.json(user.settings);
+  });
+
+  app.post('/api/user/settings', async (req, res, next) => {
+    try {
+      await updateUserSettings(db, req.user.id, req.body);
+      res.end();
+    } catch (ex) {
+      next(ex);
+    }
   });
 
   app.get('/api/repository', (req, res, next) => {
