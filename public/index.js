@@ -226,9 +226,9 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
     } else {
       $scope.userSettings.columns.push(column);
       $scope.userSettings.columns.sort();
-
-      UserService.setUserSettings($scope.userSettings);
     }
+
+    UserService.setUserSettings($scope.userSettings);
   };
 
   $scope.orderByColumn = function(column) {
