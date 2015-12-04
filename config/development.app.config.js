@@ -13,7 +13,7 @@ export default {
     callback_url: 'http://localhost/auth/github/callback'
   },
   mongodb: {
-    connectionString: 'mongodb://localhost/translate-app'
+    connectionString: 'mongodb://translate-app:PGTXeVlqYcv22JTx@46.101.113.122:27017/translate-app-test'
   },
   logger: {
     path: './log.txt'

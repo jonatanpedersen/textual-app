@@ -15,6 +15,7 @@ import ejsLocals  from 'ejs-locals';
 import url from 'url';
 import mkdirp from 'mkdirp';
 import mongodb from 'mongodb';
+import assert from 'assert';
 
 async function connectToMongoDB(connectionString) {
   return new Promise(function(resolve, reject) {

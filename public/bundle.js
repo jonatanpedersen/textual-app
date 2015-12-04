@@ -544,7 +544,7 @@
 
 
 	// module
-	exports.push([module.id, "* {\n    box-sizing: border-box;\n}\n\nhtml, body, .main {\n  margin:0;\n  height:100%;\n  min-height:100%;\n}\n\n.main {\n  padding-top: 50px;\n  padding-bottom: 50px;\n}\n\n.section { padding: 30px 0;}\n.section-default { }\n.section-primary { background-color: #eee; }\n\n.jumbotron  {\n    background-color: #2780e3;\n    color: #fff;\n}\n\n.beta {\n  background-color: #333;\n  color: #ccc;\n  border-radius: 3px;\n  padding: 2px 5px;\n}\n\n.jumbotron h1 {\n    font-size: 12rem;\n}\n\n.jumbotron .lead {\n    margin-bottom: 4rem;\n}\n\n.jumbotron .btn-primary {\n    background-color: #1967be;\n    border-color: #1862b5;\n    font-size: 4rem;\n}\n\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\n\n.toolbar + * { padding-top: 73px; }\n\n.btn-toolbar { margin: 15px -5px; }\n.btn-toolbar form { margin: 0; }\n.navbar-bottom { margin-bottom: 0;}\n\n.navbar-text {\n  margin-left: 0;\n}\n\npre {\n  margin: 0;\n  padding: 0;\n  background: none;\n  border: none;\n}\n\nbutton .glyphicon {\n  line-height: 1.4em;\n}\n\n.table-flex {\n  height:100%;\n  min-height:100%;\n  display: flex;\n  flex-direction: column;\n}\n\n.table-flex .table-header,\n.table-flex .table-body,\n.table-flex .table-footer {\n  border-top: 1px solid #ccc;\n}\n\n.table-flex .table-header .table-column  {\n  border-left: 1px solid #ccc;\n}\n\n.table-flex .table-body .table-column  {\n  border-width: 0;\n}\n\n.table-flex .table-header,\n.table-flex .table-footer {\n  background-color: #eee;\n  flex: 0 0 32px;\n  padding-right: 15px;\n}\n\n.table-flex .table-body {\n   flex: 1;\n   overflow-y: scroll;\n}\n\n.table-flex .table-header .table-column {\n  padding: 5px 10px;\n  font-weight: bold;\n}\n\n.table-flex .table-row {\n  display: flex;\n  flex-direction: row;\n}\n\n.table-flex .table-column {\n  flex: 1;\n}\n\n.table-flex .table-column:hover {\n  background-color: #eee;\n}\n\n\n.table-flex .table-column input {\n  font-size: 1.1em;\n  border-top-width: 0;\n  border-right-width: 0;\n  background: transparent;\n}\n\n.table-flex .table-column:first-child {\n  flex: 0 0 250px;\n}\n\n.table-flex .table-column:last-child {\n  flex: 0 0 36px;\n}\n", ""]);
+	exports.push([module.id, "* {\r\n    box-sizing: border-box;\r\n}\r\n\r\nhtml, body, .main {\r\n  margin:0;\r\n  height:100%;\r\n  min-height:100%;\r\n}\r\n\r\n.main {\r\n  padding-top: 50px;\r\n  padding-bottom: 50px;\r\n}\r\n\r\n.section { padding: 30px 0;}\r\n.section-default { }\r\n.section-primary { background-color: #eee; }\r\n\r\n.jumbotron  {\r\n    background-color: #2780e3;\r\n    color: #fff;\r\n}\r\n\r\n.beta {\r\n  background-color: #333;\r\n  color: #ccc;\r\n  border-radius: 3px;\r\n  padding: 2px 5px;\r\n}\r\n\r\n.jumbotron h1 {\r\n    font-size: 12rem;\r\n}\r\n\r\n.jumbotron .lead {\r\n    margin-bottom: 4rem;\r\n}\r\n\r\n.jumbotron .btn-primary {\r\n    background-color: #1967be;\r\n    border-color: #1862b5;\r\n    font-size: 4rem;\r\n}\r\n\r\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\r\n\r\n.toolbar + * { padding-top: 73px; }\r\n\r\n.btn-toolbar { margin: 15px -5px; }\r\n.btn-toolbar form { margin: 0; }\r\n.navbar-bottom { margin-bottom: 0;}\r\n\r\n.navbar-text {\r\n  margin-left: 0;\r\n}\r\n\r\npre {\r\n  margin: 0;\r\n  padding: 0;\r\n  background: none;\r\n  border: none;\r\n}\r\n\r\nbutton .glyphicon {\r\n  line-height: 1.4em;\r\n}\r\n\r\n.table-flex {\r\n  height:100%;\r\n  min-height:100%;\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.table-flex .table-header,\r\n.table-flex .table-body,\r\n.table-flex .table-footer {\r\n  border-top: 1px solid #ccc;\r\n}\r\n\r\n.table-flex .table-header .table-column  {\r\n  border-left: 1px solid #ccc;\r\n}\r\n\r\n.table-flex .table-body .table-column  {\r\n  border-width: 0;\r\n}\r\n\r\n.table-flex .table-header,\r\n.table-flex .table-footer {\r\n  background-color: #eee;\r\n  flex: 0 0 32px;\r\n  padding-right: 15px;\r\n}\r\n\r\n.table-flex .table-body {\r\n   flex: 1;\r\n   overflow-y: scroll;\r\n}\r\n\r\n.table-flex .table-header .table-column {\r\n  padding: 5px 10px;\r\n  font-weight: bold;\r\n}\r\n\r\n.table-flex .table-row {\r\n  display: flex;\r\n  flex-direction: row;\r\n}\r\n\r\n.table-flex .table-column {\r\n  flex: 1;\r\n}\r\n\r\n.table-flex .table-column:hover {\r\n  background-color: #eee;\r\n}\r\n\r\n\r\n.table-flex .table-column input {\r\n  font-size: 1.1em;\r\n  border-top-width: 0;\r\n  border-right-width: 0;\r\n  background: transparent;\r\n}\r\n\r\n.table-flex .table-column:first-child {\r\n  flex: 0 0 250px;\r\n}\r\n\r\n.table-flex .table-column:last-child {\r\n  flex: 0 0 36px;\r\n}\r\n", ""]);
 
 	// exports
 
@@ -886,7 +886,7 @@
 		},
 		"License": {
 			"en-GB": "License",
-			"da-DK": "License"
+			"da-DK": "Licens"
 		},
 		"OK": {
 			"en-GB": "Ok",
@@ -935,6 +935,16 @@
 		"Message": {
 			"en-GB": "Message",
 			"da-DK": "Besked"
+		},
+		"Test": {
+			"da-DK": "Test",
+			"de-DE": "Test",
+			"en-GB": "Test"
+		},
+		"Test2": {
+			"da-DK": "Test2",
+			"de-DE": "Test2",
+			"en-GB": "Test2"
 		}
 	};
 
