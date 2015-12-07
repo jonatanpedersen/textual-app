@@ -21,7 +21,7 @@ import jsonPatch from 'json-patch';
 
 async function connectToMongoDB(connectionString) {
   return new Promise(function(resolve, reject) {
-    mongodb.MongoClient.connect(connectionString, (err, db) => {
+    mongodb.MongoClient.connect(connectionString, { server: { sslValidate: false } }, (err, db) => {
       if (err)
         reject(err);
 
