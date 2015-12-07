@@ -126,7 +126,7 @@ button .glyphicon {
 }
 
 .table-flex .table-column:first-child {
-  flex: 0 0 250px;
+  flex: 0 0 480px;
 }
 
 .table-flex .table-column:last-child {
