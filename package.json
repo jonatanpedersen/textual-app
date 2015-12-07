@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --ignore data/ start.js",
+    "start": "node start.js",
     "test": "mocha"
   },
   "repository": {
