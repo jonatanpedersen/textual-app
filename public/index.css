@@ -7,7 +7,7 @@ html, body, .main {
   height:100%;
   min-height:100%;
 }
-
+form {margin : 0}
 .main {
   padding-top: 50px;
   padding-bottom: 50px;
@@ -91,7 +91,7 @@ button .glyphicon {
 .table-flex .table-footer {
   background-color: #eee;
   flex: 0 0 32px;
-  padding-right: 15px;
+  padding-right: 17px;
 }
 
 .table-flex .table-body {

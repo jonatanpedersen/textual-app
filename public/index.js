@@ -37,11 +37,12 @@ angular.module('app').controller('CloneRepositoryController', ['$scope', '$locat
 angular.module('app').controller('UserProfileController', ['$scope', 'UserService', UserProfileController]);
 angular.module('app').controller('UserSettingsController', ['$scope', 'UserService', UserSettingsController]);
 angular.module('app').controller('NavBarController', ['$scope', '$location', '$routeParams', 'RepositoryService', 'UserService', NavBarController]);
-angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', 'UserService', RepositoryController]);
+angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', 'RepositoryTextsService', 'UserService', RepositoryController]);
 angular.module('app').controller('RepositoryListController', ['$scope', 'RepositoryService', RepositoryListController]);
 angular.module('app').controller('CommitModalController', ['$scope', '$uibModalInstance', CommitModalController]);
 angular.module('app').controller('ErrorModalController', ['$scope', '$uibModalInstance', ErrorModalController]);
 angular.module('app').service('RepositoryService', ['$http', '$q', RepositoryService]);
+angular.module('app').service('RepositoryTextsService', ['$http', '$q', RepositoryTextsService]);
 angular.module('app').service('UserService', ['$http', '$q', UserService]);
 angular.module('app').constant('getText', getText);
 angular.module('app').filter('text', ['getText', textFilter]);
@@ -139,13 +140,13 @@ function NavBarController ($scope,  $location, $routeParams, RepositoryService, 
   });
 }
 
-function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryService, UserService) {
+function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryService, RepositoryTextsService, UserService) {
   $scope.repositoryName = $routeParams.repositoryName;
   $scope.userSettings = { columns: [] };
 
   $scope.update = function () {
-    RepositoryService.getRepository($routeParams.repositoryName).then(function(repository) {
-      $scope.repository = repository;
+    RepositoryTextsService.getTexts($routeParams.repositoryName).then(function(texts) {
+      $scope.texts = texts;
     });
 
     UserService.getUserSettings().then(function(userSettings) {
@@ -155,15 +156,14 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
 
   $scope.allTexts = [];
 
-  $scope.$watch('repository', function() {
-    if (!$scope.repository)
+  $scope.$watch('texts', function() {
+    if (!$scope.texts)
       return;
 
-    $scope.allTexts = Object.keys($scope.repository.texts).reduce(function(array, key) {
-      var value = $scope.repository.texts[key];
+    $scope.allTexts = Object.keys($scope.texts).reduce(function(array, id) {
       array.push({
-        key: key,
-        value: value
+        id: id,
+        languages: $scope.texts[id]
       });
 
       return array;
@@ -200,20 +200,16 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
     });
   }
 
-  $scope.pull = function() {
+  $scope.pull = function () {
     RepositoryService.pullRepository($routeParams.repositoryName).then($scope.update, $scope.error);
   }
 
-  $scope.push = function() {
+  $scope.push = function () {
     RepositoryService.pushRepository($routeParams.repositoryName).then($scope.update, $scope.error);
   }
 
-  $scope.sync = function() {
+  $scope.sync = function () {
     RepositoryService.syncRepository($routeParams.repositoryName).then($scope.update, $scope.error);
-  }
-
-  $scope.saveRepository = function() {
-    RepositoryService.saveRepository($routeParams.repositoryName, $scope.repository).then($scope.update, $scope.error);
   }
 
   $scope.availableColumns = ['da-DK', 'en-GB', 'fr-FR', 'de-DE', 'it-IT', 'es-ES'].sort();
@@ -232,36 +228,64 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
   };
 
   $scope.orderByColumn = function(column) {
-    console.log('orderByColumn', column);
     $scope.selectedOrderByColumn = column;
   };
 
-  $scope.resetAddForm = function() {
-    $scope.addForm = {
-      key: undefined,
-      value: {}
+  $scope.resetAddTextFormData = function() {
+    $scope.addTextFormData = {
+      textId: undefined,
+      languages: {}
     }
   };
 
-  $scope.resetAddForm();
+  $scope.resetAddTextFormData();
 
-  $scope.add = function() {
-    $scope.repository.texts[$scope.addForm.key] = $scope.addForm.value;
+  $scope.addText = function () {
+    $scope.addTextFormData.languages = $scope.addTextFormData.languages || {};
 
-    $scope.resetAddForm();
-    $scope.saveRepository();
+    RepositoryTextsService.addText($routeParams.repositoryName, $scope.addTextFormData.textId, $scope.addTextFormData.languages).then(success);
+
+    function success () {
+      $scope.texts[$scope.addTextFormData.textId] = $scope.addTextFormData.languages;
+      $scope.resetAddTextFormData();
+    }
   }
 
-  $scope.deleteKey = function(key) {
-    delete $scope.repository.texts[key];
-    $scope.saveRepository();
+  $scope.removeText = function (textId) {
+    RepositoryTextsService.removeText($routeParams.repositoryName, textId).then(success);
+
+    function success () {
+      delete $scope.texts[textId];
+    }
   }
 
-  $scope.renameKey = function(oldKey, newKey) {
-    $scope.repository.texts[newKey] = $scope.repository.texts[oldKey];
-    delete $scope.repository.texts[oldKey];
+  $scope.moveText = function (fromTextId, toTextId) {
+    RepositoryTextsService.moveText($routeParams.repositoryName, fromTextId, toTextId).then(success, error);
 
-    $scope.saveRepository();
+    function success () {
+    }
+
+    function error () {
+    }
+  }
+
+  $scope.updateTextValue = function (textId, languageCode, oldValue) {
+    var value = $scope.texts[textId][languageCode];
+
+    if (oldValue === '' && value !== '') {
+      RepositoryTextsService.addTextValue($routeParams.repositoryName, textId, languageCode, value).then(success, error);
+    } else if (oldValue !== '' && value === '') {
+      RepositoryTextsService.removeTextValue($routeParams.repositoryName, textId, languageCode, value).then(success, error);
+    } else if (oldValue !== '' && value !== '') {
+      RepositoryTextsService.replaceTextValue($routeParams.repositoryName, textId, languageCode, value).then(success, error);
+    }
+
+    function success () {
+    }
+
+    function error () {
+      $scope.texts[textId][languageCode] = oldValue;
+    }
   }
 
   $scope.update();
@@ -315,15 +339,6 @@ function RepositoryService($http, $q) {
     return $http({
       method: 'GET',
       url: '/api/repository/' + repositoryName + '/status'
-    })
-    .then(getResponseData, getResponseStatusCode)
-  }
-
-  function saveRepository(repositoryName, repository) {
-    return $http({
-      method: 'POST',
-      url: '/api/repository/' + repositoryName,
-      data: repository
     })
     .then(getResponseData, getResponseStatusCode)
   }
@@ -385,13 +400,107 @@ function RepositoryService($http, $q) {
     getRepositoryNames: getRepositoryNames,
     getRepository: getRepository,
     getRepositoryStatus: getRepositoryStatus,
-    saveRepository: saveRepository,
     cloneRepository: cloneRepository,
     pullRepository: pullRepository,
     checkoutRepository: checkoutRepository,
     commitRepository: commitRepository,
     pushRepository: pushRepository,
     syncRepository: syncRepository
+  };
+}
+
+function RepositoryTextsService($http, $q) {
+  function getResponseData(response) {
+    return $q.resolve(response.data);
+  }
+
+  function getResponseStatusCode(response) {
+    return $q.reject(response.status);
+  }
+
+  function getTexts(repositoryName) {
+    return $http({
+      method: 'GET',
+      url: '/api/repository/' + repositoryName + '/texts'
+    })
+    .then(getResponseData, getResponseStatusCode)
+  }
+
+  function patchRepositoryTexts(repositoryName, patch) {
+    return $http({
+      method: 'PATCH',
+      url: '/api/repository/' + repositoryName + '/texts',
+      data: patch
+    })
+    .then(getResponseData, getResponseStatusCode)
+  }
+
+  function addText(repositoryName, textId, text) {
+    return patchRepositoryTexts(repositoryName, [
+      {
+        op: 'add',
+        path: '/' + textId,
+        value: text
+      }
+    ]);
+  }
+
+  function addTextValue(repositoryName, textId, languageCode, value) {
+    return patchRepositoryTexts(repositoryName, [
+      {
+        op: 'add',
+        path: '/' + textId + '/' + languageCode,
+        value: value
+      }
+    ]);
+  }
+
+  function replaceTextValue(repositoryName, textId, languageCode, value) {
+    return patchRepositoryTexts(repositoryName, [
+      {
+        op: 'replace',
+        path: '/' + textId + '/' + languageCode,
+        value: value
+      }
+    ]);
+  }
+
+  function removeTextValue(repositoryName, textId, languageCode) {
+    return patchRepositoryTexts(repositoryName, [
+      {
+        op: 'remove',
+        path: '/' + textId + '/' + languageCode
+      }
+    ]);
+  }
+
+  function removeText(repositoryName, textId) {
+    return patchRepositoryTexts(repositoryName, [
+      {
+        op: 'remove',
+        path: '/' + textId
+      }
+    ]);
+  }
+
+  function moveText(repositoryName, fromTextId, toTextId) {
+    return patchRepositoryTexts(repositoryName, [
+      {
+        op: 'move',
+        from: '/' + fromTextId,
+        path: '/' + toTextId
+      }
+    ]);
+  }
+
+  return {
+    addText: addText,
+    addTextValue: addTextValue,
+    getTexts: getTexts,
+    moveText: moveText,
+    removeText: removeText,
+    removeTextValue: removeTextValue,
+    replaceTextValue: replaceTextValue
   };
 }
 
