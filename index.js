@@ -17,6 +17,7 @@ import url from 'url';
 import mkdirp from 'mkdirp';
 import mongodb from 'mongodb';
 import assert from 'assert';
+import jsonPatch from 'json-patch';
 
 async function connectToMongoDB(connectionString) {
   return new Promise(function(resolve, reject) {
@@ -252,43 +253,60 @@ async function main() {
       let userPath = path.join(config.data, req.user.id);
 
       mkdirp(userPath, (err) => {
-        if (err)
+        if (err) {
           return next(err);
+        }
 
-          let repositoryNames = fs.readdirSync(userPath)
-            .filter(file => fs.statSync(path.join(userPath, file)).isDirectory());
+        let repositoryNames = fs.readdirSync(userPath)
+          .filter(file => fs.statSync(path.join(userPath, file)).isDirectory());
 
-          res.json(repositoryNames);
+        res.json(repositoryNames);
       });
     });
 
-    app.get('/api/repository/:repositoryName', (req, res, next) => {
+    app.get('/api/repository/:repositoryName/texts', (req, res, next) => {
       let repositoryName = req.params.repositoryName;
       let repositoryTextsPath = path.join(config.data, req.user.id, repositoryName, 'texts.json');
 
       fs.readFile(repositoryTextsPath, 'utf8', function (err, data) {
-        if (err)
-          data = '{}';
+        if (err) {
+          return next(err);
+        }
 
         let texts = JSON.parse(data);
 
-        res.json({
-          repositoryName: repositoryName,
-          texts: texts
-        });
+        res.json(texts);
       });
     });
 
-    app.post('/api/repository/:repositoryName', (req, res, next) => {
+    app.patch('/api/repository/:repositoryName/texts', (req, res, next) => {
       let repositoryName = req.params.repositoryName;
       let repositoryTextsPath = path.join(config.data, req.user.id, repositoryName, 'texts.json');
-      let data = JSON.stringify(req.body.texts, null, 4);
+      let patch = req.body;
 
-      fs.writeFile(repositoryTextsPath, data, 'utf8', function (err) {
-        if (err)
+      fs.readFile(repositoryTextsPath, 'utf8', function (err, data) {
+        if (err) {
           return next(err);
+        }
+
+        let texts = JSON.parse(data);
+
+        try {
+          jsonPatch.apply(texts, patch);
+        }
+        catch(ex) {
+          return next(ex);
+        }
+
+        let newData = JSON.stringify(texts, null, 4);
+
+        fs.writeFile(repositoryTextsPath, newData, 'utf8', function (err) {
+          if (err) {
+            return next(err);
+          }
 
           res.end();
+        });
       });
     });
 
