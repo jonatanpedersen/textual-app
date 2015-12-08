@@ -18,97 +18,14 @@ import mkdirp from 'mkdirp';
 import mongodb from 'mongodb';
 import assert from 'assert';
 import jsonPatch from 'json-patch';
-
-async function connectToMongoDB(connectionString) {
-  return new Promise(function(resolve, reject) {
-    mongodb.MongoClient.connect(connectionString, { server: { sslValidate: false } }, (err, db) => {
-      if (err)
-        reject(err);
-
-      resolve(db);
-    });
-  });
-}
-
-async function getUser(db, userId) {
-  let users = db.collection('users');
-
-  return new Promise(function(resolve, reject) {
-    users.findOne({ _id: mongodb.ObjectId(userId) }, (err, user) => {
-      if (err)
-        reject(err);
-
-      resolve(user);
-    });
-  });
-}
-
-async function updateUserGitHub(db, github) {
-  let users = db.collection('users');
-
-  return new Promise(function(resolve, reject) {
-    users.findAndModify(
-      { 'github.userId': github.userId },
-      [],
-      { $set: {
-        github: github,
-        'profile.displayName': github.profile.displayName }
-      },
-      { new: true, upsert: true },
-      (err, updatedUsers) => {
-        let updatedUser = updatedUsers.value;
-
-        if (err)
-          reject(err);
-
-        resolve(updatedUser);
-      }
-    );
-  });
-}
-
-async function updateUserProfile(db, userId, userProfile) {
-  let users = db.collection('users');
-
-  return new Promise(function(resolve, reject) {
-    users.findAndModify(
-      { _id: mongodb.ObjectId(userId)},
-      [],
-      { $set: { profile: userProfile } },
-      {},
-      (err) => {
-        if (err)
-          reject(err);
-
-        resolve();
-      }
-    );
-  });
-}
-
-async function updateUserSettings(db, userId, userSettings) {
-  let users = db.collection('users');
-
-  return new Promise(function(resolve, reject) {
-    users.findAndModify(
-      { _id: mongodb.ObjectId(userId)},
-      [],
-      { $set: { settings: userSettings } },
-      {},
-      (err) => {
-        if (err)
-          reject(err);
-
-        resolve();
-      }
-    );
-  });
-}
+import User from './User';
+import MongoDB from './MongoDB';
+import { Repository, Signature } from 'nodegit';
 
 async function main() {
   try {
     let app = express();
-    let db = await connectToMongoDB(config.mongodb.connectionString);
+    let db = await MongoDB.connectToMongoDB(config.mongodb.connectionString);
 
     passport.serializeUser((user, callback) => {
       let userId = user._id;
@@ -117,7 +34,7 @@ async function main() {
 
     passport.deserializeUser(async (userId, callback) => {
       try {
-        let user = await getUser(db, userId);
+        let user = await User.getUser(db, userId);
         user.id = user._id.toString();
 
         callback(null, user);
@@ -133,7 +50,7 @@ async function main() {
       },
       async function(accessToken, refreshToken, profile, done) {
         try {
-          let user = await updateUserGitHub(db, {
+          let user = await User.updateUserGitHub(db, {
             userId: profile.id,
             profile: profile,
             accessToken: accessToken,
@@ -225,7 +142,7 @@ async function main() {
 
     app.post('/api/user/profile', async (req, res, next) => {
       try {
-        await updateUserProfile(db, req.user.id, req.body);
+        await User.updateUserProfile(db, req.user.id, req.body);
         res.end();
       } catch (ex) {
         next(ex);
@@ -242,7 +159,7 @@ async function main() {
 
     app.post('/api/user/settings', async (req, res, next) => {
       try {
-        await updateUserSettings(db, req.user.id, req.body);
+        await User.updateUserSettings(db, req.user.id, req.body);
         res.end();
       } catch (ex) {
         next(ex);
@@ -273,15 +190,21 @@ async function main() {
           return next(err);
         }
 
-        let texts = JSON.parse(data);
+        try {
+          let texts = JSON.parse(data);
 
-        res.json(texts);
+          res.json(texts);
+        }
+        catch (ex) {
+          return next(ex);
+        }
       });
     });
 
     app.patch('/api/repository/:repositoryName/texts', (req, res, next) => {
       let repositoryName = req.params.repositoryName;
-      let repositoryTextsPath = path.join(config.data, req.user.id, repositoryName, 'texts.json');
+      let repositoryPath = path.join(config.data, req.user.id, repositoryName);
+      let repositoryTextsPath = path.join(repositoryPath, 'texts.json');
       let patch = req.body;
 
       fs.readFile(repositoryTextsPath, 'utf8', function (err, data) {
@@ -289,24 +212,39 @@ async function main() {
           return next(err);
         }
 
-        let texts = JSON.parse(data);
-
         try {
+          let texts = JSON.parse(data);
           jsonPatch.apply(texts, patch);
+          let newData = JSON.stringify(texts, null, 4);
+
+          fs.writeFile(repositoryTextsPath, newData, 'utf8', function (err) {
+            if (err) {
+              return next(err);
+            }
+
+            Repository.open(repositoryPath)
+              .then(repository => {
+                let author = Signature.now(req.user.profile.displayName, req.user.profile.email);
+                let committer = author;
+                let message = patch.reduce((messages, patchEntry) => {
+                  if (patchEntry.op === 'add') messages.push(`add ${patchEntry.path}`);
+                  if (patchEntry.op === 'replace') messages.push(`update ${patchEntry.path}`);
+                  if (patchEntry.op === 'remove') messages.push(`remove ${patchEntry.path}`);
+                  if (patchEntry.op === 'move') messages.push(`move ${patchEntry.from} to $(patchEntry.path}`);
+
+                  return messages;
+                }, []).join('\n');
+
+                return repository.createCommitOnHead(['texts.json'], author, committer, message);
+              })
+              .done(oid => {
+                res.json(oid);
+              });
+          });
         }
         catch(ex) {
-          return next(ex);
+          next(ex);
         }
-
-        let newData = JSON.stringify(texts, null, 4);
-
-        fs.writeFile(repositoryTextsPath, newData, 'utf8', function (err) {
-          if (err) {
-            return next(err);
-          }
-
-          res.end();
-        });
       });
     });
 

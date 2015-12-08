@@ -39,7 +39,6 @@ angular.module('app').controller('UserSettingsController', ['$scope', 'UserServi
 angular.module('app').controller('NavBarController', ['$scope', '$location', '$routeParams', 'RepositoryService', 'UserService', NavBarController]);
 angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', 'RepositoryTextsService', 'UserService', RepositoryController]);
 angular.module('app').controller('RepositoryListController', ['$scope', 'RepositoryService', RepositoryListController]);
-angular.module('app').controller('CommitModalController', ['$scope', '$uibModalInstance', CommitModalController]);
 angular.module('app').controller('ErrorModalController', ['$scope', '$uibModalInstance', ErrorModalController]);
 angular.module('app').service('RepositoryService', ['$http', '$q', RepositoryService]);
 angular.module('app').service('RepositoryTextsService', ['$http', '$q', RepositoryTextsService]);
@@ -145,8 +144,13 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
   $scope.userSettings = { columns: [] };
 
   $scope.update = function () {
+    $scope.updatingTexts = true;
+
     RepositoryTextsService.getTexts($routeParams.repositoryName).then(function(texts) {
       $scope.texts = texts;
+      console.log(2);
+
+      $scope.updatingTexts = false;
     });
 
     UserService.getUserSettings().then(function(userSettings) {
@@ -172,21 +176,6 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
 
   $scope.searchText = undefined;
 
-  $scope.checkout = function() {
-    RepositoryService.checkoutRepository($routeParams.repositoryName).then($scope.update, $scope.error);
-  }
-
-  $scope.commit = function() {
-    var commitModal = $uibModal.open({
-      templateUrl: 'commitModal.html',
-      controller: 'CommitModalController'
-    });
-
-    commitModal.result.then(function (message) {
-       RepositoryService.commitRepository($routeParams.repositoryName, message).then($scope.update, $scope.error);
-    });
-  }
-
   $scope.error = function(message) {
     console.log(message);
     var errorModal = $uibModal.open({
@@ -200,15 +189,8 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
     });
   }
 
-  $scope.pull = function () {
-    RepositoryService.pullRepository($routeParams.repositoryName).then($scope.update, $scope.error);
-  }
-
-  $scope.push = function () {
-    RepositoryService.pushRepository($routeParams.repositoryName).then($scope.update, $scope.error);
-  }
-
   $scope.sync = function () {
+    $scope.updatingTexts = true;
     RepositoryService.syncRepository($routeParams.repositoryName).then($scope.update, $scope.error);
   }
 
@@ -291,18 +273,6 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
   $scope.update();
 }
 
-function CommitModalController ($scope, $uibModalInstance) {
-  $scope.commit = {};
-
-  $scope.ok = function () {
-    $uibModalInstance.close($scope.commit.message);
-  };
-
-  $scope.cancel = function () {
-    $uibModalInstance.dismiss('cancel');
-  };
-}
-
 function ErrorModalController ($scope, $uibModalInstance, message) {
   $scope.message = message;
   $scope.ok = function () {
@@ -355,39 +325,6 @@ function RepositoryService($http, $q) {
     .then(getResponseData, getResponseStatusCode)
   }
 
-  function pullRepository(repositoryName) {
-    return $http({
-      method: 'POST',
-      url: '/api/repository/' + repositoryName + '/pull'
-    })
-    .then(getResponseData, getResponseStatusCode)
-  }
-
-  function checkoutRepository(repositoryName) {
-    return $http({
-      method: 'POST',
-      url: '/api/repository/' + repositoryName + '/checkout'
-    })
-    .then(getResponseData, getResponseStatusCode)
-  }
-
-  function commitRepository(repositoryName, message) {
-    return $http({
-      method: 'POST',
-      url: '/api/repository/' + repositoryName + '/commit',
-      data: { message: message }
-    })
-    .then(getResponseData, getResponseStatusCode)
-  }
-
-  function pushRepository(repositoryName) {
-    return $http({
-      method: 'POST',
-      url: '/api/repository/' + repositoryName + '/push',
-    })
-    .then(getResponseData, getResponseStatusCode)
-  }
-
   function syncRepository(repositoryName) {
     return $http({
       method: 'POST',
@@ -401,10 +338,6 @@ function RepositoryService($http, $q) {
     getRepository: getRepository,
     getRepositoryStatus: getRepositoryStatus,
     cloneRepository: cloneRepository,
-    pullRepository: pullRepository,
-    checkoutRepository: checkoutRepository,
-    commitRepository: commitRepository,
-    pushRepository: pushRepository,
     syncRepository: syncRepository
   };
 }
