@@ -140,25 +140,22 @@ function NavBarController ($scope,  $location, $routeParams, RepositoryService, 
 }
 
 function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryService, RepositoryTextsService, UserService) {
+  $scope.allTexts = [];
+  $scope.availableColumns = [];
   $scope.repositoryName = $routeParams.repositoryName;
+  $scope.searchText = undefined;
+  $scope.selectedColumns = [];
   $scope.userSettings = { columns: [] };
 
-  $scope.update = function () {
-    $scope.updatingTexts = true;
-
-    RepositoryTextsService.getTexts($routeParams.repositoryName).then(function(texts) {
-      $scope.texts = texts;
-      console.log(2);
-
-      $scope.updatingTexts = false;
-    });
-
-    UserService.getUserSettings().then(function(userSettings) {
-      $scope.userSettings = userSettings;
-    });
-  }
-
-  $scope.allTexts = [];
+  $scope.addText = addText;
+  $scope.moveText = moveText;
+  $scope.error = error;
+  $scope.removeText = removeText;
+  $scope.resetAddTextFormData = resetAddTextFormData;
+  $scope.sync = sync;
+  $scope.toggleColumn = toggleColumn;
+  $scope.update = update;
+  $scope.updateTextValue = updateTextValue;
 
   $scope.$watch('texts', function() {
     if (!$scope.texts)
@@ -172,12 +169,30 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
 
       return array;
     }, []);
+
+    updateAvailableColumns();
+    updateSelectedColumns();
   }, true);
 
-  $scope.searchText = undefined;
+  $scope.resetAddTextFormData();
+  $scope.update();
 
-  $scope.error = function(message) {
-    console.log(message);
+  function addText () {
+    console.info('addText()');
+
+    $scope.addTextFormData.languages = $scope.addTextFormData.languages || {};
+
+    RepositoryTextsService.addText($routeParams.repositoryName, $scope.addTextFormData.textId, $scope.addTextFormData.languages).then(success);
+
+    function success () {
+      $scope.texts[$scope.addTextFormData.textId] = $scope.addTextFormData.languages;
+      $scope.resetAddTextFormData();
+    }
+  }
+
+  function error (message) {
+    console.info('error()');
+
     var errorModal = $uibModal.open({
       templateUrl: 'errorModal.html',
       controller: 'ErrorModalController',
@@ -189,59 +204,9 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
     });
   }
 
-  $scope.sync = function () {
-    $scope.updatingTexts = true;
-    RepositoryService.syncRepository($routeParams.repositoryName).then($scope.update, $scope.error);
-  }
+  function moveText (fromTextId, toTextId) {
+    console.info('moveText()');
 
-  $scope.availableColumns = ['da-DK', 'en-GB', 'fr-FR', 'de-DE', 'it-IT', 'es-ES'].sort();
-
-  $scope.toggleColumn = function(column) {
-    var indexOfColumn = $scope.userSettings.columns.indexOf(column);
-
-    if (indexOfColumn > -1) {
-      $scope.userSettings.columns.splice(indexOfColumn, 1);
-    } else {
-      $scope.userSettings.columns.push(column);
-      $scope.userSettings.columns.sort();
-    }
-
-    UserService.setUserSettings($scope.userSettings);
-  };
-
-  $scope.orderByColumn = function(column) {
-    $scope.selectedOrderByColumn = column;
-  };
-
-  $scope.resetAddTextFormData = function() {
-    $scope.addTextFormData = {
-      textId: undefined,
-      languages: {}
-    }
-  };
-
-  $scope.resetAddTextFormData();
-
-  $scope.addText = function () {
-    $scope.addTextFormData.languages = $scope.addTextFormData.languages || {};
-
-    RepositoryTextsService.addText($routeParams.repositoryName, $scope.addTextFormData.textId, $scope.addTextFormData.languages).then(success);
-
-    function success () {
-      $scope.texts[$scope.addTextFormData.textId] = $scope.addTextFormData.languages;
-      $scope.resetAddTextFormData();
-    }
-  }
-
-  $scope.removeText = function (textId) {
-    RepositoryTextsService.removeText($routeParams.repositoryName, textId).then(success);
-
-    function success () {
-      delete $scope.texts[textId];
-    }
-  }
-
-  $scope.moveText = function (fromTextId, toTextId) {
     RepositoryTextsService.moveText($routeParams.repositoryName, fromTextId, toTextId).then(success, error);
 
     function success () {
@@ -251,7 +216,98 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
     }
   }
 
-  $scope.updateTextValue = function (textId, languageCode, oldValue) {
+  function removeText (textId) {
+    console.info('removeText()');
+
+    RepositoryTextsService.removeText($routeParams.repositoryName, textId).then(success);
+
+    function success () {
+      delete $scope.texts[textId];
+    }
+  }
+
+  function resetAddTextFormData () {
+    console.info('resetAddTextFormData()');
+
+    $scope.addTextFormData = {
+      textId: undefined,
+      languages: {}
+    }
+  };
+
+  function sync () {
+    console.info('sync()');
+
+    $scope.updatingTexts = true;
+    RepositoryService.syncRepository($routeParams.repositoryName).then($scope.update, $scope.error);
+  }
+
+  function toggleColumn (column) {
+    console.info('toggleColumn()');
+
+    var indexOfColumn = $scope.userSettings.columns.indexOf(column);
+
+    if (indexOfColumn > -1) {
+      $scope.userSettings.columns.splice(indexOfColumn, 1);
+    } else {
+      $scope.userSettings.columns.push(column);
+      $scope.userSettings.columns.sort();
+    }
+
+    UserService.setUserSettings($scope.userSettings).then(function() {
+      updateSelectedColumns();
+    });
+  };
+
+  function update () {
+    console.info('update()');
+
+    $scope.updatingTexts = true;
+
+    RepositoryTextsService.getTexts($routeParams.repositoryName).then(function(texts) {
+      UserService.getUserSettings().then(function(userSettings) {
+        $scope.texts = texts;
+        $scope.userSettings = userSettings;
+        $scope.updatingTexts = false;
+      });
+    });
+  }
+
+  function updateAvailableColumns () {
+    console.info('updateAvailableColumns()');
+
+    if ($scope.texts) {
+      var languageMap = Object.keys($scope.texts).reduce(function(memo, textKey) {
+        var text = $scope.texts[textKey];
+
+        Object.keys(text).forEach(function(language) {
+          memo[language] = (memo[language] || 0) + 1;
+        });
+
+        return memo;
+      }, {});
+
+      $scope.availableColumns = Object.keys(languageMap).sort();
+    } else {
+      $scope.availableColumns = [];
+    }
+  };
+
+  function updateSelectedColumns() {
+    console.info('updateSelectedColumns()');
+
+    if ($scope.userSettings && $scope.userSettings.columns) {
+      $scope.selectedColumns = $scope.availableColumns.filter(function(column) {
+        return $scope.userSettings.columns.indexOf(column) > -1;
+      });
+    } else {
+      $scope.selectedColumns = [];
+    }
+  };
+
+  function updateTextValue (textId, languageCode, oldValue) {
+    console.info('updateTextValue()');
+
     var value = $scope.texts[textId][languageCode];
 
     if (oldValue === '' && value !== '') {
@@ -269,8 +325,6 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
       $scope.texts[textId][languageCode] = oldValue;
     }
   }
-
-  $scope.update();
 }
 
 function ErrorModalController ($scope, $uibModalInstance, message) {
