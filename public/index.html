@@ -26,7 +26,6 @@
            <a href="" uib-dropdown-toggle class="dropdown-toggle"><i class="glyphicon glyphicon-user"></i> {{ userProfile.displayName }} <span class="caret"></span></a>
            <ul class="dropdown-menu">
              <li><a href="#/user/profile" text>Profile</a></li>
-             <!--<li><a href="#/user/settings" text>Settings</a></li>-->
              <li class="divider"></li>
              <li><a href="/logout" text>Log out</a></li>
            </ul>
@@ -92,7 +91,7 @@
                 <span text>Columns</span> <span class="caret"></span>
               </button>
               <ul class="dropdown-menu">
-                <li ng-repeat="column in availableColumns" ng-click="toggleColumn(column)"><a href="">{{column}} <i class="glyphicon glyphicon-ok pull-right" ng-if="userSettings.columns.indexOf(column) > -1"></i></a></li>
+                <li ng-repeat="column in availableColumns" ng-click="toggleColumn(column)"><a href="">{{column}} <i class="glyphicon glyphicon-ok pull-right" ng-if="selectedColumns.indexOf(column) > -1"></i></a></li>
               </ul>
             </div>
             <div class="btn-group">
@@ -109,7 +108,7 @@
         <div class="table-header">
           <div class="table-row">
             <div class="table-column" text>Text Id</div>
-            <div class="table-column" ng-repeat="column in userSettings.columns">
+            <div class="table-column" ng-repeat="column in selectedColumns">
               {{column}}
             </div>
             <div class="table-column"></div>
@@ -120,7 +119,7 @@
             <div class="table-column">
               <input ng-model="text.id" type="text" ng-change="moveText('{{text.id}}', text.id)" ng-model-options="{ updateOn: 'blur' }" class="form-control input-sm" />
             </div>
-            <div class="table-column" ng-repeat="languageCode in userSettings.columns">
+            <div class="table-column" ng-repeat="languageCode in selectedColumns">
               <input ng-model="text.languages[languageCode]" type="text" ng-change="updateTextValue(text.id, languageCode, '{{text.languages[languageCode]}}')" ng-model-options="{ updateOn: 'blur' }" class="form-control input-sm" />
             </div>
             <div class="table-column">
@@ -133,7 +132,7 @@
             <div class="table-column">
               <input ng-model="addTextFormData.textId" type="text" class="form-control input-sm" placeholder="Text Id" required />
             </div>
-            <div class="table-column" ng-repeat="languageCode in userSettings.columns">
+            <div class="table-column" ng-repeat="languageCode in selectedColumns">
               <input ng-model="addTextFormData.languages[languageCode]" type="text" class="form-control input-sm" placeholder="{{languageCode}}" />
             </div>
             <div class="table-column">
