@@ -20,7 +20,7 @@ export function makeCreateProject (db) {
       projects.insert({
         name: projectName,
         repositoryUrl: repositoryUrl,
-        setttings: {
+        settings: {
           languages: ['en']
         }
       }, (err, res) => {

@@ -105,6 +105,9 @@
                 </div>
               </form>
             </div>
+            <div class="btn-group pull-right">
+              <a href="#/projects/{{projectId}}/settings" class="btn btn-default" text>Settings</a>
+            </div>
           </div>
         </div>
       </nav>
@@ -161,13 +164,34 @@
         <div class="container">
           <h2 text>Project settings</h2>
           <form name="updateProjectSettingsForm" ng-submit="submitUpdateProjectSettingsForm()">
-            <p class="form-group">
-              <label for="columns" text>Languages</label>
-              <input type="text" ng-model="projectSettings.languages" required class="form-control" />
-            </p>
-            <p class="form-group">
+            <fieldset>
+              <legend>Languages</legend>
+              <div class="form-group" ng-repeat="language in projectSettings.languages">
+                <div class="row">
+                  <div class="col-xs-4">
+                    <input type="text" ng-model="language" class="form-control" />
+                  </div>
+                  <div class="col-xs-8">
+                    <button type="button" ng-disabled="projectSettings.languages.length === 1" ng-click="projectSettings.languages.splice($index, 1)" class="btn btn-default"><i class="glyphicon glyphicon-trash"></i></button>
+                  </div>
+                </div>
+              </div>
+              <hr/>
+              <div class="form-group">
+                <div class="row">
+                  <div class="col-xs-4">
+                    <input type="text" ng-model="newLanguage" class="form-control" />
+                  </div>
+                  <div class="col-xs-8">
+                    <button type="button" ng-click="projectSettings.languages.indexOf(newLanguage) === -1 ? projectSettings.languages.push(newLanguage) : false; newLanguage=''" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i></button>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+            <hr/>
+            <div class="form-group">
               <button type="submit" class="btn btn-primary" ng-disabled="updateProjectSettingsForm.$invalid" text>Update project settings</button>
-            </p>
+            </div>
           </form>
         </div>
       </section>
@@ -178,17 +202,17 @@
         <div class="container">
           <h2 text>User profile</h2>
           <form name="userProfileForm" ng-submit="submitUserProfileForm()">
-            <p class="form-group">
+            <div class="form-group">
               <label for="displayName" text>Display name</label>
               <input type="text" ng-model="userProfile.displayName" required class="form-control" />
-            </p>
-            <p class="form-group">
+            </div>
+            <div class="form-group">
               <label for="email" text>Email address</label>
               <input type="email" ng-model="userProfile.email" required class="form-control" />
-            </p>
-            <p class="form-group">
+            </div>
+            <div class="form-group">
               <button type="submit" class="btn btn-primary" ng-disabled="userProfileForm.$invalid" text>Submit</button>
-            </p>
+            </div>
           </form>
         </div>
       </section>
