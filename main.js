@@ -18,8 +18,8 @@ import mkdirp from 'mkdirp';
 import mongodb from 'mongodb';
 import assert from 'assert';
 import jsonPatch from 'json-patch';
-import projects from './projects';
-import users from './users';
+import * as projects from './projects';
+import * as users from './users';
 import MongoDB from './MongoDB';
 import { Repository, Signature } from 'nodegit';
 import GitHubApi from 'github';
@@ -55,11 +55,15 @@ async function main() {
       async function(accessToken, refreshToken, profile, done) {
         try {
           let updateUserGitHub = users.makeUpdateUserGitHub(db);
+          let getUserGitHubRepositories = users.makeGetUserGitHubRepositories(github);
+          let userGitHubRepositories = await getUserGitHubRepositories(accessToken);
+          
           let user = await updateUserGitHub({
             userId: profile.id,
             profile: profile,
             accessToken: accessToken,
-            refreshToken: refreshToken
+            refreshToken: refreshToken,
+            repositories: userGitHubRepositories
           });
 
           return done(null, user);
@@ -113,7 +117,7 @@ async function main() {
 
     app.get('/api/user/profile', users.makeGetUserProfileRouteHandler(users.makeGetUserProfile(db)));
     app.post('/api/user/profile', users.makePostUserProfileRouteHandler(users.makeUpdateUserProfile(db)));
-    app.get('/api/user/repositories', users.makeGetUserRepositoriesRouteHandler(users.makeGetUserRepositories(github)));
+    app.get('/api/user/repositories', users.makeGetUserRepositoriesRouteHandler(users.makeGetUserRepositories(db)));
     app.get('/api/user/settings', users.makeGetUserSettingsRouteHandler(users.makeGetUserSettings(db)));
     app.post('/api/user/settings', users.makePostUserSettingsRouteHandler(users.makeUpdateUserSettings(db)));
     app.get('/api/projects', projects.makeGetProjectsRouteHandler(projects.makeGetProjects(db)));

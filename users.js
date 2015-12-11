@@ -1,20 +1,5 @@
 import mongodb from 'mongodb';
 
-export default {
-  makeGetUser,
-  makeGetUserProfile,
-  makeUpdateUserProfile,
-  makeUpdateUserGitHub,
-  makeGetUserRepositories,
-  makeGetUserSettings,
-  makeUpdateUserSettings,
-  makeGetUserProfileRouteHandler,
-  makePostUserProfileRouteHandler,
-  makeGetUserRepositoriesRouteHandler,
-  makeGetUserSettingsRouteHandler,
-  makePostUserSettingsRouteHandler
-}
-
 export function makeGetUser(db) {
   return async function getUser(userId) {
     let users = db.collection('users');
@@ -71,20 +56,64 @@ export function makeUpdateUserProfile(db) {
   }
 }
 
-export function makeGetUserRepositories(github) {
-  return async function getUserRepositories(githubUserName, githubAccessToken) {
+export function makeGetUserRepositories(db) {
+  return async function getUserProfile(userId) {
+    let users = db.collection('users');
+
+    return new Promise(function(resolve, reject) {
+      users.findOne({ _id: mongodb.ObjectId(userId) }, (err, user) => {
+        if (err)
+          reject(err);
+
+        let userRepositories = user.github.repositories || [];
+
+        resolve(userRepositories);
+      });
+    });
+  }
+}
+
+export function makeGetUserGitHubRepositories(github) {
+  return async function getUserGitHubRepositories(githubAccessToken) {
     github.authenticate({
         type: 'oauth',
         token: githubAccessToken
     });
 
     return new Promise((resolve, reject) => {
-      github.repos.getAll({per_page: 100}, (err, res) => {
-        if (err)
-          reject(err);
+      let repositories = [];
 
-        resolve(res);
-      });
+      getPage();
+
+      function getPage(page = 1) {
+        github.repos.getAll({per_page: 100, page: page}, (err, res) => {
+          if (err)
+            reject(err);
+
+          repositories = repositories.concat(res
+            .filter(r => {
+              return r.permissions && r.permissions.pull && r.permissions.push;
+            })
+            .map(r => {
+              return {
+                name: r.full_name,
+                url: r.clone_url
+              }
+            })
+          );
+
+          let regexp = /page=([0-9]*).*>; rel="next"/;
+          let matches = res.meta.link.match(regexp);
+
+          if (matches) {
+            let page = parseInt(matches[1]);
+
+            getPage(page);
+          } else {
+            resolve(repositories);
+          }
+        });
+      }
     });
   };
 }
@@ -185,7 +214,7 @@ export function makePostUserProfileRouteHandler(updateUserProfile) {
 export function makeGetUserRepositoriesRouteHandler(getUserRepositories) {
   return async (req, res, next) => {
     try {
-      let repositories = await getUserRepositories(req.user.github.profile.username, req.user.github.accessToken);
+      let repositories = await getUserRepositories(req.user.id);
 
       res.json(repositories);
     } catch (ex) {

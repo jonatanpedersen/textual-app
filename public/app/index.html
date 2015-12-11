@@ -67,7 +67,7 @@
             <hr/>
             <p class"form-group">
               <label for="repositoryUrl" text>Pick a repository from the list, or write the url below</label>
-              <select class="form-control" ng-model="createProjectFormData.repositoryUrl" ng-options="repository.clone_url as repository.full_name for repository in repositories"></select>
+              <select class="form-control" ng-model="createProjectFormData.repositoryUrl" ng-options="repository.url as repository.name for repository in repositories"></select>
             </p>
             <p class"form-group">
               <label for="repositoryUrl" text>Repository url</label>

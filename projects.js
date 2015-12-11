@@ -1,17 +1,5 @@
 import mongodb from 'mongodb';
 
-export default {
-  makeCreateProject,
-  makeGetProject,
-  makeGetProjects,
-  makeGetProjectSettings,
-  makeUpdateProjectSettings,
-  makePostProjectsRouteHandler,
-  makeGetProjectsRouteHandler,
-  makeGetProjectSettingsRouteHandler,
-  makePostProjectSettingsRouteHandler
-}
-
 export function makeCreateProject (db) {
   return async function createProject (projectName, repositoryUrl) {
     let projects = db.collection('projects');
