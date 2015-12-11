@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node start.js",
+    "start": "node index.js",
     "test": "mocha"
   },
   "repository": {
@@ -32,6 +32,7 @@
     "express-logger": "0.0.3",
     "express-session": "^1.12.1",
     "get-text": "git+ssh://git@github.com/jonatanpedersen/get-text.git",
+    "github": "^0.2.4",
     "json-patch": "^0.5.0",
     "mkdirp": "^0.5.1",
     "mongodb": "^2.0.49",
