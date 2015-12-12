@@ -39,4 +39,66 @@ describe('auth.js', () => {
       });
     });
   });
+
+  describe('makeLogoutRouteHandler', () => {
+    it ('throws error when no redirectUrl argument is provided', () => {
+      assert.throws(() => {
+          auth.makeLogoutRouteHandler();
+        },
+        Error
+      );
+    });
+
+    it ('returns a function named logoutRouteHandler', () => {
+      let expected = 'logoutRouteHandler';
+      let actual = auth.makeLogoutRouteHandler('/').name;
+
+      assert.equal(expected, actual);
+    });
+
+    describe('logoutRouteHandler', () => {
+      it ('calls req.logout()', () => {
+        let redirectUrl = '/';
+        let logoutRouteHandler = auth.makeLogoutRouteHandler(redirectUrl);
+
+        let expected = true;
+        let actual;
+
+        let req = {
+          logout: () => {
+            actual = true;
+          }
+        };
+        let res = {
+          redirect: (redirectUrl) => { }
+        }
+
+        logoutRouteHandler(req, res);
+
+        assert.equal(expected, actual);
+      });
+
+      it ('redirects to provided redirectUrl', () => {
+        let redirectUrl = '/';
+        let logoutRouteHandler = auth.makeLogoutRouteHandler(redirectUrl);
+
+        let expected = redirectUrl;
+        let actual;
+
+        let req = {
+          logout: () => {}
+        };
+
+        let res = {
+          redirect: (redirectUrl) => {
+            actual = redirectUrl;
+          }
+        }
+
+        logoutRouteHandler(req, res);
+
+        assert.equal(expected, actual);
+      });
+    });
+  });
 });

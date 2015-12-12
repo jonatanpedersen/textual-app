@@ -8,7 +8,10 @@ export function makeLoginRouteHandler (redirectUrl) {
 }
 
 export function makeLogoutRouteHandler (redirectUrl) {
-  return function LogoutRouteHandler (req, res) {
+  if (!redirectUrl)
+    throw new Error('redirectUrl can\'t be undefined');
+
+  return function logoutRouteHandler (req, res) {
      req.logout();
      res.redirect(redirectUrl);
   }
