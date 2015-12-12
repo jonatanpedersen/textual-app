@@ -18,7 +18,9 @@ import * as auth from './auth';
 import * as error from './error';
 import * as projects from './projects';
 import * as users from './users';
-import * as mongodb from './mongodb';
+import mongodb from 'mongodb';
+import { connectToMongoDB } from './mongodb';
+
 import { makeSerializeUser, makeDeserializeUser, makeGitHubStrategyCallback } from './passport';
 import { Repository, Signature } from 'nodegit';
 import GitHubApi from 'github';
@@ -26,7 +28,7 @@ import GitHubApi from 'github';
 async function main() {
   try {
     let app = express();
-    let db = await mongodb.connectToMongoDB(config.mongodb.connectionString);
+    let db = await connectToMongoDB(mongodb, config.mongodb.connectionString);
 
     passport.serializeUser(makeSerializeUser());
     passport.deserializeUser(makeDeserializeUser(users.makeGetUser(db)));

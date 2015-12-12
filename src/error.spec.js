@@ -1,18 +1,18 @@
 import assert from 'assert';
-import * as auth from './error';
+import * as error from './error';
 
 describe('error.js', () => {
   describe('makeErrorMiddleware', () => {
-    it ('returns a function named errorMiddleware', () => {
+    it ('should return a function named errorMiddleware', () => {
       let expected = 'errorMiddleware';
-      let actual = auth.makeErrorMiddleware('/').name;
+      let actual = error.makeErrorMiddleware('/').name;
 
       assert.equal(expected, actual);
     });
 
     describe('errorMiddleware', () => {
-      it ('calls res.status(500)', () => {
-        let errorMiddleware = auth.makeErrorMiddleware('/');
+      it ('should set response code 500', () => {
+        let errorMiddleware = error.makeErrorMiddleware('/');
 
         let expected = 500;
         let actual;
@@ -22,11 +22,8 @@ describe('error.js', () => {
         let res = {
           status: (code) => {
             actual = code;
-
-            return this;
           },
           send: (err) => {
-            return this;
           }
         }
         let next = undefined;
@@ -36,8 +33,8 @@ describe('error.js', () => {
         assert.equal(expected, actual);
       });
 
-      it ('calls res.status(?).send(err)', () => {
-        let errorMiddleware = auth.makeErrorMiddleware('/');
+      it ('should send err in response', () => {
+        let errorMiddleware = error.makeErrorMiddleware('/');
 
         let expected = '01f87de7be0f492aaeb42aff2c33f2d7';
         let actual;

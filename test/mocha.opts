@@ -1,2 +1,2 @@
---compilers js:babel-core/register
-*.spec.js
+--require ./test/babel-register.js
+./src/**/*.spec.js

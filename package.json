@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "mocha"
+    "test": "mocha",
+    "test-cov": "babel-node node_modules/isparta/bin/isparta cover -x *.spec.js -x node_modules/** --include-all-sources --report lcov --report html node_modules/mocha/bin/_mocha",
+    "test-cov2": "babel-istanbul cover node_modules/mocha/bin/_mocha"
   },
   "repository": {
     "type": "git",
@@ -40,9 +42,11 @@
     "translator-app-texts": "git+ssh://git@github.com/jonatanpedersen/translator-app-texts.git"
   },
   "devDependencies": {
+    "babel-istanbul": "^0.5.9",
     "css-loader": "^0.23.0",
     "istanbul": "^0.4.1",
     "json-loader": "^0.5.4",
+    "mocha": "^2.3.4",
     "nodemon": "^1.8.1",
     "style-loader": "^0.13.0",
     "webpack": "^1.12.9"

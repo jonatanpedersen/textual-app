@@ -3,7 +3,7 @@ import * as auth from './auth';
 
 describe('auth.js', () => {
   describe('makeLoginRouteHandler', () => {
-    it ('throws error when no redirectUrl argument is provided', () => {
+    it ('should throw an error when no redirectUrl argument is provided', () => {
       assert.throws(() => {
           auth.makeLoginRouteHandler();
         },
@@ -11,7 +11,7 @@ describe('auth.js', () => {
       );
     });
 
-    it ('returns a function named loginRouteHandler', () => {
+    it ('should return a function named loginRouteHandler', () => {
       let expected = 'loginRouteHandler';
       let actual = auth.makeLoginRouteHandler('/').name;
 
@@ -19,7 +19,7 @@ describe('auth.js', () => {
     });
 
     describe('loginRouteHandler', () => {
-      it ('redirects to provided redirectUrl', () => {
+      it ('should redirect to provided redirectUrl', () => {
         let redirectUrl = '/';
         let loginRouteHandler = auth.makeLoginRouteHandler(redirectUrl);
 
@@ -41,7 +41,7 @@ describe('auth.js', () => {
   });
 
   describe('makeLogoutRouteHandler', () => {
-    it ('throws error when no redirectUrl argument is provided', () => {
+    it ('should throw an error when no redirectUrl argument is provided', () => {
       assert.throws(() => {
           auth.makeLogoutRouteHandler();
         },
@@ -49,7 +49,7 @@ describe('auth.js', () => {
       );
     });
 
-    it ('returns a function named logoutRouteHandler', () => {
+    it ('should return a function named logoutRouteHandler', () => {
       let expected = 'logoutRouteHandler';
       let actual = auth.makeLogoutRouteHandler('/').name;
 
@@ -57,7 +57,7 @@ describe('auth.js', () => {
     });
 
     describe('logoutRouteHandler', () => {
-      it ('calls req.logout()', () => {
+      it ('should logout', () => {
         let redirectUrl = '/';
         let logoutRouteHandler = auth.makeLogoutRouteHandler(redirectUrl);
 
@@ -78,7 +78,7 @@ describe('auth.js', () => {
         assert.equal(expected, actual);
       });
 
-      it ('redirects to provided redirectUrl', () => {
+      it ('should redirect to provided redirectUrl', () => {
         let redirectUrl = '/';
         let logoutRouteHandler = auth.makeLogoutRouteHandler(redirectUrl);
 
