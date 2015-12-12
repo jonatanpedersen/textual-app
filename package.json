@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "css-loader": "^0.23.0",
+    "istanbul": "^0.4.1",
     "json-loader": "^0.5.4",
     "nodemon": "^1.8.1",
     "style-loader": "^0.13.0",
