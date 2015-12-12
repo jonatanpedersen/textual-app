@@ -11,110 +11,50 @@ import simpleGit from 'simple-git';
 import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github';
 import config from 'cnf';
-import connectEnsureLogin from 'connect-ensure-login';
-import ejsLocals  from 'ejs-locals';
 import url from 'url';
 import mkdirp from 'mkdirp';
-import mongodb from 'mongodb';
-import assert from 'assert';
 import jsonPatch from 'json-patch';
+import * as auth from './auth';
+import * as error from './error';
 import * as projects from './projects';
 import * as users from './users';
-import MongoDB from './MongoDB';
+import * as mongodb from './mongodb';
+import { makeSerializeUser, makeDeserializeUser, makeGitHubStrategyCallback } from './passport';
 import { Repository, Signature } from 'nodegit';
 import GitHubApi from 'github';
 
 async function main() {
   try {
     let app = express();
-    let db = await MongoDB.connectToMongoDB(config.mongodb.connectionString);
-    let github = new GitHubApi({version: '3.0.0'});
+    let db = await mongodb.connectToMongoDB(config.mongodb.connectionString);
 
-    passport.serializeUser((user, callback) => {
-      let userId = user._id;
-      callback(null, userId);
-    });
-
-    passport.deserializeUser(async (userId, callback) => {
-      try {
-        let getUser = users.makeGetUser(db);
-        let user = await getUser(userId);
-        user.id = user._id.toString();
-
-        callback(null, user);
-      } catch (ex) {
-        callback(ex);
-      }
-    });
-
+    passport.serializeUser(makeSerializeUser());
+    passport.deserializeUser(makeDeserializeUser(users.makeGetUser(db)));
     passport.use(new GitHubStrategy({
         clientID: config.github.client_id,
         clientSecret: config.github.client_secret,
         callbackURL: config.github.callback_url
       },
-      async function(accessToken, refreshToken, profile, done) {
-        try {
-          let updateUserGitHub = users.makeUpdateUserGitHub(db);
-          let getUserGitHubRepositories = users.makeGetUserGitHubRepositories(github);
-          let userGitHubRepositories = await getUserGitHubRepositories(accessToken);
-          
-          let user = await updateUserGitHub({
-            userId: profile.id,
-            profile: profile,
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-            repositories: userGitHubRepositories
-          });
-
-          return done(null, user);
-        } catch (ex) {
-          return done(ex);
-        }
-      }
+      makeGitHubStrategyCallback(users.makeGetUserGitHubRepositories(new GitHubApi({version: '3.0.0'})), users.makeUpdateUserGitHub(db))
     ));
 
-    // Use application-level middleware for common functionality, including
-    // logging, parsing, and session handling.
     app.use(logger(config.logger));
     app.use(cookieParser());
     app.use(bodyParser.json());
     app.use(session(config.session));
-
-    // Initialize Passport and restore authentication state, if any, from the
-    // session.
     app.use(passport.initialize());
     app.use(passport.session());
 
     app.use('/', express.static('./public'));
-
-    app.get('/auth/github',
-      passport.authenticate('github', { scope: 'repo' })
-    );
-
+    app.get('/login', auth.makeLoginRouteHandler('/auth/github'));
+    app.get('/logout', auth.makeLogoutRouteHandler('/'));
+    app.get('/auth/github', auth.makeAuthGithubRouteHandler(passport));
     app.get('/auth/github/callback',
-      passport.authenticate('github', { failureRedirect: '/' }),
-      function(req, res) {
-        res.redirect('/app');
-      }
+      auth.makeAuthGithubCallbackMiddleware(passport, '/'),
+      auth.makeAuthGithubCallbackRouteHandler('/app')
     );
 
-    app.get('/login', (req, res) => {
-      res.redirect('/auth/github');
-    });
-
-    app.get('/logout', (req, res) => {
-      req.logout();
-      res.redirect('/');
-    });
-
-    app.use('/api', (req, res, next) => {
-      if (!req.isAuthenticated || !req.isAuthenticated()) {
-        return res.status(401).end();
-      }
-
-      next();
-    });
-
+    app.use('/api', auth.makeIsAuthenticatedMiddleware());
     app.get('/api/user/profile', users.makeGetUserProfileRouteHandler(users.makeGetUserProfile(db)));
     app.post('/api/user/profile', users.makePostUserProfileRouteHandler(users.makeUpdateUserProfile(db)));
     app.get('/api/user/repositories', users.makeGetUserRepositoriesRouteHandler(users.makeGetUserRepositories(db)));
@@ -124,145 +64,11 @@ async function main() {
     app.post('/api/projects', projects.makePostProjectsRouteHandler(projects.makeCreateProject(db)));
     app.get('/api/projects/:projectId/settings', projects.makeGetProjectSettingsRouteHandler(projects.makeGetProjectSettings(db)));
     app.post('/api/projects/:projectId/settings', projects.makePostProjectSettingsRouteHandler(projects.makeUpdateProjectSettings(db)));
+    app.get('/api/projects/:projectId/repository/texts', projects.makeGetProjectRepositoryTextsRouteHandler(config.data, path, fs, url, mkdirp, simpleGit, new projects.makeGetProject(db)));
+    app.patch('/api/projects/:projectId/repository/texts', projects.makePatchProjectRepositoryTextsRouteHandler(config.data, path, fs, jsonPatch, Repository, Signature));
+    app.post('/api/projects/:projectId/repository/sync', projects.makePostProjectRepositorySyncRouteHandler(config.data, path, url, new projects.makeGetProject(db), simpleGit));
 
-    app.get('/api/projects/:projectId/repository/texts', async (req, res, next) => {
-      try {
-        let getProject = projects.makeGetProject(db);
-        let projectId = req.params.projectId;
-        let project = await getProject(projectId);
-
-        let repositoryName = projectId;
-        let repositoryPath = path.join(config.data, req.user.id, repositoryName);
-
-        try {
-          let stats = fs.lstatSync(repositoryPath);
-        } catch (e) {
-          async function init () {
-            return new Promise((resolve, reject) => {
-              let parsedRepositoryUrl = url.parse(project.repositoryUrl);
-              parsedRepositoryUrl.auth = req.user.github.accessToken;
-              let signedRepositoryUrl = url.format(parsedRepositoryUrl);
-
-              mkdirp(repositoryPath, (err) => {
-                if (err)
-                  throw err;
-
-                simpleGit(repositoryPath)
-                  .init(false, (err) => {
-                    if (err)
-                      throw err;
-                  })
-                  .addRemote('origin', project.repositoryUrl)
-                  .pull(signedRepositoryUrl, 'master', (err) => {
-                    if (err)
-                      throw err;
-
-                    return resolve();
-                  });
-              });
-            });
-          }
-
-          await init();
-        }
-
-        let repositoryTextsPath = path.join(repositoryPath, 'texts.json');
-
-        fs.readFile(repositoryTextsPath, 'utf8', function (err, data) {
-          if (err) {
-            return next(err);
-          }
-
-          try {
-            let texts = JSON.parse(data);
-
-            res.json(texts);
-          }
-          catch (ex) {
-            return next(ex);
-          }
-        });
-      } catch (ex) {
-        return next(ex);
-      }
-    });
-
-    app.patch('/api/projects/:projectId/repository/texts', (req, res, next) => {
-      let repositoryName = req.params.projectId;
-      let repositoryPath = path.join(config.data, req.user.id, repositoryName);
-      let repositoryTextsPath = path.join(repositoryPath, 'texts.json');
-      let patch = req.body;
-
-      fs.readFile(repositoryTextsPath, 'utf8', function (err, data) {
-        if (err) {
-          return next(err);
-        }
-
-        try {
-          let texts = JSON.parse(data);
-          jsonPatch.apply(texts, patch);
-          let newData = JSON.stringify(texts, null, 4);
-
-          fs.writeFile(repositoryTextsPath, newData, 'utf8', function (err) {
-            if (err) {
-              return next(err);
-            }
-
-            Repository.open(repositoryPath)
-              .then(repository => {
-                let author = Signature.now(req.user.profile.displayName, req.user.profile.email);
-                let committer = author;
-                let message = patch.reduce((messages, patchEntry) => {
-                  if (patchEntry.op === 'add') messages.push(`add ${patchEntry.path}`);
-                  if (patchEntry.op === 'replace') messages.push(`update ${patchEntry.path}`);
-                  if (patchEntry.op === 'remove') messages.push(`remove ${patchEntry.path}`);
-                  if (patchEntry.op === 'move') messages.push(`move ${patchEntry.from} to $(patchEntry.path}`);
-
-                  return messages;
-                }, []).join('\n');
-
-                return repository.createCommitOnHead(['texts.json'], author, committer, message);
-              })
-              .done(oid => {
-                res.json(oid);
-              });
-          });
-        }
-        catch(ex) {
-          next(ex);
-        }
-      });
-    });
-
-    app.post('/api/projects/:projectId/repository/sync', async (req, res, next) => {
-      let getProject = projects.makeGetProject(db);
-      let projectId = req.params.projectId;
-      let project = await getProject(projectId);
-
-      let repositoryName = req.params.projectId;
-      let repositoryPath = path.join(config.data, req.user.id, repositoryName);
-
-      let parsedRepositoryUrl = url.parse(project.repositoryUrl);
-      parsedRepositoryUrl.auth = req.user.github.accessToken;
-      let signedRepositoryUrl = url.format(parsedRepositoryUrl);
-
-      simpleGit(repositoryPath)
-        .pull(signedRepositoryUrl, 'master', (err, other) => {
-          if (err)
-            return next(err);
-        })
-        .push(signedRepositoryUrl, 'master', (err, other) => {
-          if (err)
-            return next(err);
-
-          res.end();
-        });
-    });
-
-    app.use(async (err, req, res, next) => {
-      console.error(err, err.stack);
-      res.status(500).send(err);
-    });
+    app.use(error.makeErrorMiddleware());
 
     let httpServer = http.createServer(app);
     let httpsServer = https.createServer({

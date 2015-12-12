@@ -2,201 +2,237 @@ import mongodb from 'mongodb';
 
 export function makeGetUser(db) {
   return async function getUser(userId) {
-    let users = db.collection('users');
+    try {
+      let users = db.collection('users');
 
-    return new Promise(function(resolve, reject) {
-      users.findOne({ _id: mongodb.ObjectId(userId) }, (err, user) => {
-        if (err)
-          reject(err);
+      return new Promise(function(resolve, reject) {
+        users.findOne({ _id: mongodb.ObjectId(userId) }, (err, user) => {
+          if (err)
+            reject(err);
 
-        resolve(user);
+          resolve(user);
+        });
       });
-    });
-  }
+    } catch (ex) {
+      next(ex);
+    }
+  };
 }
 
 export function makeGetUserProfile(db) {
   return async function getUserProfile(userId) {
-    let users = db.collection('users');
+    try {    
+      let users = db.collection('users');
 
-    return new Promise(function(resolve, reject) {
-      users.findOne({ _id: mongodb.ObjectId(userId) }, (err, user) => {
-        if (err)
-          reject(err);
+      return new Promise(function(resolve, reject) {
+        users.findOne({ _id: mongodb.ObjectId(userId) }, (err, user) => {
+          if (err)
+            reject(err);
 
-        let userProfile = user.profile || {
-          displayName: 'John Doe',
-          email: 'john@doe'
-        };
+          let userProfile = user.profile || {
+            displayName: 'John Doe',
+            email: 'john@doe'
+          };
 
-        resolve(userProfile);
+          resolve(userProfile);
+        });
       });
-    });
-  }
+    } catch (ex) {
+      next(ex);
+    }
+  };
 }
 
 export function makeUpdateUserProfile(db) {
   return async function updateUserProfile(userId, userProfile) {
-    let users = db.collection('users');
+    try {
+      let users = db.collection('users');
 
-    return new Promise(function(resolve, reject) {
-      users.findAndModify(
-        { _id: mongodb.ObjectId(userId)},
-        [],
-        { $set: { profile: userProfile } },
-        {},
-        (err) => {
-          if (err)
-            reject(err);
+      return new Promise(function(resolve, reject) {
+        users.findAndModify(
+          { _id: mongodb.ObjectId(userId)},
+          [],
+          { $set: { profile: userProfile } },
+          {},
+          (err) => {
+            if (err)
+              reject(err);
 
-          resolve();
-        }
-      );
-    });
-  }
+            resolve();
+          }
+        );
+      });
+    } catch (ex) {
+      next(ex);
+    }
+  };
 }
 
 export function makeGetUserRepositories(db) {
   return async function getUserProfile(userId) {
-    let users = db.collection('users');
+    try {
+      let users = db.collection('users');
 
-    return new Promise(function(resolve, reject) {
-      users.findOne({ _id: mongodb.ObjectId(userId) }, (err, user) => {
-        if (err)
-          reject(err);
+      return new Promise(function(resolve, reject) {
+        users.findOne({ _id: mongodb.ObjectId(userId) }, (err, user) => {
+          if (err)
+            reject(err);
 
-        let userRepositories = user.github.repositories || [];
+          let userRepositories = user.github.repositories || [];
 
-        resolve(userRepositories);
+          resolve(userRepositories);
+        });
       });
-    });
-  }
+    } catch (ex) {
+      next(ex);
+    }
+  };
 }
 
 export function makeGetUserGitHubRepositories(github) {
   return async function getUserGitHubRepositories(githubAccessToken) {
-    github.authenticate({
-        type: 'oauth',
-        token: githubAccessToken
-    });
+    try {
+      github.authenticate({
+          type: 'oauth',
+          token: githubAccessToken
+      });
 
-    return new Promise((resolve, reject) => {
-      let repositories = [];
+      return new Promise((resolve, reject) => {
+        let repositories = [];
 
-      getPage();
+        getPage();
 
-      function getPage(page = 1) {
-        github.repos.getAll({per_page: 100, page: page}, (err, res) => {
-          if (err)
-            reject(err);
+        function getPage(page = 1) {
+          github.repos.getAll({per_page: 100, page: page}, (err, res) => {
+            if (err)
+              reject(err);
 
-          repositories = repositories.concat(res
-            .filter(r => {
-              return r.permissions && r.permissions.pull && r.permissions.push;
-            })
-            .map(r => {
-              return {
-                name: r.full_name,
-                url: r.clone_url
-              }
-            })
-          );
+            repositories = repositories.concat(res
+              .filter(r => {
+                return r.permissions && r.permissions.pull && r.permissions.push;
+              })
+              .map(r => {
+                return {
+                  name: r.full_name,
+                  url: r.clone_url
+                }
+              })
+            );
 
-          let regexp = /page=([0-9]*).*>; rel="next"/;
-          let matches = res.meta.link.match(regexp);
+            let regexp = /page=([0-9]*).*>; rel="next"/;
+            let matches = res.meta.link.match(regexp);
 
-          if (matches) {
-            let page = parseInt(matches[1]);
+            if (matches) {
+              let page = parseInt(matches[1]);
 
-            getPage(page);
-          } else {
-            resolve(repositories);
-          }
-        });
-      }
-    });
+              getPage(page);
+            } else {
+              resolve(repositories);
+            }
+          });
+        }
+      });
+    } catch (ex) {
+      next(ex);
+    }
   };
 }
 
 export function makeGetUserSettings(db) {
   return async function getUserSettings(userId) {
-    let users = db.collection('users');
+    try {
+      let users = db.collection('users');
 
-    return new Promise((resolve, reject) => {
-      users.findOne({ _id: mongodb.ObjectId(userId) }, (err, user) => {
-        if (err)
-          reject(err);
+      return new Promise((resolve, reject) => {
+        users.findOne({ _id: mongodb.ObjectId(userId) }, (err, user) => {
+          if (err)
+            reject(err);
 
-        let userSettings = user.settings || {
-          columns: [
-            'en'
-          ]
-        };
+          let userSettings = user.settings || {
+            columns: [
+              'en'
+            ]
+          };
 
-        resolve(userSettings);
+          resolve(userSettings);
+        });
       });
-    });
-  }
+    } catch (ex) {
+      next(ex);
+    }
+  };
 }
 
 export function makeUpdateUserGitHub(db) {
   return async function updateUserGitHub(github) {
-    let users = db.collection('users');
+    try {
+      let users = db.collection('users');
 
-    return new Promise((resolve, reject) => {
-      let $set = {
-        github: github,
-        'profile.displayName': github.profile.displayName,
-      };
+      return new Promise((resolve, reject) => {
+        let $set = {
+          github: github,
+          'profile.displayName': github.profile.displayName,
+        };
 
-      if (github.profile._json.email) {
-        $set['profile.email'] = github.profile._json.email;
-      }
-
-      users.findAndModify(
-        { 'github.userId': github.userId },
-        [],
-        { $set: $set },
-        { new: true, upsert: true },
-        (err, updatedUsers) => {
-          let updatedUser = updatedUsers.value;
-
-          if (err)
-            reject(err);
-
-          resolve(updatedUser);
+        if (github.profile._json.email) {
+          $set['profile.email'] = github.profile._json.email;
         }
-      );
-    });
-  }
+
+        users.findAndModify(
+          { 'github.userId': github.userId },
+          [],
+          { $set: $set },
+          { new: true, upsert: true },
+          (err, updatedUsers) => {
+            let updatedUser = updatedUsers.value;
+
+            if (err)
+              reject(err);
+
+            resolve(updatedUser);
+          }
+        );
+      });
+    } catch (ex) {
+      next(ex);
+    }
+  };
 }
 
 export function makeUpdateUserSettings(db) {
   return async function updateUserSettings(userId, userSettings) {
-    let users = db.collection('users');
+    try {
+      let users = db.collection('users');
 
-    return new Promise((resolve, reject) => {
-      users.findAndModify(
-        { _id: mongodb.ObjectId(userId)},
-        [],
-        { $set: { settings: userSettings } },
-        {},
-        (err) => {
-          if (err)
-            reject(err);
+      return new Promise((resolve, reject) => {
+        users.findAndModify(
+          { _id: mongodb.ObjectId(userId)},
+          [],
+          { $set: { settings: userSettings } },
+          {},
+          (err) => {
+            if (err)
+              reject(err);
 
-          resolve();
-        }
-      );
-    });
-  }
+            resolve();
+          }
+        );
+      });
+    } catch (ex) {
+      next(ex);
+    }
+  };
 }
 
 export function makeGetUserProfileRouteHandler(getUserProfile) {
   return async (req, res, next) => {
-    let userProfile = await getUserProfile(req.user.id);
+    try {
+      let userProfile = await getUserProfile(req.user.id);
 
-    res.json(userProfile);
+      res.json(userProfile);
+    } catch (ex) {
+      next(ex);
+    }
   };
 }
 
@@ -225,9 +261,13 @@ export function makeGetUserRepositoriesRouteHandler(getUserRepositories) {
 
 export function makeGetUserSettingsRouteHandler(getUserSettings) {
   return async (req, res, next) => {
-    let userSettings = await getUserSettings(req.user.id);
+    try {
+      let userSettings = await getUserSettings(req.user.id);
 
-    res.json(userSettings);
+      res.json(userSettings);
+    } catch (ex) {
+      next(ex);
+    }
   };
 }
 

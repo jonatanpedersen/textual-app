@@ -10,5 +10,3 @@ export async function connectToMongoDB(connectionString) {
     });
   });
 }
-
-export default { connectToMongoDB }
