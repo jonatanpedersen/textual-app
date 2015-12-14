@@ -1002,20 +1002,11 @@
 	module.exports = {
 		"About": {
 			"en-GB": "About",
-			"da-DK": "Om",
-			"de-DE": "Hest"
+			"da-DK": "Om"
 		},
 		"Cancel": {
 			"en-GB": "Cancel",
 			"da-DK": "Annullér"
-		},
-		"Clone repository": {
-			"en-GB": "Clone repository",
-			"da-DK": "Klon arkiv"
-		},
-		"Commit": {
-			"en-GB": "Commit",
-			"da-DK": "Arkivér"
 		},
 		"Help": {
 			"en-GB": "Help",
@@ -1023,15 +1014,11 @@
 		},
 		"License": {
 			"en-GB": "License",
-			"da-DK": "License"
+			"da-DK": "Licens"
 		},
 		"OK": {
 			"en-GB": "Ok",
 			"da-DK": "Ok"
-		},
-		"Repositories": {
-			"en-GB": "Repositories",
-			"da-DK": "Arkiver"
 		},
 		"Repository name": {
 			"en-GB": "Repository name",
@@ -1065,13 +1052,13 @@
 			"da-DK": "Sorter efter",
 			"en-GB": "Order by"
 		},
-		"search": {
-			"da-DK": "søg",
-			"en-GB": "search"
-		},
 		"Message": {
 			"en-GB": "Message",
 			"da-DK": "Besked"
+		},
+		"search": {
+			"da-DK": "søg",
+			"en-GB": "search"
 		}
 	};
 
