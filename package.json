@@ -33,9 +33,7 @@
     "mongodb": "^2.0.49",
     "passport": "^0.3.2",
     "passport-github": "^1.0.0",
-    "textual-app-texts": "https://github.com/jonatanpedersen/textual-app-texts.git"
-  },
-  "devDependencies": {
+    "textual-app-texts": "https://github.com/jonatanpedersen/textual-app-texts.git",
     "babel-core": "6.1.21",
     "babel-loader": "^6.2.0",
     "babel-plugin-syntax-async-functions": "6.1.18",
