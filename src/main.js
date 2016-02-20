@@ -4,7 +4,6 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import logger from 'express-logger';
 import fs from 'fs';
 import path  from 'path';
 import passport from 'passport';
@@ -23,7 +22,7 @@ import mongodb from 'mongodb';
 import { connectToMongoDB } from './mongodb';
 import { makeSerializeUser, makeDeserializeUser, makeGitHubStrategyCallback } from './passport';
 
-async function main() {
+export async function main () {
   try {
     let app = express();
     let db = await connectToMongoDB(mongodb, config.mongodb.connectionString);
@@ -38,7 +37,6 @@ async function main() {
       makeGitHubStrategyCallback(users.makeGetUserGitHubRepositories(new GitHubApi({version: '3.0.0'})), users.makeUpdateUserGitHub(db))
     ));
 
-    app.use(logger(config.logger));
     app.use(cookieParser());
     app.use(bodyParser.json());
     app.use(session(config.session));
@@ -66,23 +64,14 @@ async function main() {
     app.post('/api/projects/:projectId/settings', projects.makePostProjectSettingsRouteHandler(projects.makeUpdateProjectSettings(db)));
     app.get('/api/projects/:projectId/repository/texts', projects.makeGetProjectRepositoryTextsRouteHandler(projects.makeGetProject(db), Github));
     app.patch('/api/projects/:projectId/repository/texts', projects.makePatchProjectRepositoryTextsRouteHandler(projects.makeGetProject(db), jsonPatch, Github));
-    //app.post('/api/projects/:projectId/repository/sync', projects.makePostProjectRepositorySyncRouteHandler(config.data, path, url, projects.makeGetProject(db), simpleGit));
 
     app.use(error.makeErrorMiddleware());
 
-    let httpServer = http.createServer(app);
-    let httpsServer = https.createServer({
-      ca: config.ssl.ca.map(path => fs.readFileSync(path, 'utf8')),
-      key: fs.readFileSync(config.ssl.key, 'utf8'),
-      cert: fs.readFileSync(config.ssl.cert, 'utf8'),
-      passphrase: config.ssl.passphrase
-    }, app);
 
-    httpServer.listen(80, () => { console.log('Listening on port 80'); });
-    httpsServer.listen(443, () => { console.log('Listening on port 443'); });
+    app.listen(config.port, () => {
+      console.log(`textual-app listening on port ${config.port}`);
+    });
   } catch (ex) {
     console.log(ex, ex.stack);
   }
 }
-
-main();

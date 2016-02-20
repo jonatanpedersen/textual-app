@@ -1,10 +1,9 @@
-# translator-app
-[![Deployment status from DeployBot](https://jonatanpedersen.deploybot.com/badge/23779030034315/55643.svg)](http://deploybot.com)
+# textual-app
 
 ## Install
 Clone from GitHub:
 ``` bash
-git clone git@github.com:jonatanpedersen/translator-app.git
+git clone git@github.com:jonatanpedersen/textual-app.git
 ```
 Install dependencies:
 ``` bash
