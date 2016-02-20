@@ -44,10 +44,9 @@ angular.module('app').controller('ProjectSettingsController', ['$scope', '$route
 angular.module('app').controller('UserProfileController', ['$scope', 'UserService', UserProfileController]);
 angular.module('app').controller('UserSettingsController', ['$scope', 'UserService', UserSettingsController]);
 angular.module('app').controller('NavBarController', ['$scope', '$location', '$routeParams', 'ProjectService', 'UserService', NavBarController]);
-angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryService', 'RepositoryTextsService', 'UserService', RepositoryController]);
+angular.module('app').controller('RepositoryController', ['$scope', '$routeParams', '$location', '$uibModal', 'RepositoryTextsService', 'UserService', RepositoryController]);
 
 angular.module('app').controller('ErrorModalController', ['$scope', '$uibModalInstance', ErrorModalController]);
-angular.module('app').service('RepositoryService', ['$http', '$q', RepositoryService]);
 angular.module('app').service('RepositoryTextsService', ['$http', '$q', RepositoryTextsService]);
 angular.module('app').service('UserService', ['$http', '$q', UserService]);
 angular.module('app').service('ProjectService', ['$http', '$q', ProjectService]);
@@ -160,7 +159,7 @@ function NavBarController ($scope,  $location, $routeParams, ProjectService, Use
   });
 }
 
-function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryService, RepositoryTextsService, UserService) {
+function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryTextsService, UserService) {
   $scope.allTexts = [];
   $scope.availableColumns = [];
   $scope.projectId = $routeParams.projectId;
@@ -173,7 +172,6 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
   $scope.error = error;
   $scope.removeText = removeText;
   $scope.resetAddTextFormData = resetAddTextFormData;
-  $scope.sync = sync;
   $scope.toggleColumn = toggleColumn;
   $scope.update = update;
   $scope.updateTextValue = updateTextValue;
@@ -255,13 +253,6 @@ function RepositoryController ($scope, $routeParams, $location, $uibModal, Repos
       languages: {}
     }
   };
-
-  function sync () {
-    console.info('sync()');
-
-    $scope.updatingTexts = true;
-    RepositoryService.syncRepository($routeParams.projectId).then($scope.update, $scope.error);
-  }
 
   function toggleColumn (column) {
     console.info('toggleColumn()');
@@ -352,28 +343,6 @@ function ErrorModalController ($scope, $uibModalInstance, message) {
   $scope.message = message;
   $scope.ok = function () {
     $uibModalInstance.close();
-  };
-}
-
-function RepositoryService($http, $q) {
-  function getResponseData(response) {
-    return response.data;
-  }
-
-  function getResponseStatusCode(response) {
-    return $q.reject(response.status);
-  }
-
-  function syncRepository(projectId) {
-    return $http({
-      method: 'POST',
-      url: '/api/projects/' + projectId + '/repository/sync',
-    })
-    .then(getResponseData, getResponseStatusCode)
-  }
-
-  return {
-    syncRepository: syncRepository
   };
 }
 
