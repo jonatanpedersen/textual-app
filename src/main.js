@@ -17,13 +17,16 @@ import jsonPatch from 'json-patch';
 import * as auth from './auth';
 import * as error from './error';
 import * as projects from './projects';
+import * as texts from './texts';
 import * as users from './users';
+
+import GitHubApi from 'github';
+
 import mongodb from 'mongodb';
 import { connectToMongoDB } from './mongodb';
 
 import { makeSerializeUser, makeDeserializeUser, makeGitHubStrategyCallback } from './passport';
 import { Repository, Signature } from 'nodegit';
-import GitHubApi from 'github';
 
 async function main() {
   try {
@@ -66,9 +69,9 @@ async function main() {
     app.post('/api/projects', projects.makePostProjectsRouteHandler(projects.makeCreateProject(db)));
     app.get('/api/projects/:projectId/settings', projects.makeGetProjectSettingsRouteHandler(projects.makeGetProjectSettings(db)));
     app.post('/api/projects/:projectId/settings', projects.makePostProjectSettingsRouteHandler(projects.makeUpdateProjectSettings(db)));
-    app.get('/api/projects/:projectId/repository/texts', projects.makeGetProjectRepositoryTextsRouteHandler(config.data, path, fs, url, mkdirp, simpleGit, new projects.makeGetProject(db)));
+    app.get('/api/projects/:projectId/repository/texts', projects.makeGetProjectRepositoryTextsRouteHandler(projects.makeGetProject(db), texts.makeGetTextsFromGithub()));
     app.patch('/api/projects/:projectId/repository/texts', projects.makePatchProjectRepositoryTextsRouteHandler(config.data, path, fs, jsonPatch, Repository, Signature));
-    app.post('/api/projects/:projectId/repository/sync', projects.makePostProjectRepositorySyncRouteHandler(config.data, path, url, new projects.makeGetProject(db), simpleGit));
+    app.post('/api/projects/:projectId/repository/sync', projects.makePostProjectRepositorySyncRouteHandler(config.data, path, url, projects.makeGetProject(db), simpleGit));
 
     app.use(error.makeErrorMiddleware());
 

@@ -1,4 +1,5 @@
 import mongodb from 'mongodb';
+import Github from 'github-api';
 
 export function makeCreateProject (db) {
   return async function createProject (projectName, repositoryUrl) {
@@ -153,63 +154,19 @@ export function makePostProjectSettingsRouteHandler (updateProjectSettings) {
   };
 }
 
-export function makeGetProjectRepositoryTextsRouteHandler (basePath, path, fs, url, mkdirp, simpleGit, getProject) {
+export function makeGetProjectRepositoryTextsRouteHandler (getProject, getTextsFromGithub) {
   return async function getProjectRepositoryTextsRouteHandler (req, res, next) {
     try {
+      let github = new Github({
+				token: req.user.github.accessToken,
+				auth: "oauth"
+			});
+
       let projectId = req.params.projectId;
       let project = await getProject(projectId);
+      let texts = await getTextsFromGithub(github, project.repositoryUrl);
 
-      let repositoryName = projectId;
-      let repositoryPath = path.join(basePath, req.user.id, repositoryName);
-
-      try {
-        let stats = fs.lstatSync(repositoryPath);
-      } catch (e) {
-        async function init () {
-          return new Promise((resolve, reject) => {
-            let parsedRepositoryUrl = url.parse(project.repositoryUrl);
-            parsedRepositoryUrl.auth = req.user.github.accessToken;
-            let signedRepositoryUrl = url.format(parsedRepositoryUrl);
-
-            mkdirp(repositoryPath, (err) => {
-              if (err)
-                throw err;
-
-              simpleGit(repositoryPath)
-                .init(false, (err) => {
-                  if (err)
-                    throw err;
-                })
-                .addRemote('origin', project.repositoryUrl)
-                .pull(signedRepositoryUrl, 'master', (err) => {
-                  if (err)
-                    throw err;
-
-                  return resolve();
-                });
-            });
-          });
-        }
-
-        await init();
-      }
-
-      let repositoryTextsPath = path.join(repositoryPath, 'texts.json');
-
-      fs.readFile(repositoryTextsPath, 'utf8', function (err, data) {
-        if (err) {
-          return next(err);
-        }
-
-        try {
-          let texts = JSON.parse(data);
-
-          res.json(texts);
-        }
-        catch (ex) {
-          return next(ex);
-        }
-      });
+      res.json(texts);
     } catch (ex) {
       return next(ex);
     }
