@@ -14,17 +14,5 @@ export default {
   },
   mongodb: {
     connectionString: process.env.MONGODB
-  },
-  logger: {
-    path: process.env.LOG
-  },
-  ssl: {
-    ca: [
-      process.env.SSL_CA1,
-      process.env.SSL_CA2
-    ],
-    key: process.env.SSL_KEY,
-    cert: process.env.SSL_CERT,
-    passphrase : process.env.SSL_PASSPHRASE
   }
 }

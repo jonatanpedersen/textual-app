@@ -1,4 +1,5 @@
 import mongodb from 'mongodb';
+import Github from 'github-api';
 
 export function makeCreateProject (db) {
   return async function createProject (projectName, repositoryUrl) {
@@ -153,144 +154,92 @@ export function makePostProjectSettingsRouteHandler (updateProjectSettings) {
   };
 }
 
-export function makeGetProjectRepositoryTextsRouteHandler (basePath, path, fs, url, mkdirp, simpleGit, getProject) {
+function getRepositoryNameFromRepositoryUrl (repositoryUrl) {
+	return /https:\/\/github\.com\/(.*\.*).git/.exec(repositoryUrl)[1];
+}
+
+export function makeGetProjectRepositoryTextsRouteHandler (getProject, Github) {
   return async function getProjectRepositoryTextsRouteHandler (req, res, next) {
     try {
+      let github = new Github({
+				token: req.user.github.accessToken,
+				auth: 'oauth'
+			});
+
       let projectId = req.params.projectId;
       let project = await getProject(projectId);
+      let repositoryName = getRepositoryNameFromRepositoryUrl(project.repositoryUrl);
+			let repo = github.getRepo(repositoryName);
+			let branchName = 'master';
+			let filePath = 'texts.json';
 
-      let repositoryName = projectId;
-      let repositoryPath = path.join(basePath, req.user.id, repositoryName);
+			repo.read(branchName, filePath, (err, data) => {
+				if (err) {
+					return next(err);
+				}
 
-      try {
-        let stats = fs.lstatSync(repositoryPath);
-      } catch (e) {
-        async function init () {
-          return new Promise((resolve, reject) => {
-            let parsedRepositoryUrl = url.parse(project.repositoryUrl);
-            parsedRepositoryUrl.auth = req.user.github.accessToken;
-            let signedRepositoryUrl = url.format(parsedRepositoryUrl);
-
-            mkdirp(repositoryPath, (err) => {
-              if (err)
-                throw err;
-
-              simpleGit(repositoryPath)
-                .init(false, (err) => {
-                  if (err)
-                    throw err;
-                })
-                .addRemote('origin', project.repositoryUrl)
-                .pull(signedRepositoryUrl, 'master', (err) => {
-                  if (err)
-                    throw err;
-
-                  return resolve();
-                });
-            });
-          });
-        }
-
-        await init();
-      }
-
-      let repositoryTextsPath = path.join(repositoryPath, 'texts.json');
-
-      fs.readFile(repositoryTextsPath, 'utf8', function (err, data) {
-        if (err) {
-          return next(err);
-        }
-
-        try {
-          let texts = JSON.parse(data);
-
-          res.json(texts);
-        }
-        catch (ex) {
-          return next(ex);
-        }
-      });
+				res.json(data);
+			});
     } catch (ex) {
       return next(ex);
     }
   };
 }
 
-export function makePatchProjectRepositoryTextsRouteHandler (basePath, path, fs, jsonPatch, Repository, Signature) {
+export function makePatchProjectRepositoryTextsRouteHandler (getProject, jsonPatch, Github) {
   return async function (req, res, next) {
     try {
-      let repositoryName = req.params.projectId;
-      let repositoryPath = path.join(basePath, req.user.id, repositoryName);
-      let repositoryTextsPath = path.join(repositoryPath, 'texts.json');
+      let github = new Github({
+				token: req.user.github.accessToken,
+				auth: "oauth"
+			});
+
+      let projectId = req.params.projectId;
+      let project = await getProject(projectId);
+      let repositoryName = getRepositoryNameFromRepositoryUrl(project.repositoryUrl);
+			let repo = github.getRepo(repositoryName);
+			let branchName = 'master';
+			let filePath = 'texts.json';
       let patch = req.body;
 
-      fs.readFile(repositoryTextsPath, 'utf8', function (err, data) {
-        if (err) {
-          return next(err);
+			repo.read(branchName, filePath, (err, data) => {
+				if (err) {
+					return next(err);
+				}
+
+        try {
+          jsonPatch.apply(data, patch);
+          let newData = JSON.stringify(data, null, 4);
+
+          let author = { name: req.user.profile.displayName, email: req.user.profile.email };
+          let committer = author;
+          let message = patch.reduce((messages, patchEntry) => {
+            if (patchEntry.op === 'add') messages.push(`add ${patchEntry.path}`);
+            if (patchEntry.op === 'replace') messages.push(`update ${patchEntry.path}`);
+            if (patchEntry.op === 'remove') messages.push(`remove ${patchEntry.path}`);
+            if (patchEntry.op === 'move') messages.push(`move ${patchEntry.from} to $(patchEntry.path}`);
+
+            return messages;
+          }, []).join('\n');
+
+          let options = {
+            author: author,
+            committer: committer
+          };
+
+          repo.write(branchName, filePath, newData, message, options, function(err) {
+            if (err) {
+              return next(err);
+            }
+
+            return res.end();
+          });
+        } catch (ex) {
+          return next(ex);
         }
-
-        let texts = JSON.parse(data);
-        jsonPatch.apply(texts, patch);
-        let newData = JSON.stringify(texts, null, 4);
-
-        fs.writeFile(repositoryTextsPath, newData, 'utf8', function (err) {
-          if (err) {
-            return next(err);
-          }
-
-          Repository.open(repositoryPath)
-            .then(repository => {
-              let author = Signature.now(req.user.profile.displayName, req.user.profile.email);
-              let committer = author;
-              let message = patch.reduce((messages, patchEntry) => {
-                if (patchEntry.op === 'add') messages.push(`add ${patchEntry.path}`);
-                if (patchEntry.op === 'replace') messages.push(`update ${patchEntry.path}`);
-                if (patchEntry.op === 'remove') messages.push(`remove ${patchEntry.path}`);
-                if (patchEntry.op === 'move') messages.push(`move ${patchEntry.from} to $(patchEntry.path}`);
-
-                return messages;
-              }, []).join('\n');
-
-              return repository.createCommitOnHead(['texts.json'], author, committer, message);
-            })
-            .done(oid => {
-              res.json(oid);
-            });
-        });
-      });
-    } catch(ex) {
-      next(ex);
+			});
+    } catch (ex) {
+      return next(ex);
     }
-  };
-}
-
-export function makePostProjectRepositorySyncRouteHandler(basePath, path, url, getProject, simpleGit) {
-  return async function (req, res, next) {
-    try {
-     let projectId = req.params.projectId;
-     let project = await getProject(projectId);
-
-     let repositoryName = req.params.projectId;
-     let repositoryPath = path.join(basePath, req.user.id, repositoryName);
-
-     let parsedRepositoryUrl = url.parse(project.repositoryUrl);
-     parsedRepositoryUrl.auth = req.user.github.accessToken;
-     let signedRepositoryUrl = url.format(parsedRepositoryUrl);
-
-     simpleGit(repositoryPath)
-       .pull(signedRepositoryUrl, 'master', (err, other) => {
-         if (err)
-           return next(err);
-       })
-       .push(signedRepositoryUrl, 'master', (err, other) => {
-         if (err)
-           return next(err);
-
-         res.end();
-       });
-     }
-     catch (ex) {
-       next(ex);
-     }
   };
 }

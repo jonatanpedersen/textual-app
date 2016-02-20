@@ -1,2 +1,2 @@
 require('babel-core/register');
-require('./src/main');
+require('./src/main').main();
