@@ -1,41 +1,41 @@
 require('./index.css');
 
-var texts = require('json!translator-app-texts');
+var texts = require('json!textual-app-texts');
 var getText = require('get-text')(texts, 'en-GB');
 
 angular.module('app', ['ngRoute', 'ui.bootstrap']);
 
-angular.module('app').config(['$routeProvider',
-  function($routeProvider) {
-    $routeProvider
-      .when('/', {
-        templateUrl: 'project-list.html',
-        controller: 'ProjectListController'
-      })
-      .when('/create-project', {
-        templateUrl: 'create-project.html',
-        controller: 'CreateProjectController'
-      })
-      .when('/projects/:projectId/settings', {
-        templateUrl: 'project-settings.html',
-        controller: 'ProjectSettingsController'
-      })
-      .when('/projects/:projectId/repository', {
-        templateUrl: 'repository.html',
-        controller: 'RepositoryController'
-      })
-      .when('/user/profile', {
-        templateUrl: 'user-profile.html',
-        controller: 'UserProfileController'
-      })
-      .when('/user/settings', {
-        templateUrl: 'user-settings.html',
-        controller: 'UserSettingsController'
-      })
-      .otherwise({
-        redirectTo: '/'
-      });
-  }]);
+angular.module('app').config(['$routeProvider', '$locationProvider', config]);
+
+function config ($routeProvider, $locationProvider) {
+  $routeProvider
+    .when('/', {
+      templateUrl: 'project-list.html',
+      controller: 'ProjectListController'
+    })
+    .when('/create-project', {
+      templateUrl: 'create-project.html',
+      controller: 'CreateProjectController'
+    })
+    .when('/projects/:projectId/settings', {
+      templateUrl: 'project-settings.html',
+      controller: 'ProjectSettingsController'
+    })
+    .when('/projects/:projectId/repository', {
+      templateUrl: 'repository.html',
+      controller: 'RepositoryController'
+    })
+    .when('/user/profile', {
+      templateUrl: 'user-profile.html',
+      controller: 'UserProfileController'
+    })
+    .when('/user/settings', {
+      templateUrl: 'user-settings.html',
+      controller: 'UserSettingsController'
+    });
+
+    $locationProvider.html5Mode(true);
+}
 
 angular.module('app').controller('CreateProjectController', ['$scope', '$location', 'ProjectService', 'UserService', CreateProjectController]);
 angular.module('app').controller('ProjectListController', ['$scope', 'ProjectService', ProjectListController]);
@@ -63,7 +63,7 @@ function handle401($httpProvider) {
                 var defer = $q.defer();
 
                 if(rejection.status == 401){
-                    window.location.href = '/';
+                    window.location.href = '/login';
                 }
 
                 defer.reject(rejection);

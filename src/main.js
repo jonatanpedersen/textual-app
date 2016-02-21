@@ -43,13 +43,12 @@ export async function main () {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    app.use('/', express.static('./public'));
     app.get('/login', auth.makeLoginRouteHandler('/auth/github'));
     app.get('/logout', auth.makeLogoutRouteHandler('/'));
     app.get('/auth/github', auth.makeAuthGithubRouteHandler(passport));
     app.get('/auth/github/callback',
       auth.makeAuthGithubCallbackMiddleware(passport, '/'),
-      auth.makeAuthGithubCallbackRouteHandler('/app')
+      auth.makeAuthGithubCallbackRouteHandler('/')
     );
 
     app.use('/api', auth.makeIsAuthenticatedMiddleware());
@@ -65,8 +64,10 @@ export async function main () {
     app.get('/api/projects/:projectId/repository/texts', projects.makeGetProjectRepositoryTextsRouteHandler(projects.makeGetProject(db), Github));
     app.patch('/api/projects/:projectId/repository/texts', projects.makePatchProjectRepositoryTextsRouteHandler(projects.makeGetProject(db), jsonPatch, Github));
 
-    app.use(error.makeErrorMiddleware());
+    app.use('/', express.static('./public'));
+    app.use('/*', express.static('./public/index.html'));
 
+    app.use(error.makeErrorMiddleware());
 
     app.listen(config.port, () => {
       console.log(`textual-app listening on port ${config.port}`);
