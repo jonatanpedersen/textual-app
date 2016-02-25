@@ -1,6 +1,14 @@
 import mongodb from 'mongodb';
 import Github from 'github-api';
 
+function ObjectId (objectId) {
+  try {
+    return mongodb.ObjectId(objectId);
+  } catch (error) {
+    return mongodb.ObjectId();
+  }
+}
+
 export function makeCreateProject (db) {
   return async function createProject (projectName, repositoryUrl) {
     try {
@@ -17,9 +25,7 @@ export function makeCreateProject (db) {
           if (err)
             reject(err);
 
-          let projectId = res.insertedIds[0];
-
-          resolve(projectId);
+          resolve();
         });
       });
     } catch (ex) {
@@ -29,12 +35,12 @@ export function makeCreateProject (db) {
 }
 
 export function makeGetProject (db) {
-  return async function getProject (projectId) {
+  return async function getProject (projectIdOrName) {
     try {
       let projects = db.collection('projects');
 
       return new Promise((resolve, reject) => {
-        projects.findOne({ _id: mongodb.ObjectId(projectId) }, (err, project) => {
+        projects.findOne({ $or: [{ _id: ObjectId(projectIdOrName)}, { name: projectIdOrName }] }, (err, project) => {
           if (err)
             reject(err);
 
@@ -67,12 +73,12 @@ export function makeGetProjects (db) {
 }
 
 export function makeGetProjectSettings (db) {
-  return async function getProjectSettings (projectId) {
+  return async function getProjectSettings (projectIdOrName) {
     try {
       let projects = db.collection('projects');
 
       return new Promise((resolve, reject) => {
-        projects.findOne({ _id: mongodb.ObjectId(projectId) }, (err, project) => {
+        projects.findOne({ $or: [{ _id: ObjectId(projectIdOrName)}, { name: projectIdOrName }] }, (err, project) => {
           if (err)
             reject(err);
 
@@ -86,13 +92,13 @@ export function makeGetProjectSettings (db) {
 }
 
 export function makeUpdateProjectSettings (db) {
-  return async function updateProjectSettings (projectId, projectSettings) {
+  return async function updateProjectSettings (projectIdOrName, projectSettings) {
     try {
       let projects = db.collection('projects');
 
       return new Promise((resolve, reject) => {
         projects.findAndModify(
-          { _id: mongodb.ObjectId(projectId)},
+          { $or: [{ _id: ObjectId(projectIdOrName)}, { name: projectIdOrName }] },
           [],
           { $set: { settings: projectSettings } },
           {},
@@ -113,8 +119,8 @@ export function makeUpdateProjectSettings (db) {
 export function makePostProjectsRouteHandler (createProject) {
   return async (req, res, next) => {
     try {
-      let projectId = await createProject(req.body.projectName, req.body.repositoryUrl);
-      res.json(projectId);
+      await createProject(req.body.projectName, req.body.repositoryUrl);
+      res.end();
     } catch (ex) {
       next(ex);
     }
@@ -135,7 +141,7 @@ export function makeGetProjectsRouteHandler (getProjects) {
 export function makeGetProjectSettingsRouteHandler (getProjectSettings) {
   return async (req, res, next) => {
     try {
-      let projectSettings = await getProjectSettings(req.params.projectId);
+      let projectSettings = await getProjectSettings(req.params.projectIdOrName);
       res.json(projectSettings);
     } catch (ex) {
       next(ex);
@@ -146,7 +152,7 @@ export function makeGetProjectSettingsRouteHandler (getProjectSettings) {
 export function makePostProjectSettingsRouteHandler (updateProjectSettings) {
   return async (req, res, next) => {
     try {
-      await updateProjectSettings(req.params.projectId, req.body);
+      await updateProjectSettings(req.params.projectIdOrName, req.body);
       res.end();
     } catch (ex) {
       next(ex);
@@ -166,8 +172,8 @@ export function makeGetProjectRepositoryTextsRouteHandler (getProject, Github) {
 				auth: 'oauth'
 			});
 
-      let projectId = req.params.projectId;
-      let project = await getProject(projectId);
+      let projectIdOrName = req.params.projectIdOrName;
+      let project = await getProject(projectIdOrName);
       let repositoryName = getRepositoryNameFromRepositoryUrl(project.repositoryUrl);
 			let repo = github.getRepo(repositoryName);
 			let branchName = 'master';
@@ -194,8 +200,8 @@ export function makePatchProjectRepositoryTextsRouteHandler (getProject, jsonPat
 				auth: "oauth"
 			});
 
-      let projectId = req.params.projectId;
-      let project = await getProject(projectId);
+      let projectIdOrName = req.params.projectIdOrName;
+      let project = await getProject(projectIdOrName);
       let repositoryName = getRepositoryNameFromRepositoryUrl(project.repositoryUrl);
 			let repo = github.getRepo(repositoryName);
 			let branchName = 'master';

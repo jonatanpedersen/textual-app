@@ -59,10 +59,10 @@ export async function main () {
     app.post('/api/user/settings', users.makePostUserSettingsRouteHandler(users.makeUpdateUserSettings(db)));
     app.get('/api/projects', projects.makeGetProjectsRouteHandler(projects.makeGetProjects(db)));
     app.post('/api/projects', projects.makePostProjectsRouteHandler(projects.makeCreateProject(db)));
-    app.get('/api/projects/:projectId/settings', projects.makeGetProjectSettingsRouteHandler(projects.makeGetProjectSettings(db)));
-    app.post('/api/projects/:projectId/settings', projects.makePostProjectSettingsRouteHandler(projects.makeUpdateProjectSettings(db)));
-    app.get('/api/projects/:projectId/repository/texts', projects.makeGetProjectRepositoryTextsRouteHandler(projects.makeGetProject(db), Github));
-    app.patch('/api/projects/:projectId/repository/texts', projects.makePatchProjectRepositoryTextsRouteHandler(projects.makeGetProject(db), jsonPatch, Github));
+    app.get('/api/projects/:projectIdOrName/settings', projects.makeGetProjectSettingsRouteHandler(projects.makeGetProjectSettings(db)));
+    app.post('/api/projects/:projectIdOrName/settings', projects.makePostProjectSettingsRouteHandler(projects.makeUpdateProjectSettings(db)));
+    app.get('/api/projects/:projectIdOrName/repository/texts', projects.makeGetProjectRepositoryTextsRouteHandler(projects.makeGetProject(db), Github));
+    app.patch('/api/projects/:projectIdOrName/repository/texts', projects.makePatchProjectRepositoryTextsRouteHandler(projects.makeGetProject(db), jsonPatch, Github));
 
     app.use('/', express.static('./public'));
     app.use('/*', express.static('./public/index.html'));

@@ -63,11 +63,11 @@
 	      templateUrl: 'create-project.html',
 	      controller: 'CreateProjectController'
 	    })
-	    .when('/projects/:projectId/settings', {
+	    .when('/projects/:projectName/settings', {
 	      templateUrl: 'project-settings.html',
 	      controller: 'ProjectSettingsController'
 	    })
-	    .when('/projects/:projectId/repository', {
+	    .when('/projects/:projectName/repository', {
 	      templateUrl: 'repository.html',
 	      controller: 'RepositoryController'
 	    })
@@ -143,8 +143,8 @@
 	  })
 
 	  $scope.submitCreateProjectForm = function() {
-	    ProjectService.createProject($scope.createProjectFormData.projectName, $scope.createProjectFormData.repositoryUrl).then(function(projectId) {
-	       $location.path('/projects/' + projectId + '/repository');
+	    ProjectService.createProject($scope.createProjectFormData.projectName, $scope.createProjectFormData.repositoryUrl).then(function() {
+	       $location.path('/projects/' + $scope.createProjectFormData.projectName + '/repository');
 	    });
 	  }
 	}
@@ -156,13 +156,13 @@
 	}
 
 	function ProjectSettingsController ($scope, $routeParams, ProjectService) {
-	  ProjectService.getProjectSettings($routeParams.projectId).then(function(projectSettings) {
+	  ProjectService.getProjectSettings($routeParams.projectName).then(function(projectSettings) {
 	    $scope.projectSettings = projectSettings;
 	  });
 
 	  $scope.submitUpdateProjectSettingsForm = function() {
 	    if($scope.updateProjectSettingsForm.$valid) {
-	      ProjectService.updateProjectSettings($routeParams.projectId, $scope.projectSettings);
+	      ProjectService.updateProjectSettings($routeParams.projectName, $scope.projectSettings);
 	    }
 	  }
 	}
@@ -192,8 +192,8 @@
 	}
 
 	function NavBarController ($scope,  $location, $routeParams, ProjectService, UserService) {
-	  $scope.currentProjectId = function() {
-	    return $routeParams.projectId;
+	  $scope.currentProjectName = function() {
+	    return $routeParams.projectName;
 	  }
 
 	  ProjectService.getProjects().then(function(projects) {
@@ -208,7 +208,7 @@
 	function RepositoryController ($scope, $routeParams, $location, $uibModal, RepositoryTextsService, UserService) {
 	  $scope.allTexts = [];
 	  $scope.availableColumns = [];
-	  $scope.projectId = $routeParams.projectId;
+	  $scope.projectName = $routeParams.projectName;
 	  $scope.searchText = undefined;
 	  $scope.selectedColumns = [];
 	  $scope.userSettings = { columns: [] };
@@ -247,7 +247,7 @@
 
 	    $scope.addTextFormData.languages = $scope.addTextFormData.languages || {};
 
-	    RepositoryTextsService.addText($routeParams.projectId, $scope.addTextFormData.textId, $scope.addTextFormData.languages).then(success);
+	    RepositoryTextsService.addText($routeParams.projectName, $scope.addTextFormData.textId, $scope.addTextFormData.languages).then(success);
 
 	    function success () {
 	      $scope.texts[$scope.addTextFormData.textId] = $scope.addTextFormData.languages;
@@ -272,7 +272,7 @@
 	  function moveText (fromTextId, toTextId) {
 	    console.info('moveText()');
 
-	    RepositoryTextsService.moveText($routeParams.projectId, fromTextId, toTextId).then(success, error);
+	    RepositoryTextsService.moveText($routeParams.projectName, fromTextId, toTextId).then(success, error);
 
 	    function success () {
 	    }
@@ -284,7 +284,7 @@
 	  function removeText (textId) {
 	    console.info('removeText()');
 
-	    RepositoryTextsService.removeText($routeParams.projectId, textId).then(success);
+	    RepositoryTextsService.removeText($routeParams.projectName, textId).then(success);
 
 	    function success () {
 	      delete $scope.texts[textId];
@@ -322,7 +322,7 @@
 
 	    $scope.updatingTexts = true;
 
-	    RepositoryTextsService.getTexts($routeParams.projectId).then(function(texts) {
+	    RepositoryTextsService.getTexts($routeParams.projectName).then(function(texts) {
 	      UserService.getUserSettings().then(function(userSettings) {
 	        $scope.texts = texts;
 	        $scope.userSettings = userSettings;
@@ -369,11 +369,11 @@
 	    var value = $scope.texts[textId][languageCode];
 
 	    if (oldValue === '' && value !== '') {
-	      RepositoryTextsService.addTextValue($routeParams.projectId, textId, languageCode, value).then(success, error);
+	      RepositoryTextsService.addTextValue($routeParams.projectName, textId, languageCode, value).then(success, error);
 	    } else if (oldValue !== '' && value === '') {
-	      RepositoryTextsService.removeTextValue($routeParams.projectId, textId, languageCode, value).then(success, error);
+	      RepositoryTextsService.removeTextValue($routeParams.projectName, textId, languageCode, value).then(success, error);
 	    } else if (oldValue !== '' && value !== '') {
-	      RepositoryTextsService.replaceTextValue($routeParams.projectId, textId, languageCode, value).then(success, error);
+	      RepositoryTextsService.replaceTextValue($routeParams.projectName, textId, languageCode, value).then(success, error);
 	    }
 
 	    function success () {
@@ -401,25 +401,25 @@
 	    return $q.reject(response.status);
 	  }
 
-	  function getTexts(projectId) {
+	  function getTexts(projectIdOrName) {
 	    return $http({
 	      method: 'GET',
-	      url: '/api/projects/' + projectId + '/repository/texts'
+	      url: '/api/projects/' + projectIdOrName + '/repository/texts'
 	    })
 	    .then(getResponseData, getResponseStatusCode)
 	  }
 
-	  function patchRepositoryTexts(projectId, patch) {
+	  function patchRepositoryTexts(projectIdOrName, patch) {
 	    return $http({
 	      method: 'PATCH',
-	      url: '/api/projects/' + projectId + '/repository/texts',
+	      url: '/api/projects/' + projectIdOrName + '/repository/texts',
 	      data: patch
 	    })
 	    .then(getResponseData, getResponseStatusCode)
 	  }
 
-	  function addText(projectId, textId, text) {
-	    return patchRepositoryTexts(projectId, [
+	  function addText(projectIdOrName, textId, text) {
+	    return patchRepositoryTexts(projectIdOrName, [
 	      {
 	        op: 'add',
 	        path: '/' + textId,
@@ -428,8 +428,8 @@
 	    ]);
 	  }
 
-	  function addTextValue(projectId, textId, languageCode, value) {
-	    return patchRepositoryTexts(projectId, [
+	  function addTextValue(projectIdOrName, textId, languageCode, value) {
+	    return patchRepositoryTexts(projectIdOrName, [
 	      {
 	        op: 'add',
 	        path: '/' + textId + '/' + languageCode,
@@ -438,8 +438,8 @@
 	    ]);
 	  }
 
-	  function replaceTextValue(projectId, textId, languageCode, value) {
-	    return patchRepositoryTexts(projectId, [
+	  function replaceTextValue(projectIdOrName, textId, languageCode, value) {
+	    return patchRepositoryTexts(projectIdOrName, [
 	      {
 	        op: 'replace',
 	        path: '/' + textId + '/' + languageCode,
@@ -448,8 +448,8 @@
 	    ]);
 	  }
 
-	  function removeTextValue(projectId, textId, languageCode) {
-	    return patchRepositoryTexts(projectId, [
+	  function removeTextValue(projectIdOrName, textId, languageCode) {
+	    return patchRepositoryTexts(projectIdOrName, [
 	      {
 	        op: 'remove',
 	        path: '/' + textId + '/' + languageCode
@@ -457,8 +457,8 @@
 	    ]);
 	  }
 
-	  function removeText(projectId, textId) {
-	    return patchRepositoryTexts(projectId, [
+	  function removeText(projectIdOrName, textId) {
+	    return patchRepositoryTexts(projectIdOrName, [
 	      {
 	        op: 'remove',
 	        path: '/' + textId
@@ -466,8 +466,8 @@
 	    ]);
 	  }
 
-	  function moveText(projectId, fromTextId, toTextId) {
-	    return patchRepositoryTexts(projectId, [
+	  function moveText(projectIdOrName, fromTextId, toTextId) {
+	    return patchRepositoryTexts(projectIdOrName, [
 	      {
 	        op: 'move',
 	        from: '/' + fromTextId,
@@ -570,17 +570,17 @@
 	    }).then(getResponseData, getResponseStatusCode)
 	  }
 
-	  function getProjectSettings(projectId) {
+	  function getProjectSettings(projectIdOrName) {
 	    return $http({
 	      method: 'GET',
-	      url: '/api/projects/' + projectId + '/settings'
+	      url: '/api/projects/' + projectIdOrName + '/settings'
 	    }).then(getResponseData, getResponseStatusCode)
 	  }
 
-	  function updateProjectSettings(projectId, projectSettings) {
+	  function updateProjectSettings(projectIdOrName, projectSettings) {
 	    return $http({
 	      method: 'POST',
-	      url: '/api/projects/' + projectId + '/settings',
+	      url: '/api/projects/' + projectIdOrName + '/settings',
 	      data: projectSettings
 	    }).then(getResponseData, getResponseStatusCode)
 	  }
@@ -971,7 +971,7 @@
 	module.exports = {
 		"About": {
 			"en-GB": "About",
-			"da-DK": "Om 1"
+			"da-DK": "Om"
 		},
 		"Cancel": {
 			"en-GB": "Cancel",

@@ -16,7 +16,7 @@
           <li class="dropdown" uib-dropdown>
            <a href="" uib-dropdown-toggle class="dropdown-toggle">{{ 'Projects' | text }} <span class="caret"></span></a>
            <ul class="dropdown-menu">
-             <li ng-repeat="project in projects" ng-class="{ active: project._id === currentProjectId() }"><a href="/projects/{{project._id}}/repository">{{project.name}}</a></li>
+             <li ng-repeat="project in projects" ng-class="{ active: project.name === currentProjectName() }"><a href="/projects/{{project.name}}/repository">{{project.name}}</a></li>
              <li ng-if="projects.length > 0" role="separator" class="divider"></li>
              <li><a href="/create-project" text>Create Project</a></li>
            </ul>
@@ -39,7 +39,7 @@
 
     <nav class="navbar navbar-default navbar-fixed-bottom navbar-bottom">
       <div class="container-fluid">
-        <p class="navbar-text"><span text>Copyright &copy; 2015</span> <a href="https://www.jonatanpedersen.com" target="_blank">Jonatan Pedersen</a></p>
+        <p class="navbar-text"><span text>Copyright &copy; 2015-2016</span> <a href="https://www.jonatanpedersen.com" target="_blank">Jonatan Pedersen</a></p>
       </div>
     </nav>
 
@@ -48,7 +48,7 @@
         <div class="container">
           <h2 text>Projects</h2>
           <menu class="list-group">
-            <a href="/projects/{{project._id}}/repository" class="list-group-item" ng-repeat="project in projects">{{project.name}}</a>
+            <a href="/projects/{{project.name}}/repository" class="list-group-item" ng-repeat="project in projects">{{project.name}}</a>
           </menu>
         </div>
       </section>
@@ -61,20 +61,20 @@
           <hr/>
           <form name="createProjectForm" ng-submit="submitCreateProjectForm()">
             <p class"form-group">
-              <label for="repositoryUrl" text>Project name</label>
-              <input type="text" class="form-control" ng-model="createProjectFormData.projectName" required />
-              <p>e.g. <span ng-click="createProjectFormData.projectName = 'Translation App'">Translation App</span></p>
+              <label for="projectName" text>Project name</label>
+              <input id="projectName" type="text" class="form-control" ng-model="createProjectFormData.projectName" required ng-pattern="'[0-9a-zA-Z-]+'" />
+              <p>e.g. <span ng-click="createProjectFormData.projectName = 'textual-app'">textual-app</span></p>
             </p>
             <hr/>
             <p class"form-group">
-              <label for="repositoryUrl" text>Pick a repository from the list, or write the url below</label>
-              <select class="form-control" ng-model="createProjectFormData.repositoryUrl" ng-options="repository.url as repository.name for repository in repositories"></select>
+              <label for="repository" text>Pick a repository from the list, or write the url below</label>
+              <select id="repository" class="form-control" ng-model="createProjectFormData.repositoryUrl" ng-options="repository.url as repository.name for repository in repositories"></select>
             </p>
             <p class"form-group">
               <label for="repositoryUrl" text>Repository url</label>
-              <input type="uri" class="form-control" ng-model="createProjectFormData.repositoryUrl" required />
+              <input id="repositoryUrl" type="uri" class="form-control" ng-model="createProjectFormData.repositoryUrl" required />
             </p>
-            <p>e.g. <span ng-click="createProjectFormData.repositoryUrl = 'https://github.com/jonatanpedersen/translator-app-texts.git'">https://github.com/jonatanpedersen/translator-app-texts.git</span></p>
+            <p>e.g. <span ng-click="createProjectFormData.repositoryUrl = 'https://github.com/jonatanpedersen/textual-app-texts.git'">https://github.com/jonatanpedersen/textual-app-texts.git</span></p>
             <hr/>
             <p class"form-group">
               <button type="submit" class="btn btn-primary" ng-disabled="createProjectForm.$invalid" text>Create project</button>
@@ -104,7 +104,7 @@
               </form>
             </div>
             <div class="btn-group pull-right">
-              <a href="/projects/{{projectId}}/settings" class="btn btn-default" text>Settings</a>
+              <a href="/projects/{{projectName}}/settings" class="btn btn-default" text>Settings</a>
             </div>
           </div>
         </div>
