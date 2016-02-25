@@ -1,9 +1,11 @@
 require('./index.css');
+require('./elastic.js');
+require('./ui-bootstrap-tpls-0.14.3.js');
 
 var texts = require('json!textual-app-texts');
 var getText = require('get-text')(texts, 'en-GB');
 
-angular.module('app', ['ngRoute', 'ui.bootstrap']);
+angular.module('app', ['ngRoute', 'ui.bootstrap', 'monospaced.elastic']);
 
 angular.module('app').config(['$routeProvider', '$locationProvider', config]);
 

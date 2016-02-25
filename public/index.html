@@ -122,26 +122,26 @@
         <div class="table-body">
           <div class="table-row" ng-repeat="text in allTexts | filter: searchText | limitTo: 1000 | orderBy: 'id' ">
             <div class="table-column">
-              <input ng-model="text.id" type="text" ng-change="moveText('{{text.id}}', text.id)" ng-model-options="{ updateOn: 'blur' }" class="form-control input-sm" />
+              <textarea ng-model="text.id" type="text" ng-change="moveText('{{text.id}}', text.id)" ng-model-options="{ updateOn: 'blur' }" msd-elastic class="form-control input-sm"></textarea>
             </div>
             <div class="table-column" ng-repeat="languageCode in selectedColumns">
-              <input ng-model="text.languages[languageCode]" type="text" ng-change="updateTextValue(text.id, languageCode, '{{text.languages[languageCode]}}')" ng-model-options="{ updateOn: 'blur' }" class="form-control input-sm" />
+              <textarea ng-model="text.languages[languageCode]" type="text" ng-change="updateTextValue(text.id, languageCode, '{{text.languages[languageCode]}}')" ng-model-options="{ updateOn: 'blur' }" msd-elastic class="form-control input-sm"></textarea>
             </div>
             <div class="table-column">
-              <button ng-click="removeText(text.id)" class="btn btn-sm btn-default"><i class="glyphicon glyphicon-trash"></i></button>
+              <button ng-click="removeText(text.id)" class="btn btn-danger"><i class="glyphicon glyphicon-trash"></i></button>
             </div>
           </div>
         </div>
         <form name="addTextForm" class="table-footer">
           <div class="table-row">
             <div class="table-column">
-              <input ng-model="addTextFormData.textId" type="text" class="form-control input-sm" placeholder="Text Id" required />
+              <textarea ng-model="addTextFormData.textId" type="text" msd-elastic class="form-control input-sm" placeholder="Text Id" required></textarea>
             </div>
             <div class="table-column" ng-repeat="languageCode in selectedColumns">
-              <input ng-model="addTextFormData.languages[languageCode]" type="text" class="form-control input-sm" placeholder="{{languageCode}}" />
+              <textarea ng-model="addTextFormData.languages[languageCode]" type="text" msd-elastic class="form-control input-sm" placeholder="{{languageCode}}"></textarea>
             </div>
             <div class="table-column">
-              <button type="submit" class="btn btn-default btn-sm" ng-click="addText()"><i class="glyphicon glyphicon-plus"></i></button>
+              <button type="submit" class="btn btn-primary" ng-click="addText()"><i class="glyphicon glyphicon-plus"></i></button>
             </div>
           </div>
         </form>

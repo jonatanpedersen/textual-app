@@ -83,12 +83,12 @@ button .glyphicon {
   border-top: 1px solid #ccc;
 }
 
-.table-flex .table-header .table-column  {
+.table-flex .table-column  {
   border-left: 1px solid #ccc;
 }
 
-.table-flex .table-body .table-column  {
-  border-width: 0;
+.table-flex .table-row  {
+  border-bottom: 1px solid #ccc;
 }
 
 .table-flex .table-header,
@@ -121,11 +121,15 @@ button .glyphicon {
   background-color: #eee;
 }
 
-.table-flex .table-column input {
+.table-flex .table-column input,
+.table-flex .table-column textarea {
   font-size: 1.1em;
-  border-top-width: 0;
-  border-right-width: 0;
+  border: none;
+  box-shadow: none;
   background: transparent;
+  resize: none;
+  height: 30px;
+  padding: 9px 10px;
 }
 
 .table-flex .table-column:first-child {
@@ -133,5 +137,5 @@ button .glyphicon {
 }
 
 .table-flex .table-column:last-child {
-  flex: 0 0 36px;
+  flex: 0 0 55px;
 }
