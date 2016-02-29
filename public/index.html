@@ -120,7 +120,7 @@
           </div>
         </div>
         <div class="table-body">
-          <div class="table-row" ng-repeat="text in allTexts | filter: searchText | limitTo: 1000 | orderBy: 'id' ">
+          <div class="table-row" ng-repeat="text in allTexts | filter: searchText | limitTo: 100 | orderBy: 'id' ">
             <div class="table-column">
               <textarea ng-model="text.id" type="text" ng-change="moveText('{{text.id}}', text.id)" ng-model-options="{ updateOn: 'blur' }" msd-elastic class="form-control input-sm"></textarea>
             </div>
