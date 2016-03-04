@@ -45,11 +45,11 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	__webpack_require__(1);
-	__webpack_require__(7);
-	__webpack_require__(8);
+	__webpack_require__(5);
+	__webpack_require__(6);
 
-	var texts = __webpack_require__(5);
-	var getText = __webpack_require__(6)(texts, 'en-GB');
+	var texts = __webpack_require__(7);
+	var getText = __webpack_require__(8)(texts, 'en-GB');
 
 	angular.module('app', ['ngRoute', 'ui.bootstrap', 'monospaced.elastic']);
 
@@ -101,6 +101,8 @@
 	angular.module('app').constant('getText', getText);
 	angular.module('app').filter('text', ['getText', textFilter]);
 	angular.module('app').directive('text', ['getText', textDirective]);
+	angular.module('app').directive('viewHeader', [viewHeader]);
+	angular.module('app').directive('viewFooter', [viewFooter]);
 
 	angular.module('app').config(['$httpProvider', handle401]);
 
@@ -125,16 +127,32 @@
 	function textFilter(getText) {
 	  return function(text) {
 	    return getText(text);
-	  }
+	  };
 	}
 
 	function textDirective(getText) {
 	  return {
 	    restrict: 'A',
-	    link: function (scope, elem, attrs) {
+	    link: function (scope, elem) {
 	        elem.html(getText(elem.html()));
 	    }
-	  }
+	  };
+	}
+
+	function viewHeader() {
+	  return {
+	    transclude: true,
+	    templateUrl: 'view-header.html',
+	    replace: true
+	  };
+	}
+
+	function viewFooter() {
+	  return {
+	    transclude: true,
+	    templateUrl: 'view-footer.html',
+	    replace: true
+	  };
 	}
 
 	function CreateProjectController ($scope, $location, ProjectService, UserService) {
@@ -651,7 +669,7 @@
 
 
 	// module
-	exports.push([module.id, "* {\r\n    box-sizing: border-box;\r\n}\r\n\r\nhtml, body, .main {\r\n  margin:0;\r\n  height:100%;\r\n  min-height:100%;\r\n}\r\nform {margin : 0}\r\n.main {\r\n  padding-top: 50px;\r\n  padding-bottom: 50px;\r\n}\r\n\r\n.dropdown-menu .active {\r\n  font-weight: bold;\r\n}\r\n\r\n.section { padding: 30px 0;}\r\n.section-default { }\r\n.section-primary { background-color: #eee; }\r\n\r\n.jumbotron  {\r\n    background-color: #2780e3;\r\n    color: #fff;\r\n}\r\n\r\n.beta {\r\n  background-color: #333;\r\n  color: #ccc;\r\n  border-radius: 3px;\r\n  padding: 2px 5px;\r\n}\r\n\r\n.jumbotron h1 {\r\n    font-size: 12rem;\r\n}\r\n\r\n.jumbotron .lead {\r\n    margin-bottom: 4rem;\r\n}\r\n\r\n.jumbotron .btn-primary {\r\n    background-color: #1967be;\r\n    border-color: #1862b5;\r\n    font-size: 4rem;\r\n}\r\n\r\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\r\n\r\n.toolbar + * { padding-top: 73px; }\r\n\r\n.btn-toolbar { margin: 15px -5px; }\r\n.btn-toolbar form { margin: 0; }\r\n.navbar-bottom { margin-bottom: 0;}\r\n\r\n.navbar-text {\r\n  margin-left: 0;\r\n}\r\n\r\npre {\r\n  margin: 0;\r\n  padding: 0;\r\n  background: none;\r\n  border: none;\r\n}\r\n\r\nbutton .glyphicon {\r\n  line-height: 1.4em;\r\n}\r\n\r\n.table-flex {\r\n  height:100%;\r\n  min-height:100%;\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.table-flex .table-header,\r\n.table-flex .table-body,\r\n.table-flex .table-footer {\r\n  border-top: 1px solid #ccc;\r\n}\r\n\r\n.table-flex .table-column  {\r\n  border-left: 1px solid #ccc;\r\n}\r\n\r\n.table-flex .table-row  {\r\n  border-bottom: 1px solid #ccc;\r\n}\r\n\r\n.table-flex .table-header,\r\n.table-flex .table-footer {\r\n  background-color: #eee;\r\n  flex: 0 0 32px;\r\n  padding-right: 17px;\r\n}\r\n\r\n.table-flex .table-body {\r\n   flex: 1;\r\n   overflow-y: scroll;\r\n}\r\n\r\n.table-flex .table-header .table-column {\r\n  padding: 5px 10px;\r\n  font-weight: bold;\r\n}\r\n\r\n.table-flex .table-row {\r\n  display: flex;\r\n  flex-direction: row;\r\n}\r\n\r\n.table-flex .table-column {\r\n  flex: 1;\r\n}\r\n\r\n.table-flex .table-column:hover {\r\n  background-color: #eee;\r\n}\r\n\r\n.table-flex .table-column input,\r\n.table-flex .table-column textarea {\r\n  font-size: 1.1em;\r\n  border: none;\r\n  box-shadow: none;\r\n  background: transparent;\r\n  resize: none;\r\n  height: 30px;\r\n  padding: 9px 10px;\r\n}\r\n\r\n.table-flex .table-column:first-child {\r\n  flex: 0 0 480px;\r\n}\r\n\r\n.table-flex .table-column:last-child {\r\n  flex: 0 0 55px;\r\n}\r\n", ""]);
+	exports.push([module.id, "* {\r\n    box-sizing: border-box;\r\n}\r\n\r\nhtml, body {\r\n  margin:0;\r\n  height:100%;\r\n  min-height:100%;\r\n}\r\n\r\nform {margin : 0}\r\n\r\n.dropdown-menu .active {\r\n  font-weight: bold;\r\n}\r\n\r\n.section { padding: 30px 0;}\r\n.section-default { }\r\n.section-primary { background-color: #eee; }\r\n\r\n.jumbotron  {\r\n    background-color: #2780e3;\r\n    color: #fff;\r\n}\r\n\r\n.beta {\r\n  background-color: #333;\r\n  color: #ccc;\r\n  border-radius: 3px;\r\n  padding: 2px 5px;\r\n}\r\n\r\n.jumbotron h1 {\r\n    font-size: 12rem;\r\n}\r\n\r\n.jumbotron .lead {\r\n    margin-bottom: 4rem;\r\n}\r\n\r\n.jumbotron .btn-primary {\r\n    background-color: #1967be;\r\n    border-color: #1862b5;\r\n    font-size: 4rem;\r\n}\r\n\r\n.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }\r\n\r\n.toolbar + * { padding-top: 73px; }\r\n\r\n.btn-toolbar { margin: 15px -5px; }\r\n.btn-toolbar form { margin: 0; }\r\n.navbar-bottom { margin-bottom: 0;}\r\n\r\n.navbar-text {\r\n  margin-left: 0;\r\n}\r\n\r\npre {\r\n  margin: 0;\r\n  padding: 0;\r\n  background: none;\r\n  border: none;\r\n}\r\n\r\nbutton .glyphicon {\r\n  line-height: 1.4em;\r\n}\r\n\r\n.table-flex {\r\n  height:100%;\r\n  min-height:100%;\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.table-flex .table-header,\r\n.table-flex .table-body,\r\n.table-flex .table-footer {\r\n  border-top: 1px solid #ccc;\r\n}\r\n\r\n.table-flex .table-column  {\r\n  border-left: 1px solid #ccc;\r\n}\r\n\r\n.table-flex .table-row  {\r\n  border-bottom: 1px solid #ccc;\r\n}\r\n\r\n.table-flex .table-header,\r\n.table-flex .table-footer {\r\n  background-color: #eee;\r\n  flex: 0 0 32px;\r\n  padding-right: 17px;\r\n}\r\n\r\n.table-flex .table-body {\r\n   flex: 1;\r\n   overflow-y: scroll;\r\n}\r\n\r\n.table-flex .table-header .table-column {\r\n  padding: 5px 10px;\r\n  font-weight: bold;\r\n}\r\n\r\n.table-flex .table-row {\r\n  display: flex;\r\n  flex-direction: row;\r\n}\r\n\r\n.table-flex .table-column {\r\n  flex: 1;\r\n}\r\n\r\n.table-flex .table-column:hover {\r\n  background-color: #eee;\r\n}\r\n\r\n.table-flex .table-column input,\r\n.table-flex .table-column textarea {\r\n  font-size: 1.1em;\r\n  border: none;\r\n  box-shadow: none;\r\n  background: transparent;\r\n  resize: none;\r\n  height: 30px;\r\n  padding: 9px 10px;\r\n}\r\n\r\n.table-flex .table-column:first-child {\r\n  flex: 0 0 480px;\r\n}\r\n\r\n.table-flex .table-column:last-child {\r\n  flex: 0 0 55px;\r\n}\r\n\r\n.view {\r\n  height: 100%;\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.view .view-header,\r\n.view .view-footer {\r\n  margin: 0;\r\n  flex: 0 0 50px;\r\n  overflow: hidden;\r\n}\r\n\r\n.view .view-body {\r\n  flex: 1;\r\n  overflow-y: hidden;\r\n  display: flex;\r\n  flex-direction: row;\r\n}\r\n\r\n.view .view-body .sidebar {\r\n  flex: 0 0 45px;\r\n  background-color: rgb(248, 248, 248);\r\n  border-right: 1px solid #eee;\r\n}\r\n\r\n.view .view-body .content {\r\n  flex: 1;\r\n}\r\n", ""]);
 
 	// exports
 
@@ -970,84 +988,6 @@
 /* 5 */
 /***/ function(module, exports) {
 
-	module.exports = {
-		"About": {
-			"en-GB": "About",
-			"da-DK": "Om"
-		},
-		"Cancel": {
-			"en-GB": "Cancel",
-			"da-DK": "Annullér"
-		},
-		"Help": {
-			"en-GB": "Help",
-			"da-DK": "Hjælp"
-		},
-		"License": {
-			"en-GB": "License",
-			"da-DK": "Licens"
-		},
-		"OK": {
-			"en-GB": "Ok",
-			"da-DK": "Ok"
-		},
-		"Repository name": {
-			"en-GB": "Repository name",
-			"da-DK": "Arkivnavn"
-		},
-		"Repository url": {
-			"en-GB": "Repository url",
-			"da-DK": "Arkivadresse"
-		},
-		"Translator App": {
-			"da-DK": "Translator App",
-			"en-GB": "Translator App"
-		},
-		"Key": {
-			"da-DK": "Nøgle",
-			"en-GB": "Key"
-		},
-		"Columns": {
-			"da-DK": "Kolonner",
-			"en-GB": "Columns"
-		},
-		"Checkout": {
-			"da-DK": "Check-ud",
-			"en-GB": "Checkout"
-		},
-		"Order by": {
-			"da-DK": "Sorter efter",
-			"en-GB": "Order by"
-		},
-		"Message": {
-			"en-GB": "Message",
-			"da-DK": "Besked"
-		},
-		"search": {
-			"da-DK": "søg",
-			"en-GB": "search"
-		}
-	};
-
-/***/ },
-/* 6 */
-/***/ function(module, exports) {
-
-	function create(texts, language) {
-	  function getText(text) {
-	    return (texts[text] || {})[language] || text;
-	  }
-
-	  return getText;
-	}
-
-	module.exports = create;
-
-
-/***/ },
-/* 7 */
-/***/ function(module, exports) {
-
 	/*
 	 * angular-elastic v2.5.1
 	 * (c) 2014 Monospaced http://monospaced.com
@@ -1272,7 +1212,7 @@
 
 
 /***/ },
-/* 8 */
+/* 6 */
 /***/ function(module, exports) {
 
 	/*
@@ -9778,6 +9718,84 @@
 	    "");
 	}]);
 	!angular.$$csp() && angular.element(document).find('head').prepend('<style type="text/css">.ng-animate.item:not(.left):not(.right){-webkit-transition:0s ease-in-out left;transition:0s ease-in-out left}</style>');
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	module.exports = {
+		"About": {
+			"en-GB": "About",
+			"da-DK": "Om 1"
+		},
+		"Cancel": {
+			"en-GB": "Cancel",
+			"da-DK": "Annullér"
+		},
+		"Help": {
+			"en-GB": "Help",
+			"da-DK": "Hjælp"
+		},
+		"License": {
+			"en-GB": "License",
+			"da-DK": "Licens"
+		},
+		"OK": {
+			"en-GB": "Ok",
+			"da-DK": "Ok"
+		},
+		"Repository name": {
+			"en-GB": "Repository name",
+			"da-DK": "Arkivnavn"
+		},
+		"Repository url": {
+			"en-GB": "Repository url",
+			"da-DK": "Arkivadresse"
+		},
+		"Translator App": {
+			"da-DK": "Translator App",
+			"en-GB": "Translator App"
+		},
+		"Key": {
+			"da-DK": "Nøgle",
+			"en-GB": "Key"
+		},
+		"Columns": {
+			"da-DK": "Kolonner",
+			"en-GB": "Columns"
+		},
+		"Checkout": {
+			"da-DK": "Check-ud",
+			"en-GB": "Checkout"
+		},
+		"Order by": {
+			"da-DK": "Sorter efter",
+			"en-GB": "Order by"
+		},
+		"Message": {
+			"en-GB": "Message",
+			"da-DK": "Besked"
+		},
+		"search": {
+			"da-DK": "søg",
+			"en-GB": "search"
+		}
+	};
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	function create(texts, language) {
+	  function getText(text) {
+	    return (texts[text] || {})[language] || text;
+	  }
+
+	  return getText;
+	}
+
+	module.exports = create;
+
 
 /***/ }
 /******/ ]);

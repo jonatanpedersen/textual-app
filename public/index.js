@@ -55,6 +55,8 @@ angular.module('app').service('ProjectService', ['$http', '$q', ProjectService])
 angular.module('app').constant('getText', getText);
 angular.module('app').filter('text', ['getText', textFilter]);
 angular.module('app').directive('text', ['getText', textDirective]);
+angular.module('app').directive('viewHeader', [viewHeader]);
+angular.module('app').directive('viewFooter', [viewFooter]);
 
 angular.module('app').config(['$httpProvider', handle401]);
 
@@ -79,16 +81,32 @@ function handle401($httpProvider) {
 function textFilter(getText) {
   return function(text) {
     return getText(text);
-  }
+  };
 }
 
 function textDirective(getText) {
   return {
     restrict: 'A',
-    link: function (scope, elem, attrs) {
+    link: function (scope, elem) {
         elem.html(getText(elem.html()));
     }
-  }
+  };
+}
+
+function viewHeader() {
+  return {
+    transclude: true,
+    templateUrl: 'view-header.html',
+    replace: true
+  };
+}
+
+function viewFooter() {
+  return {
+    transclude: true,
+    templateUrl: 'view-footer.html',
+    replace: true
+  };
 }
 
 function CreateProjectController ($scope, $location, ProjectService, UserService) {
