@@ -53,16 +53,19 @@ export async function main () {
 
     app.use('/api', auth.makeIsAuthenticatedMiddleware());
     app.get('/api/user/profile', users.makeGetUserProfileRouteHandler(users.makeGetUserProfile(db)));
-    app.post('/api/user/profile', users.makePostUserProfileRouteHandler(users.makeUpdateUserProfile(db)));
+    app.put('/api/user/profile', users.makePostUserProfileRouteHandler(users.makeUpdateUserProfile(db)));
     app.get('/api/user/repositories', users.makeGetUserRepositoriesRouteHandler(users.makeGetUserRepositories(db)));
     app.get('/api/user/settings', users.makeGetUserSettingsRouteHandler(users.makeGetUserSettings(db)));
-    app.post('/api/user/settings', users.makePostUserSettingsRouteHandler(users.makeUpdateUserSettings(db)));
-    app.get('/api/projects', projects.makeGetProjectsRouteHandler(projects.makeGetProjects(db)));
-    app.post('/api/projects', projects.makePostProjectsRouteHandler(projects.makeCreateProject(db)));
-    app.get('/api/projects/:projectIdOrName/settings', projects.makeGetProjectSettingsRouteHandler(projects.makeGetProjectSettings(db)));
-    app.post('/api/projects/:projectIdOrName/settings', projects.makePostProjectSettingsRouteHandler(projects.makeUpdateProjectSettings(db)));
-    app.get('/api/projects/:projectIdOrName/repository/texts', projects.makeGetProjectRepositoryTextsRouteHandler(projects.makeGetProject(db), Github));
-    app.patch('/api/projects/:projectIdOrName/repository/texts', projects.makePatchProjectRepositoryTextsRouteHandler(projects.makeGetProject(db), jsonPatch, Github));
+    app.put('/api/user/settings', users.makePostUserSettingsRouteHandler(users.makeUpdateUserSettings(db)));
+    app.get('/api/projects', projects.createGetProjectsRouteHandler(projects.createGetProjects(db)));
+    app.post('/api/projects', projects.createPostProjectsRouteHandler(projects.createCreateProject(db)));
+    app.get('/api/projects/:projectIdOrName', projects.createGetProjectRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db)));
+    app.get('/api/projects/:projectIdOrName/settings', projects.createGetProjectSettingsRouteHandler(projects.createGetProjectId(db), projects.createGetProjectSettings(db)));
+    app.post('/api/projects/:projectIdOrName/rename', projects.createPostProjectRenameRouteHandler(projects.createGetProjectId(db), projects.createRenameProject(db)));
+    app.delete('/api/projects/:projectIdOrName', projects.createDeleteProjectRouteHandler(projects.createGetProjectId(db), projects.createDeleteProject(db)));
+    app.put('/api/projects/:projectIdOrName/settings', projects.createPostProjectSettingsRouteHandler(projects.createGetProjectId(db), projects.createUpdateProjectSettings(db)));
+    app.get('/api/projects/:projectIdOrName/texts', projects.createGetProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), Github));
+    app.patch('/api/projects/:projectIdOrName/texts', projects.createPatchProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), jsonPatch, Github));
 
     app.use('/', express.static('./public'));
     app.use('/*', express.static('./public/index.html'));

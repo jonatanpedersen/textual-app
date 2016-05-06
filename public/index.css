@@ -1,168 +1,140 @@
 * {
+    margin: 0;
     box-sizing: border-box;
 }
 
 html, body {
-  margin:0;
-  height:100%;
-  min-height:100%;
+  height: 100%;
+  min-height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-form {margin : 0}
-
-.dropdown-menu .active {
-  font-weight: bold;
+.container {
+  padding: 20px;
+  width: 50%;
 }
 
-.section { padding: 30px 0;}
-.section-default { }
-.section-primary { background-color: #eee; }
+.form-group {
+  margin-bottom: 20px;
+}
 
-.jumbotron  {
-    background-color: #2780e3;
+.form-control {
+  margin-bottom: 20px;
+}
+
+.btn.btn-primary {
+    background-color: #000;
     color: #fff;
 }
 
-.beta {
-  background-color: #333;
-  color: #ccc;
-  border-radius: 3px;
-  padding: 2px 5px;
+h1 {
+  margin-bottom: 20px;
 }
 
-.jumbotron h1 {
-    font-size: 12rem;
+h2 {
+  margin-bottom: 15px;
 }
 
-.jumbotron .lead {
-    margin-bottom: 4rem;
+h3 {
+  margin-bottom: 10px;
 }
 
-.jumbotron .btn-primary {
-    background-color: #1967be;
-    border-color: #1862b5;
-    font-size: 4rem;
+form {
+  margin-bottom: 20px;
 }
 
-.toolbar { background-color: #eee; margin-bottom: 50px; position: fixed; width: 100%; }
-
-.toolbar + * { padding-top: 73px; }
-
-.btn-toolbar { margin: 15px -5px; }
-.btn-toolbar form { margin: 0; }
-.navbar-bottom { margin-bottom: 0;}
-
-.navbar-text {
-  margin-left: 0;
+fieldset {
+  border: 1px solid #ddd;
+  padding: 15px;
 }
 
-pre {
-  margin: 0;
-  padding: 0;
-  background: none;
-  border: none;
+form.danger fieldset {
+  border-color: #d00000;
 }
 
-button .glyphicon {
-  line-height: 1.4em;
+form.danger legend {
+  color: #d00000;
 }
 
-.table-flex {
-  height:100%;
-  min-height:100%;
-  display: flex;
-  flex-direction: column;
+legend {
+  font-size: 0.7rem;
+  text-transform: uppercase;
 }
-
-.table-flex .table-header,
-.table-flex .table-body,
-.table-flex .table-footer {
-  border-top: 1px solid #ccc;
-}
-
-.table-flex .table-column  {
-  border-left: 1px solid #ccc;
-}
-
-.table-flex .table-row  {
-  border-bottom: 1px solid #ccc;
-}
-
-.table-flex .table-header,
-.table-flex .table-footer {
-  background-color: #eee;
-  flex: 0 0 32px;
-  padding-right: 17px;
-}
-
-.table-flex .table-body {
-   flex: 1;
-   overflow-y: scroll;
-}
-
-.table-flex .table-header .table-column {
-  padding: 5px 10px;
-  font-weight: bold;
-}
-
-.table-flex .table-row {
-  display: flex;
-  flex-direction: row;
-}
-
-.table-flex .table-column {
-  flex: 1;
-}
-
-.table-flex .table-column:hover {
-  background-color: #eee;
-}
-
-.table-flex .table-column input,
-.table-flex .table-column textarea {
-  font-size: 1.1em;
-  border: none;
-  box-shadow: none;
-  background: transparent;
-  resize: none;
+label {
   height: 30px;
-  padding: 9px 10px;
+  display: block;
 }
 
-.table-flex .table-column:first-child {
-  flex: 0 0 480px;
+input, textarea, button, select {
+  display: block;
+  min-height: 30px;
+  padding: 10px;
+  border: 1px solid #ddd;
 }
 
-.table-flex .table-column:last-child {
-  flex: 0 0 55px;
-}
-
-.view {
+.layout {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.view .view-header,
-.view .view-footer {
+.layout .layout-header,
+.layout .layout-footer {
   margin: 0;
   flex: 0 0 50px;
   overflow: hidden;
+  padding: 15px 15px;
+  background-color: #f7f7f7;
 }
 
-.view .view-body {
+.layout .layout-body {
   flex: 1;
   overflow-y: hidden;
   display: flex;
   flex-direction: row;
 }
 
-.view .view-body .sidebar {
-  flex: 0 0 45px;
+.layout .layout-body .sidebar {
+  flex: 0 0 50px;
   background-color: rgb(248, 248, 248);
-  border-right: 1px solid #eee;
 }
 
-.view .view-body .content {
+.layout .layout-body .content {
   flex: 1;
+}
+
+.sidebar {
+  position: relative;
+}
+
+.sidebar-top {
+  position: absolute;
+  top: 0;
+}
+
+.sidebar-bottom {
+  position: absolute;
+  bottom: 0;
+}
+
+
+.button-group {
+  padding: 0;
+  list-style: none;
+}
+
+.button-group-item a {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  padding: 10px;
+  list-style: none;
+  font-size: 25px;
+  vertical-align: middle;
+  text-align: center;
+  text-decoration: none;
+}
+
+.button-group-item a:hover {
+    background-color: #eee;
 }
