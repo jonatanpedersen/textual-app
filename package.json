@@ -39,7 +39,7 @@
     "express-logger": "0.0.3",
     "express-session": "^1.12.1",
     "file-loader": "^0.8.5",
-    "get-text": "git+ssh://github.com/jonatanpedersen/get-text.git",
+    "get-text": "git+https://github.com/jonatanpedersen/get-text.git",
     "github-api": "^2.2.0",
     "imports-loader": "^0.6.5",
     "json-loader": "^0.5.4",
@@ -56,7 +56,7 @@
     "react-octicon": "^2.0.0",
     "react-router": "^2.4.0",
     "style-loader": "^0.13.1",
-    "textual-app-texts": "git+ssh://github.com/jonatanpedersen/textual-app-texts.git",
+    "textual-app-texts": "git+https://github.com/jonatanpedersen/textual-app-texts.git",
     "url-loader": "^0.5.7",
     "webpack": "^1.13.0",
     "whatwg-fetch": "^1.0.0"
