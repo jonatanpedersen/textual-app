@@ -1,10 +1,9 @@
 import React from 'react';
 import { render } from 'react-dom';
-import { Router, Route, IndexRoute, Link, browserHistory } from 'react-router';
-import { Icon } from './components/Icon';
+import { Router, Route, IndexRoute, IndexRedirect, Link, browserHistory } from 'react-router';
 import * as api from './api';
 import { NewProject, Projects, ProjectLayout, ProjectTexts, ProjectMetrics, ProjectSettings } from './projects';
-import { UserProfile, UserSettings, UserLogout } from './user';
+import { User, UserProfile, UserSettings } from './user';
 import { Home } from './home';
 import { Layout } from './layout';
 
@@ -14,7 +13,7 @@ export function main () {
   render((
     <Router history={browserHistory}>
       <Route path="/" component={Layout}>
-        <IndexRoute component={Home}/>
+        <IndexRedirect to="/projects" />
         <Route path="/projects/new" component={NewProject} />
         <Route path="/projects">
           <IndexRoute component={Projects}/>
@@ -24,11 +23,7 @@ export function main () {
             <Route path="/projects/:projectName/settings" component={ProjectSettings} />
           </Route>
         </Route>
-        <Route path="/user">
-          <Route path="/user/profile" component={UserProfile} />
-          <Route path="/user/settings" component={UserSettings} />
-          <Route path="/user/logout" component={UserLogout} />
-        </Route>
+        <Route path="/user" component={User} />
       </Route>
     </Router>
   ), mainElement);

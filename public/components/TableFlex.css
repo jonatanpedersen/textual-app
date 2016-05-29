@@ -1,71 +1,73 @@
 .table-flex {
-  height:100%;
-  min-height:100%;
-  display: flex;
-  flex-direction: column;
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	display: flex;
+	flex-direction: column;
 }
 
 .table-flex .table-header,
-.table-flex .table-body,
-.table-flex .table-footer {
-  border-top: 1px solid #ccc;
+.table-flex .table-body {
+	border-bottom: 1px solid #eee;
 }
 
-.table-flex .table-column  {
-  border-left: 1px solid #ccc;
+.table-flex .table-row	{
+	border-bottom: 1px solid #eee;
 }
 
-.table-flex .table-row  {
-  border-bottom: 1px solid #ccc;
+.table-flex .table-header .table-row:last-child,
+.table-flex .table-footer .table-row:last-child	{
+	border-bottom: none;
 }
 
 .table-flex .table-header,
 .table-flex .table-footer {
-  background-color: #eee;
-  flex: 0 0 32px;
-  padding-right: 17px;
+	flex: none;
 }
 
 .table-flex .table-body {
-   flex: 1;
-   overflow-y: scroll;
+	 flex: 1;
+	 overflow-y: scroll;
 }
 
 .table-flex .table-header .table-column {
-  padding: 5px 10px;
-  font-weight: bold;
+	font-weight: bold;
 }
 
 .table-flex .table-row {
-  display: flex;
-  flex-direction: row;
+	display: flex;
+	flex-direction: row;
 }
 
-.table-flex .table-column {
-  flex: 1;
+.table-flex .table-column	{
+	flex: 1;
+	border-right: 1px solid #eee;
+	overflow: hidden;
 }
 
-.table-flex .table-column:hover {
-  background-color: #eee;
+.table-flex .table-column:last-child	{
+	border-right: none;
 }
 
+
+.table-flex .table-column span,
 .table-flex .table-column input,
 .table-flex .table-column textarea {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 1.1em;
-  border: none;
-  box-shadow: none;
-  background: transparent;
-  resize: none;
-  height: 30px;
-  padding: 9px 10px;
-  width: 100%;
+	line-height: 1.25rem;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 1em;
+	border: none;
+	box-shadow: none;
+	background: transparent;
+	resize: none;
+	padding: 0.75rem;
+	display: block;
+	width: 100%;
+	white-space: pre;
 }
 
-.table-flex .table-column:first-child {
-  flex: 0 0 480px;
-}
-
-.table-flex .table-column:last-child {
-  flex: 0 0 55px;
+.table-flex .table-column textarea {
+	background-color: #f7f7f7;
 }

@@ -1,0 +1,30 @@
+@import '../variables';
+
+.button {
+	display: inline-block;
+	padding: 0.75rem;
+	cursor: pointer;
+	background-color: transparent;
+	border-width: 1;
+	border-color: $border-color;
+	border-style: solid;
+
+	&.button--small {
+		padding: 0.5rem;
+	}
+
+	&.button--large {
+		padding: 1rem;
+		font-size: 1.25rem;
+	}
+
+	&.button--primary {
+		border-color: $primary-color;
+		background-color: $primary-color;
+		color: #fff
+	}
+
+	&.button--secondary {
+		background-color: $secondary-color;
+	}
+}

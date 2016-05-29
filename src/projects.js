@@ -26,7 +26,7 @@ export function createCreateProject (db) {
 			name: projectName,
 			repositoryUrl: repositoryUrl,
 			settings: {
-				languages: ['en']
+				languages: ['en-GB', 'da-DK']
 			}
 		};
 
@@ -90,7 +90,7 @@ export function createDeleteProject (db) {
 export function createPostProjectsRouteHandler (createProject) {
 	return async (req, res, next) => {
 		try {
-			let projectName = req.params.projectName;
+			let projectName = req.body.projectName;
 			let repositoryUrl = req.body.repositoryUrl;
 
 			await createProject(projectName, repositoryUrl);
@@ -119,6 +119,19 @@ export function createGetProjectRouteHandler (getProjectId, getProject) {
 			let projectId = await getProjectId(projectIdOrName);
 			let project = await getProject(projectId);
 			res.json(project);
+		} catch (err) {
+			next(err);
+		}
+	};
+}
+
+export function createGetProjectMetricsRouteHandler (getProjectId, getProjectMetrics) {
+	return async (req, res, next) => {
+		try {
+			let projectIdOrName = req.params.projectIdOrName;
+			let projectId = await getProjectId(projectIdOrName);
+			let projectMetrics = await getProjectMetrics(projectId);
+			res.json(projectMetrics);
 		} catch (err) {
 			next(err);
 		}

@@ -26,8 +26,10 @@
     "babel-plugin-transform-runtime": "^6.8.0",
     "babel-preset-es2015": "^6.3.13",
     "babel-preset-es2015-node": "^6.0.1",
+    "babel-preset-es2017": "^1.3.1",
     "babel-preset-react": "^6.5.0",
     "body-parser": "^1.15.1",
+    "classnames": "^2.2.5",
     "cnf": "^3.0.1",
     "cookie-parser": "^1.4.0",
     "css-loader": "^0.23.0",
@@ -37,7 +39,7 @@
     "express-logger": "0.0.3",
     "express-session": "^1.12.1",
     "file-loader": "^0.8.5",
-    "get-text": "git+https://github.com/jonatanpedersen/get-text.git",
+    "get-text": "git+ssh://github.com/jonatanpedersen/get-text.git",
     "github": "^0.2.4",
     "github-api": "^1.1.0",
     "imports-loader": "^0.6.5",
@@ -50,10 +52,12 @@
     "passport": "^0.3.2",
     "passport-github": "^1.0.0",
     "react": "^15.0.2",
+    "react-autosize-textarea": "^0.3.0",
     "react-dom": "^15.0.2",
+    "react-octicon": "^2.0.0",
     "react-router": "^2.4.0",
     "style-loader": "^0.13.1",
-    "textual-app-texts": "git+https://github.com/jonatanpedersen/textual-app-texts.git",
+    "textual-app-texts": "git+ssh://github.com/jonatanpedersen/textual-app-texts.git",
     "url-loader": "^0.5.7",
     "webpack": "^1.13.0",
     "whatwg-fetch": "^1.0.0"
@@ -61,5 +65,10 @@
   "engines": {
     "node": "6.1.0",
     "npm": "3.8.5"
+  },
+  "devDependencies": {
+    "node-sass": "^3.7.0",
+    "sass-loader": "^3.2.0",
+    "webpack": "^1.13.0"
   }
 }

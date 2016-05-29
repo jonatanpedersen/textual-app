@@ -1,3 +1,16 @@
+export function del (url) {
+	return fetch(url, {
+		credentials: 'same-origin',
+	  method: 'DELETE',
+	  headers: {
+	    'Accept': 'application/json'
+	  }
+	})
+	.then(handleUnauthorized)
+	.then(checkStatus)
+  .then(parseJSON);
+}
+
 export function get (url) {
 	return fetch(url, {
 		credentials: 'same-origin',

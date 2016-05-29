@@ -1,10 +1,10 @@
 import React from 'react';
-import ContainerStyles from './Container.scss';
+import ButtonStyles from './ButtonGroup.scss';
 import classnames from 'classnames';
 
-export class Container extends React.Component {
+export class ButtonGroup extends React.Component {
 	render() {
-		let className = classnames('container', this.props.className);
+		let className = classnames('button-group', this.props.className);
 
 		return (
 			<div className={className}>

@@ -1,12 +1,13 @@
 import React from 'react';
+import { Link } from 'react-router';
+import { DefaultLayout } from './layout';
 
 export class Home extends React.Component {
   render() {
     return (
-      <div>
-        <a href="/projects">Projects</a>
-        {this.props.children}
-      </div>
+      <DefaultLayout>
+        <Link to="/projects">Projects</Link>
+      </DefaultLayout>
     );
   }
 }
