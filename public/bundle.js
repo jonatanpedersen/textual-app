@@ -26794,7 +26794,7 @@
 /* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -27820,7 +27820,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.DeleteProjectButton = exports.DeleteProjectForm = exports.RenameProjectButton = exports.RenameProjectForm = exports.ProjectSettings = exports.ProjectMetricsTable = exports.ProjectMetrics = exports.AddProjectTextButton = exports.RemoveProjectTextButton = exports.ProjectTexts = exports.ProjectLayout = exports.ProjectDropdown = exports.ProjectsTableRow = exports.ProjectsTable = exports.Projects = exports.NewProjectButton = exports.CreateProjectButton = exports.NewProjectForm = exports.NewProject = exports.getProjectTexts = exports.updateProjectSettings = exports.deleteProject = exports.renameProject = exports.getProjectSettings = exports.getProjectMetrics = exports.createProject = exports.getProject = exports.getProjects = undefined;
+	exports.DeleteProjectButton = exports.DeleteProjectForm = exports.RenameProjectButton = exports.RenameProjectForm = exports.ProjectSettings = exports.ProjectMetricsTable = exports.ProjectMetrics = exports.ProjectTexts = exports.ProjectLayout = exports.ProjectDropdown = exports.ProjectsTableRow = exports.ProjectsTable = exports.Projects = exports.NewProjectButton = exports.CreateProjectButton = exports.NewProjectForm = exports.NewProject = exports.getProjectTexts = exports.updateProjectSettings = exports.deleteProject = exports.renameProject = exports.getProjectSettings = exports.getProjectMetrics = exports.createProject = exports.getProject = exports.getProjects = undefined;
 
 	var _keys = __webpack_require__(311);
 
@@ -27997,7 +27997,6 @@
 	}
 
 	function addProjectText(projectIdOrName, textId, text) {
-		console.log(arguments);
 		return patchProjectTexts(projectIdOrName, [{
 			op: 'add',
 			path: '/' + textId,
@@ -28629,209 +28628,8 @@
 			});
 		}
 	}
-	exports.ProjectTexts = ProjectTexts; //
-	// export class ProjectTexts extends React.Component	{
-	// 	constructor(props) {
-	// 		super(props);
-	// 		this.state = {};
-	// 		this.handleRemoveTextButtonClick = this.handleRemoveTextButtonClick.bind(this);
-	// 		this.handleTextChange = this.handleTextChange.bind(this);
-	// 		this.handleTextKeyChange = this.handleTextKeyChange.bind(this);
-	// 		this.handleTextClick = this.handleTextClick.bind(this);
-	// 		this.fetch();
-	// 	}
-	//
-	// 	fetch () {
-	// 		getProjectSettings(this.props.params.projectName).then(projectSettings => {
-	// 			getProjectTexts(this.props.params.projectName).then(projectTexts => {
-	// 				this.setState({projectSettings, projectTexts});
-	// 			});
-	// 		});
-	// 	}
-	//
-	// 	handleRemoveTextButtonClick (textId) {
-	// 		removeProjectText(this.props.params.projectName, textId).then(() => {
-	// 			let projectTexts = this.state.projectTexts;
-	// 			delete projectTexts[textId];
-	// 			this.setState({projectTexts});
-	// 		});
-	// 	}
-	//
-	// 	handleTextChange (textId, language, event) {
-	// 		let projectTexts = this.state.projectTexts;
-	// 		projectTexts[textId][language] = event.target.value;
-	// 		this.setState({projectTexts});
-	// 	}
-	//
-	// 	handleTextKeyChange (textId, event) {
-	// 		let newTextId = event.target.value;
-	//
-	// 		console.log(textId, newTextId);
-	//
-	// 		//let projectTexts = this.state.projectTexts;
-	// 		//projectTexts[textId][language] = event.target.value;
-	// 		//this.setState({projectTexts});
-	// 	}
-	//
-	// 	handleTextClick (selectedTextId, selectedLanguage) {
-	// 		this.setState({selectedTextId, selectedLanguage});
-	// 	}
-	//
-	// 	render() {
-	// 		return (
-	// 			<TableFlex className="project-texts-table">
-	// 				<TableFlex.Header>
-	// 					<TableFlex.Row>
-	// 						<TableFlex.Column>Text Id</TableFlex.Column>
-	// 						{this.state.projectSettings && this.state.projectSettings.languages.map(language => {
-	// 							return (
-	// 								<TableFlex.Column key={language}>{language}</TableFlex.Column>
-	// 							);
-	// 						})}
-	// 						<TableFlex.Column></TableFlex.Column>
-	// 					</TableFlex.Row>
-	// 				</TableFlex.Header>
-	// 				<TableFlex.Body>
-	// 					{this.state.projectTexts && Object.keys(this.state.projectTexts).map(textId => {
-	// 						return (
-	// 							<TableFlex.Row key={textId}>
-	// 								<TableFlex.Column>
-	// 									<AutosizeTextarea onChange={this.handleTextKeyChange.bind(this, textId)} value={textId}></AutosizeTextarea>
-	// 								</TableFlex.Column>
-	// 								{this.state.projectSettings.languages.map(language => {
-	// 									if (textId === this.state.selectedTextId && language === this.state.selectedLanguage) {
-	// 										return (
-	// 											<TableFlex.Column key={language}>
-	// 												<AutosizeTextarea onChange={this.handleTextChange.bind(this, textId, language)} value={this.state.projectTexts[textId][language]}></AutosizeTextarea>
-	// 											</TableFlex.Column>
-	// 										);
-	// 									} else {
-	// 										return (
-	// 											<TableFlex.Column key={language} onClick={this.handleTextClick.bind(this, textId, language)}>
-	// 												{this.state.projectTexts[textId][language]}
-	// 											</TableFlex.Column>
-	// 										);
-	// 									}
-	// 								})}
-	// 								<TableFlex.Column>
-	// 									<RemoveProjectTextButton onClick={this.handleRemoveTextButtonClick.bind(this, textId)}/>
-	// 								</TableFlex.Column>
-	// 							</TableFlex.Row>
-	// 						);
-	// 					})}
-	// 				</TableFlex.Body>
-	// 				<TableFlex.Footer>
-	// 					<TableFlex.Row>
-	// 						<TableFlex.Column>
-	// 							<AutosizeTextarea placeholder="Text Id"></AutosizeTextarea>
-	// 						</TableFlex.Column>
-	// 						{this.state.projectSettings && this.state.projectSettings.languages.map(language => {
-	// 							return (
-	// 								<TableFlex.Column key={language}>
-	// 									<AutosizeTextarea placeholder={language}></AutosizeTextarea>
-	// 								</TableFlex.Column>
-	// 							);
-	// 						})}
-	// 						<TableFlex.Column>
-	// 							<AddProjectTextButton />
-	// 						</TableFlex.Column>
-	// 					</TableFlex.Row>
-	// 				</TableFlex.Footer>
-	// 			</TableFlex>
-	// 		);
-	// 	}
-	// }
 
-	// export class ProjectTextsTable extends React.Component	{
-	// 	render() {
-	// 		let texts = {this.props.projectTexts && Object.keys(this.props.projectTexts).map(textId => {
-	//
-	// 		return (
-	// 			<TableFlex className="project-texts-table">
-	// 				<TableFlex.Header>
-	// 					<TableFlex.Row>
-	// 						<TableFlex.Column>Text Id</TableFlex.Column>
-	// 						{this.props.languages(language => {
-	// 							return (
-	// 								<TableFlex.Column key={language}>{language}</TableFlex.Column>
-	// 							);
-	// 						})}
-	// 						<TableFlex.Column></TableFlex.Column>
-	// 					</TableFlex.Row>
-	// 				</TableFlex.Header>
-	// 				<TableFlex.Body>
-	// 					{this.props.projectTexts && Object.keys(this.props.projectTexts).map(textId => {
-	// 						return (
-	// 							<TableFlex.Row key={textId}>
-	// 								<TableFlex.Column>
-	// 									<AutosizeTextarea onChange={this.handleTextKeyChange.bind(this, textId)} value={textId}></AutosizeTextarea>
-	// 								</TableFlex.Column>
-	// 								{this.state.props.languages.map(language => {
-	// 									if (textId === this.state.selectedTextId && language === this.state.selectedLanguage) {
-	// 										return (
-	// 											<TableFlex.Column key={language}>
-	// 												<AutosizeTextarea onChange={this.handleTextChange.bind(this, textId, language)} value={this.state.projectTexts[textId][language]}></AutosizeTextarea>
-	// 											</TableFlex.Column>
-	// 										);
-	// 									} else {
-	// 										return (
-	// 											<TableFlex.Column key={language} onClick={this.handleTextClick.bind(this, textId, language)}>
-	// 												{this.state.projectTexts[textId][language]}
-	// 											</TableFlex.Column>
-	// 										);
-	// 									}
-	// 								})}
-	// 								<TableFlex.Column>
-	// 									<RemoveProjectTextButton onClick={this.handleRemoveTextButtonClick.bind(this, textId)}/>
-	// 								</TableFlex.Column>
-	// 							</TableFlex.Row>
-	// 						);
-	// 					})}
-	// 				</TableFlex.Body>
-	// 				<TableFlex.Footer>
-	// 					<TableFlex.Row>
-	// 						<TableFlex.Column>
-	// 							<AutosizeTextarea placeholder="Text Id"></AutosizeTextarea>
-	// 						</TableFlex.Column>
-	// 						{this.state.projectSettings && this.state.projectSettings.languages.map(language => {
-	// 							return (
-	// 								<TableFlex.Column key={language}>
-	// 									<AutosizeTextarea placeholder={language}></AutosizeTextarea>
-	// 								</TableFlex.Column>
-	// 							);
-	// 						})}
-	// 						<TableFlex.Column>
-	// 							<AddProjectTextButton />
-	// 						</TableFlex.Column>
-	// 					</TableFlex.Row>
-	// 				</TableFlex.Footer>
-	// 			</TableFlex>
-	// 		);
-	// 	}
-	// }
-
-	class RemoveProjectTextButton extends _react2.default.Component {
-		render() {
-			return _react2.default.createElement(
-				_Button.Button,
-				{ onClick: this.props.onClick, size: 'small' },
-				_react2.default.createElement(_reactOcticon2.default, { name: 'trashcan' })
-			);
-		}
-	}
-
-	exports.RemoveProjectTextButton = RemoveProjectTextButton;
-	class AddProjectTextButton extends _react2.default.Component {
-		render() {
-			return _react2.default.createElement(
-				_Button.Button,
-				{ onClick: this.props.onClick },
-				_react2.default.createElement(_reactOcticon2.default, { name: 'plus' })
-			);
-		}
-	}
-
-	exports.AddProjectTextButton = AddProjectTextButton;
+	exports.ProjectTexts = ProjectTexts;
 	class ProjectMetrics extends _react2.default.Component {
 		constructor(props) {
 			super(props);
