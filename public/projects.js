@@ -548,20 +548,24 @@ export class ProjectTexts extends React.Component	{
 	}
 
 	render() {
-		return (
-			<DataBoundFlexTable
-				data={this.state.data}
-				value={this.state.value}
-				columnIndex={this.state.columnIndex}
-				rowIndex={this.state.rowIndex}
-				newRow={this.state.newRow}
-				onCellBlur={this.handleCellBlur}
-				onCellChange={this.handleCellChange}
-				onCellClick={this.handleCellClick}
-				onRemoveRowButtonClick={this.handleRemoveRowButtonClick}
-				onAddRowButtonClick={this.handleAddRowButtonClick}
-			/>
-		);
+		if (this.state.data) {
+			return (
+				<DataBoundFlexTable
+					data={this.state.data}
+					value={this.state.value}
+					columnIndex={this.state.columnIndex}
+					rowIndex={this.state.rowIndex}
+					newRow={this.state.newRow}
+					onCellBlur={this.handleCellBlur}
+					onCellChange={this.handleCellChange}
+					onCellClick={this.handleCellClick}
+					onRemoveRowButtonClick={this.handleRemoveRowButtonClick}
+					onAddRowButtonClick={this.handleAddRowButtonClick}
+				/>
+			);
+		}
+
+		return <Loading />
 	}
 }
 
@@ -786,7 +790,9 @@ export class DeleteProjectButton extends React.Component	{
 export class Loading extends React.Component	{
 	render() {
 		return (
-			<Octicon name="plus" spin={true} />
+			<div className="loading">
+				<Octicon name="clock" spin={true} />
+			</div>
 		);
 	}
 }

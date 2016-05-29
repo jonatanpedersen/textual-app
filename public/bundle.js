@@ -91,7 +91,7 @@
 
 
 	// module
-	exports.push([module.id, "* {\r\n    margin: 0;\r\n    box-sizing: border-box;\r\n}\r\n\r\nhtml, body {\r\n  height: 100%;\r\n  min-height: 100%;\r\n  font-family: Arial, Helvetica, sans-serif;\r\n  font-size: 15px;\r\n}\r\n\r\n.content {\r\n  flex: 1;\r\n  position: relative;\r\n\toverflow-y:auto;\r\n}\r\n\r\ntable {\r\n    border-spacing: 0;\r\n    border-collapse: collapse;\r\n}\r\n\r\n.table {\r\n    width: 100%;\r\n    max-width: 100%;\r\n}\r\n\r\n.table>tbody>tr>td,.table>tbody>tr>th,.table>tfoot>tr>td,.table>tfoot>tr>th,.table>thead>tr>td,.table>thead>tr>th {\r\n    padding: 8px;\r\n    line-height: 1.42857143;\r\n    vertical-align: top;\r\n    border-top: 1px solid #ddd\r\n}\r\n\r\n.table>thead>tr>th {\r\n    vertical-align: bottom;\r\n    border-bottom: 2px solid #ddd\r\n}\r\n\r\n.table>caption+thead>tr:first-child>td,.table>caption+thead>tr:first-child>th,.table>colgroup+thead>tr:first-child>td,.table>colgroup+thead>tr:first-child>th,.table>thead:first-child>tr:first-child>td,.table>thead:first-child>tr:first-child>th {\r\n    border-top: 0\r\n}\r\n\r\n.table>tbody+tbody {\r\n    border-top: 2px solid #ddd\r\n}\r\n\r\ntable col[class*=col-] {\r\n    position: static;\r\n    display: table-column;\r\n    float: none\r\n}\r\n\r\ntable td[class*=col-],table th[class*=col-] {\r\n    position: static;\r\n    display: table-cell;\r\n    float: none\r\n}\r\n\r\n.text {\r\n  text-align: left;\r\n}\r\n\r\n.number {\r\n  text-align: right;\r\n}\r\n\r\na {\r\n\ttext-decoration: none;\r\n\tcolor: #000;\r\n}\r\n\r\n\r\n::-webkit-scrollbar {\r\n\tdisplay: none;\r\n}\r\n\r\ninput, textarea, select {\r\n outline: none;\r\n}\r\n", ""]);
+	exports.push([module.id, "* {\r\n    margin: 0;\r\n    box-sizing: border-box;\r\n}\r\n\r\nhtml, body {\r\n  height: 100%;\r\n  min-height: 100%;\r\n  font-family: Arial, Helvetica, sans-serif;\r\n  font-size: 15px;\r\n}\r\n\r\n.content {\r\n  flex: 1;\r\n  position: relative;\r\n\toverflow-y:auto;\r\n}\r\n\r\ntable {\r\n    border-spacing: 0;\r\n    border-collapse: collapse;\r\n}\r\n\r\n.table {\r\n    width: 100%;\r\n    max-width: 100%;\r\n}\r\n\r\n.table>tbody>tr>td,.table>tbody>tr>th,.table>tfoot>tr>td,.table>tfoot>tr>th,.table>thead>tr>td,.table>thead>tr>th {\r\n    padding: 8px;\r\n    line-height: 1.42857143;\r\n    vertical-align: top;\r\n    border-top: 1px solid #ddd\r\n}\r\n\r\n.table>thead>tr>th {\r\n    vertical-align: bottom;\r\n    border-bottom: 2px solid #ddd\r\n}\r\n\r\n.table>caption+thead>tr:first-child>td,.table>caption+thead>tr:first-child>th,.table>colgroup+thead>tr:first-child>td,.table>colgroup+thead>tr:first-child>th,.table>thead:first-child>tr:first-child>td,.table>thead:first-child>tr:first-child>th {\r\n    border-top: 0\r\n}\r\n\r\n.table>tbody+tbody {\r\n    border-top: 2px solid #ddd\r\n}\r\n\r\ntable col[class*=col-] {\r\n    position: static;\r\n    display: table-column;\r\n    float: none\r\n}\r\n\r\ntable td[class*=col-],table th[class*=col-] {\r\n    position: static;\r\n    display: table-cell;\r\n    float: none\r\n}\r\n\r\n.text {\r\n  text-align: left;\r\n}\r\n\r\n.number {\r\n  text-align: right;\r\n}\r\n\r\na {\r\n\ttext-decoration: none;\r\n\tcolor: #000;\r\n}\r\n\r\n\r\n::-webkit-scrollbar {\r\n\tdisplay: none;\r\n}\r\n\r\ninput, textarea, select {\r\n outline: none;\r\n}\r\n\r\n.loading {\r\n\tposition: absolute;\r\n\tmargin-top: -4rem;\r\n\tmargin-left: -4rem;\r\n\ttop: 50%;\r\n\tleft: 50%;\r\n\tbottom: 0;\r\n\tright: 0;\r\n\tcolor: #ccc;\r\n}\r\n\r\n.octicon.octicon-clock.spin-octicon {\r\n\tfont-size: 8rem !important;\r\n}\r\n", ""]);
 
 	// exports
 
@@ -28618,18 +28618,22 @@
 		}
 
 		render() {
-			return _react2.default.createElement(_TableFlex.DataBoundFlexTable, {
-				data: this.state.data,
-				value: this.state.value,
-				columnIndex: this.state.columnIndex,
-				rowIndex: this.state.rowIndex,
-				newRow: this.state.newRow,
-				onCellBlur: this.handleCellBlur,
-				onCellChange: this.handleCellChange,
-				onCellClick: this.handleCellClick,
-				onRemoveRowButtonClick: this.handleRemoveRowButtonClick,
-				onAddRowButtonClick: this.handleAddRowButtonClick
-			});
+			if (this.state.data) {
+				return _react2.default.createElement(_TableFlex.DataBoundFlexTable, {
+					data: this.state.data,
+					value: this.state.value,
+					columnIndex: this.state.columnIndex,
+					rowIndex: this.state.rowIndex,
+					newRow: this.state.newRow,
+					onCellBlur: this.handleCellBlur,
+					onCellChange: this.handleCellChange,
+					onCellClick: this.handleCellClick,
+					onRemoveRowButtonClick: this.handleRemoveRowButtonClick,
+					onAddRowButtonClick: this.handleAddRowButtonClick
+				});
+			}
+
+			return _react2.default.createElement(Loading, null);
 		}
 	}
 
@@ -28926,7 +28930,11 @@
 	exports.DeleteProjectButton = DeleteProjectButton;
 	class Loading extends _react2.default.Component {
 		render() {
-			return _react2.default.createElement(_reactOcticon2.default, { name: 'plus', spin: true });
+			return _react2.default.createElement(
+				'div',
+				{ className: 'loading' },
+				_react2.default.createElement(_reactOcticon2.default, { name: 'clock', spin: true })
+			);
 		}
 	}
 	exports.Loading = Loading;

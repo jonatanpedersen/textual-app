@@ -79,3 +79,18 @@ a {
 input, textarea, select {
  outline: none;
 }
+
+.loading {
+	position: absolute;
+	margin-top: -4rem;
+	margin-left: -4rem;
+	top: 50%;
+	left: 50%;
+	bottom: 0;
+	right: 0;
+	color: #ccc;
+}
+
+.octicon.octicon-clock.spin-octicon {
+	font-size: 8rem !important;
+}
