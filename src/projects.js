@@ -50,6 +50,14 @@ export function createGetProjects (db) {
 	};
 }
 
+export function createGetProjectsByRepositoryUrls (db) {
+	return async function getProjectsByRepositoryUrls (repositoryUrls) {
+		return db.collection('projects')
+			.find({repositoryUrl: { $in: repositoryUrls}})
+			.toArray();
+	};
+}
+
 export function createGetProjectSettings (db) {
 	return async function getProjectSettings (projectId) {
 		return db.collection('projects')
@@ -101,10 +109,13 @@ export function createPostProjectsRouteHandler (createProject) {
 	};
 }
 
-export function createGetProjectsRouteHandler (getProjects) {
+export function createGetProjectsRouteHandler (getProjectsByRepositoryUrls, getUserRepositories) {
 	return async (req, res, next) => {
 		try {
-			let projects = await getProjects();
+			let userRepositories = await getUserRepositories(req.user.id);
+			let userRepositoryUrls = userRepositories.map(userRepository => userRepository.url);
+
+			let projects = await getProjectsByRepositoryUrls(userRepositoryUrls);
 			res.json(projects);
 		} catch (err) {
 			next(err);
@@ -228,7 +239,7 @@ export function createPatchProjectTextsRouteHandler (getProjectId, getProject, j
 				token: req.user.github.accessToken,
 				auth: "oauth"
 			});
-			
+
 			let projectIdOrName = req.params.projectIdOrName;
 			let projectId = await getProjectId(projectIdOrName);
 			let project = await getProject(projectId);

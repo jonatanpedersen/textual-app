@@ -8,7 +8,7 @@ import fs from 'fs';
 import path  from 'path';
 import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github';
-import config from 'cnf';
+import cnf from 'cnf';
 import url from 'url';
 import mkdirp from 'mkdirp';
 import jsonPatch from 'json-patch';
@@ -24,21 +24,21 @@ import { makeSerializeUser, makeDeserializeUser, makeGitHubStrategyCallback } fr
 export async function main () {
   try {
     let app = express();
-    let db = await connectToMongoDB(mongodb, config.mongodb.connectionString);
+    let db = await connectToMongoDB(mongodb, cnf.mongodb.connectionString);
 
     passport.serializeUser(makeSerializeUser());
     passport.deserializeUser(makeDeserializeUser(users.makeGetUser(db)));
     passport.use(new GitHubStrategy({
-        clientID: config.github.client_id,
-        clientSecret: config.github.client_secret,
-        callbackURL: config.github.callback_url
+        clientID: cnf.github.client_id,
+        clientSecret: cnf.github.client_secret,
+        callbackURL: cnf.github.callback_url
       },
-      makeGitHubStrategyCallback(users.makeGetUserGitHubRepositories(GitHub), users.makeUpdateUserGitHub(db))
+      makeGitHubStrategyCallback(users.makeGetUserGitHubRepositories(GitHub), users.makeUpdateUserGitHub(db), (user) => cnf.github.authorizedUsers.includes(user))
     ));
 
     app.use(cookieParser());
     app.use(bodyParser.json());
-    app.use(session(config.session));
+    app.use(session(cnf.session));
     app.use(passport.initialize());
     app.use(passport.session());
 
@@ -56,7 +56,7 @@ export async function main () {
     app.get('/api/user/repositories', users.makeGetUserRepositoriesRouteHandler(users.makeGetUserRepositories(db)));
     app.get('/api/user/settings', users.makeGetUserSettingsRouteHandler(users.makeGetUserSettings(db)));
     app.put('/api/user/settings', users.makePostUserSettingsRouteHandler(users.makeUpdateUserSettings(db)));
-    app.get('/api/projects', projects.createGetProjectsRouteHandler(projects.createGetProjects(db)));
+    app.get('/api/projects', projects.createGetProjectsRouteHandler(projects.createGetProjectsByRepositoryUrls(db), users.makeGetUserRepositories(db)));
     app.post('/api/projects', projects.createPostProjectsRouteHandler(projects.createCreateProject(db)));
     app.get('/api/projects/:projectIdOrName', projects.createGetProjectRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db)));
     app.get('/api/projects/:projectIdOrName/settings', projects.createGetProjectSettingsRouteHandler(projects.createGetProjectId(db), projects.createGetProjectSettings(db)));
@@ -71,8 +71,8 @@ export async function main () {
 
     app.use(error.makeErrorMiddleware());
 
-    app.listen(config.port, () => {
-      console.log(`textual-app listening on port ${config.port}`);
+    app.listen(cnf.port, () => {
+      console.log(`textual-app listening on port ${cnf.port}`);
     });
   } catch (ex) {
     console.log(ex, ex.stack);
