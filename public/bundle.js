@@ -26794,7 +26794,7 @@
 /* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -27820,7 +27820,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.DeleteProjectButton = exports.DeleteProjectForm = exports.RenameProjectButton = exports.RenameProjectForm = exports.ProjectSettings = exports.ProjectMetricsTable = exports.ProjectMetrics = exports.ProjectTexts = exports.ProjectLayout = exports.ProjectDropdown = exports.ProjectsTableRow = exports.ProjectsTable = exports.Projects = exports.NewProjectButton = exports.CreateProjectButton = exports.NewProjectForm = exports.NewProject = exports.getProjectTexts = exports.updateProjectSettings = exports.deleteProject = exports.renameProject = exports.getProjectSettings = exports.getProjectMetrics = exports.createProject = exports.getProject = exports.getProjects = undefined;
+	exports.Loading = exports.DeleteProjectButton = exports.DeleteProjectForm = exports.UpdateProjectSettingsButton = exports.ProjectSettingsForm = exports.RenameProjectButton = exports.RenameProjectForm = exports.ProjectSettings = exports.ProjectMetricsTable = exports.ProjectMetrics = exports.ProjectTexts = exports.ProjectLayout = exports.ProjectDropdown = exports.ProjectsTableRow = exports.ProjectsTable = exports.Projects = exports.NewProjectButton = exports.CreateProjectButton = exports.NewProjectForm = exports.NewProject = exports.getProjectTexts = exports.updateProjectSettings = exports.deleteProject = exports.renameProject = exports.getProjectSettings = exports.getProjectMetrics = exports.createProject = exports.getProject = exports.getProjects = undefined;
 
 	var _keys = __webpack_require__(311);
 
@@ -28251,16 +28251,20 @@
 		}
 
 		render() {
-			return _react2.default.createElement(
-				_Layout2.DefaultLayout,
-				null,
-				_react2.default.createElement(
-					_Container.Container,
+			if (this.state.projects) {
+				return _react2.default.createElement(
+					_Layout2.DefaultLayout,
 					null,
-					_react2.default.createElement(ProjectsTable, { projects: this.state.projects }),
-					_react2.default.createElement(NewProjectButton, null)
-				)
-			);
+					_react2.default.createElement(
+						_Container.Container,
+						null,
+						_react2.default.createElement(ProjectsTable, { projects: this.state.projects }),
+						_react2.default.createElement(NewProjectButton, null)
+					)
+				);
+			}
+
+			return _react2.default.createElement(Loading, null);
 		}
 	}
 
@@ -28706,22 +28710,17 @@
 		constructor(props) {
 			super(props);
 			this.state = {};
-			this.handleRenameProjectFormSubmit = this.handleRenameProjectFormSubmit.bind(this);
+			this.handleUpdateProjectSettingsFormSubmit = this.handleUpdateProjectSettingsFormSubmit.bind(this);
 			this.handleDeleteProjectFormSubmit = this.handleDeleteProjectFormSubmit.bind(this);
+			this.handleRenameProjectFormSubmit = this.handleRenameProjectFormSubmit.bind(this);
+			this.handleProjectSettingsFormBlur = this.handleProjectSettingsFormBlur.bind(this);
+			this.handleProjectSettingsFormChange = this.handleProjectSettingsFormChange.bind(this);
 			this.fetch();
 		}
 
 		fetch() {
 			getProject(this.props.params.projectName).then(project => {
 				this.setState({ project });
-			});
-		}
-
-		handleRenameProjectFormSubmit(newProjectName, event) {
-			event.preventDefault();
-
-			renameProject(this.props.params.projectName, newProjectName).then(() => {
-				_reactRouter.browserHistory.push(`/projects/${ newProjectName }/settings`);
 			});
 		}
 
@@ -28733,13 +28732,53 @@
 			});
 		}
 
+		handleRenameProjectFormSubmit(newProjectName, event) {
+			event.preventDefault();
+
+			renameProject(this.props.params.projectName, newProjectName).then(() => {
+				_reactRouter.browserHistory.push(`/projects/${ newProjectName }/settings`);
+			});
+		}
+
+		handleProjectSettingsFormBlur(event) {
+			event.preventDefault();
+			let project = this.state.project;
+
+			if (typeof project.settings.languages === 'string') {
+				project.settings.languages = project.settings.languages.split(/[\s\n,;]+/).filter(function (value) {
+					return value !== null && value !== undefined && value !== '';
+				});
+
+				this.setState({ project });
+			}
+		}
+
+		handleProjectSettingsFormChange(event) {
+			event.preventDefault();
+
+			let project = this.state.project;
+			project.settings.languages = event.target.value;
+
+			this.setState({ project });
+		}
+
+		handleUpdateProjectSettingsFormSubmit(event) {
+			event.preventDefault();
+			updateProjectSettings(this.props.params.projectName, this.state.project.settings);
+		}
+
 		render() {
-			return _react2.default.createElement(
-				_Container.Container,
-				null,
-				_react2.default.createElement(RenameProjectForm, { project: this.state.project, onSubmit: this.handleRenameProjectFormSubmit }),
-				_react2.default.createElement(DeleteProjectForm, { project: this.state.project, onSubmit: this.handleDeleteProjectFormSubmit })
-			);
+			if (this.state.project) {
+				return _react2.default.createElement(
+					_Container.Container,
+					null,
+					_react2.default.createElement(ProjectSettingsForm, { project: this.state.project, onBlur: this.handleProjectSettingsFormBlur, onChange: this.handleProjectSettingsFormChange, onSubmit: this.handleUpdateProjectSettingsFormSubmit }),
+					_react2.default.createElement(RenameProjectForm, { project: this.state.project, onSubmit: this.handleRenameProjectFormSubmit }),
+					_react2.default.createElement(DeleteProjectForm, { project: this.state.project, onSubmit: this.handleDeleteProjectFormSubmit })
+				);
+			}
+
+			return _react2.default.createElement(Loading, null);
 		}
 	}
 
@@ -28748,7 +28787,7 @@
 		constructor(props) {
 			super(props);
 			this.state = {
-				newProjectName: ''
+				newProjectName: props.project.name
 			};
 
 			this.handleNewProjectNameChange = this.handleNewProjectNameChange.bind(this);
@@ -28808,6 +28847,47 @@
 	}
 
 	exports.RenameProjectButton = RenameProjectButton;
+	class ProjectSettingsForm extends _react2.default.Component {
+		render() {
+			return _react2.default.createElement(
+				_Forms.Form,
+				{ onSubmit: this.props.onSubmit.bind(this) },
+				_react2.default.createElement(
+					_Forms.Form.Header,
+					null,
+					'Project Settings'
+				),
+				_react2.default.createElement(
+					_Forms.Form.Body,
+					null,
+					_react2.default.createElement(
+						_Paragraph.Paragraph,
+						null,
+						_react2.default.createElement(
+							'label',
+							{ htmlFor: 'languages' },
+							'Languages'
+						),
+						_react2.default.createElement(_reactAutosizeTextarea2.default, { id: 'languages', type: 'text', onChange: this.props.onChange, onBlur: this.props.onBlur, value: this.props.project.settings.languages })
+					),
+					_react2.default.createElement(UpdateProjectSettingsButton, null)
+				)
+			);
+		}
+	}
+
+	exports.ProjectSettingsForm = ProjectSettingsForm;
+	class UpdateProjectSettingsButton extends _react2.default.Component {
+		render() {
+			return _react2.default.createElement(
+				_Button.Button,
+				{ type: 'submit', color: 'primary', className: 'update-project-settings-button' },
+				'Update Project Settings'
+			);
+		}
+	}
+
+	exports.UpdateProjectSettingsButton = UpdateProjectSettingsButton;
 	class DeleteProjectForm extends _react2.default.Component {
 		render() {
 			return _react2.default.createElement(
@@ -28842,7 +28922,14 @@
 			);
 		}
 	}
+
 	exports.DeleteProjectButton = DeleteProjectButton;
+	class Loading extends _react2.default.Component {
+		render() {
+			return _react2.default.createElement(_reactOcticon2.default, { name: 'plus', spin: true });
+		}
+	}
+	exports.Loading = Loading;
 
 /***/ },
 /* 244 */
