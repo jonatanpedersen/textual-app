@@ -192,10 +192,10 @@ export function createPostProjectRenameRouteHandler (getProjectId, renameProject
 	};
 }
 
-export function createGetProjectTextsRouteHandler (getProjectId, getProject, Github) {
+export function createGetProjectTextsRouteHandler (getProjectId, getProject, GitHub) {
 	return async function getProjectTextsRouteHandler (req, res, next) {
 		try {
-			let github = new Github({
+			let github = new GitHub({
 				token: req.user.github.accessToken,
 				auth: 'oauth'
 			});
@@ -221,14 +221,14 @@ export function createGetProjectTextsRouteHandler (getProjectId, getProject, Git
 	};
 }
 
-export function createPatchProjectTextsRouteHandler (getProjectId, getProject, jsonPatch, Github) {
+export function createPatchProjectTextsRouteHandler (getProjectId, getProject, jsonPatch, GitHub) {
 	return async function patchProjectTextsRouteHandler (req, res, next) {
 		try {
-			let github = new Github({
+			let github = new GitHub({
 				token: req.user.github.accessToken,
 				auth: "oauth"
 			});
-
+			
 			let projectIdOrName = req.params.projectIdOrName;
 			let projectId = await getProjectId(projectIdOrName);
 			let project = await getProject(projectId);
@@ -263,7 +263,7 @@ export function createPatchProjectTextsRouteHandler (getProjectId, getProject, j
 						committer: committer
 					};
 
-					repo.write(branchName, filePath, newData, message, options, function(err) {
+					repo.writeFile(branchName, filePath, newData, message, options, function(err) {
 						if (err) {
 							return next(err);
 						}

@@ -26262,6 +26262,7 @@
 
 	exports.del = del;
 	exports.get = get;
+	exports.patch = patch;
 	exports.post = post;
 	exports.put = put;
 
@@ -26284,6 +26285,18 @@
 				'Accept': 'application/json'
 			},
 			method: 'GET'
+		}).then(handleUnauthorized).then(checkStatus).then(parseJSON);
+	}
+
+	function patch(url, data) {
+		return fetch(url, {
+			body: (0, _stringify2.default)(data),
+			credentials: 'same-origin',
+			method: 'PATCH',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			}
 		}).then(handleUnauthorized).then(checkStatus).then(parseJSON);
 	}
 
@@ -26781,7 +26794,7 @@
 /* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -27809,10 +27822,6 @@
 	});
 	exports.DeleteProjectButton = exports.DeleteProjectForm = exports.RenameProjectButton = exports.RenameProjectForm = exports.ProjectSettings = exports.ProjectMetricsTable = exports.ProjectMetrics = exports.AddProjectTextButton = exports.RemoveProjectTextButton = exports.ProjectTexts = exports.ProjectLayout = exports.ProjectDropdown = exports.ProjectsTableRow = exports.ProjectsTable = exports.Projects = exports.NewProjectButton = exports.CreateProjectButton = exports.NewProjectForm = exports.NewProject = exports.getProjectTexts = exports.updateProjectSettings = exports.deleteProject = exports.renameProject = exports.getProjectSettings = exports.getProjectMetrics = exports.createProject = exports.getProject = exports.getProjects = undefined;
 
-	var _promise = __webpack_require__(244);
-
-	var _promise2 = _interopRequireDefault(_promise);
-
 	var _keys = __webpack_require__(311);
 
 	var _keys2 = _interopRequireDefault(_keys);
@@ -27919,9 +27928,13 @@
 	})();
 
 	exports.updateProjectTexts = updateProjectTexts;
-	exports.removeProjectText = removeProjectText;
+	exports.patchProjectTexts = patchProjectTexts;
 	exports.addProjectText = addProjectText;
-	exports.updateProjectText = updateProjectText;
+	exports.addProjectTextValue = addProjectTextValue;
+	exports.replaceProjectTextValue = replaceProjectTextValue;
+	exports.removeProjectTextValue = removeProjectTextValue;
+	exports.removeProjectText = removeProjectText;
+	exports.moveProjectText = moveProjectText;
 
 	var _react = __webpack_require__(6);
 
@@ -27979,16 +27992,55 @@
 		return (0, _api.put)(`/api/projects/${ projectIdOrName }/texts`, newProjectTexts);
 	}
 
+	function patchProjectTexts(projectIdOrName, projectTextsPatch) {
+		return (0, _api.patch)(`/api/projects/${ projectIdOrName }/texts`, projectTextsPatch);
+	}
+
+	function addProjectText(projectIdOrName, textId, text) {
+		console.log(arguments);
+		return patchProjectTexts(projectIdOrName, [{
+			op: 'add',
+			path: '/' + textId,
+			value: text
+		}]);
+	}
+
+	function addProjectTextValue(projectIdOrName, textId, languageCode, value) {
+		return patchProjectTexts(projectIdOrName, [{
+			op: 'add',
+			path: '/' + textId + '/' + languageCode,
+			value: value
+		}]);
+	}
+
+	function replaceProjectTextValue(projectIdOrName, textId, languageCode, value) {
+		return patchProjectTexts(projectIdOrName, [{
+			op: 'replace',
+			path: '/' + textId + '/' + languageCode,
+			value: value
+		}]);
+	}
+
+	function removeProjectTextValue(projectIdOrName, textId, languageCode) {
+		return patchProjectTexts(projectIdOrName, [{
+			op: 'remove',
+			path: '/' + textId + '/' + languageCode
+		}]);
+	}
+
 	function removeProjectText(projectIdOrName, textId) {
-		return _promise2.default.resolve();
+		return patchProjectTexts(projectIdOrName, [{
+			op: 'remove',
+			path: '/' + textId
+		}]);
 	}
 
-	function addProjectText(projectIdOrName, text) {
-		return _promise2.default.resolve();
-	}
-
-	function updateProjectText(projectIdOrName, text) {
-		return _promise2.default.resolve();
+	function moveProjectText(projectIdOrName, fromTextId, toTextId) {
+		return patchProjectTexts(projectIdOrName, [{
+			op: 'move',
+			from: '/' + fromTextId,
+			path: '/' + toTextId
+		}]);
 	}
 
 	class NewProject extends _react2.default.Component {
@@ -28045,9 +28097,17 @@
 				selectedUserRepository: event.target.value,
 				repositoryUrl: event.target.value
 			});
+
+			if (this.state.projectName === '') {
+				let projectName = this.state.userRepositories.find(repo => repo.url === event.target.value).name;
+
+				this.setState({ projectName });
+			}
 		}
 
 		render() {
+			let sortedUserRepositories = this.state.userRepositories.sort((a, b) => a.name.localeCompare(b.name));
+
 			return _react2.default.createElement(
 				_Layout2.DefaultLayout,
 				null,
@@ -28061,7 +28121,7 @@
 						onUserRepositoryChange: this.handleUserRepositoryChange,
 						projectName: this.state.projectName,
 						repositoryUrl: this.state.repositoryUrl,
-						userRepositories: this.state.userRepositories,
+						userRepositories: sortedUserRepositories,
 						selectedUserRepository: this.state.selectedUserRepository
 					})
 				)
@@ -28448,9 +28508,11 @@
 		constructor(props) {
 			super(props);
 			this.state = {};
-			this.handleChange = this.handleChange.bind(this);
-			this.handleBlur = this.handleBlur.bind(this);
-			this.handleClick = this.handleClick.bind(this);
+			this.handleCellChange = this.handleCellChange.bind(this);
+			this.handleCellBlur = this.handleCellBlur.bind(this);
+			this.handleCellClick = this.handleCellClick.bind(this);
+			this.handleAddRowButtonClick = this.handleAddRowButtonClick.bind(this);
+			this.handleRemoveRowButtonClick = this.handleRemoveRowButtonClick.bind(this);
 			this.fetch(props.params.projectName);
 		}
 
@@ -28467,32 +28529,46 @@
 						return [textId, ...projectSettings.languages.map(language => projectTexts[textId][language])];
 					})];
 
-					this.setState({ data });
+					let newRow = ['Text Id', ...projectSettings.languages];
+
+					this.setState({ data, newRow, rowIndex: -1, columnIndex: -1 });
 				});
 			});
 		}
 
-		handleChange(event) {
+		handleCellChange(event) {
 			let value = event.target.value;
 
 			this.setState({ value });
 		}
 
-		handleBlur(event) {
-			let oldValue = this.state.data[this.state.rowIndex][this.state.columnIndex];
+		handleCellBlur(event) {
 			let newValue = this.state.value;
+
+			if (this.state.rowIndex === -1) {
+				let newRow = this.state.newRow;
+				newRow[this.state.columnIndex] = newValue;
+				this.setState({ newRow });
+				return;
+			}
+
+			let oldValue = this.state.data[this.state.rowIndex][this.state.columnIndex];
 
 			if (oldValue === newValue) {
 				return;
 			}
 
 			if (this.state.columnIndex === 0) {
-				console.log(`PUT texts/${ oldValue }`, newValue);
+				moveProjectText(this.props.params.projectName, oldValue, newValue);
 			} else {
 				let textId = this.state.data[this.state.rowIndex][0];
 				let language = this.state.data[0][this.state.columnIndex];
 
-				console.log(`PUT texts/${ textId }/${ language }`, oldValue, newValue);
+				if (oldValue === undefined) {
+					addProjectTextValue(this.props.params.projectName, textId, language, newValue);
+				} else {
+					replaceProjectTextValue(this.props.params.projectName, textId, language, newValue);
+				}
 			}
 
 			let data = this.state.data;
@@ -28500,10 +28576,42 @@
 			this.setState({ data });
 		}
 
-		handleClick(rowIndex, columnIndex) {
-			let value = this.state.data[rowIndex][columnIndex];
+		handleCellClick(rowIndex, columnIndex) {
+			let row = rowIndex === -1 ? this.state.newRow : this.state.data[rowIndex];
+			let value = row[columnIndex];
 
 			this.setState({ rowIndex, columnIndex, value });
+		}
+
+		handleAddRowButtonClick(rowIndex) {
+			let data = this.state.data;
+			let newRow = this.state.newRow;
+
+			let textId = newRow[0];
+			let newText = data[0].slice(1).reduce((newText, language, index) => {
+				newText[language] = newRow[index];
+
+				return newText;
+			}, {});
+
+			addProjectText(this.props.params.projectName, textId, newText).then(() => {
+				data.push(newRow);
+				let rowIndex = null;
+				let columnIndex = null;
+				newRow = [...data[0]];
+
+				this.setState({ data, rowIndex, columnIndex, newRow });
+			});
+		}
+
+		handleRemoveRowButtonClick(rowIndex) {
+			let data = this.state.data;
+			let textId = data[rowIndex][0];
+
+			removeProjectText(this.props.params.projectName, textId).then(() => {
+				data.splice(rowIndex, 1);
+				this.setState({ data });
+			});
 		}
 
 		render() {
@@ -28512,9 +28620,12 @@
 				value: this.state.value,
 				columnIndex: this.state.columnIndex,
 				rowIndex: this.state.rowIndex,
-				onBlur: this.handleBlur,
-				onChange: this.handleChange,
-				onClick: this.handleClick
+				newRow: this.state.newRow,
+				onCellBlur: this.handleCellBlur,
+				onCellChange: this.handleCellChange,
+				onCellClick: this.handleCellClick,
+				onRemoveRowButtonClick: this.handleRemoveRowButtonClick,
+				onAddRowButtonClick: this.handleAddRowButtonClick
 			});
 		}
 	}
@@ -31337,7 +31448,7 @@
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+			value: true
 	});
 	exports.DataBoundFlexTable = exports.TableFlex = exports.TableFlexColumn = exports.TableFlexRow = exports.TableFlexFooter = exports.TableFlexBody = exports.TableFlexHeader = undefined;
 
@@ -31359,83 +31470,87 @@
 
 	var _Button = __webpack_require__(316);
 
+	var _reactOcticon = __webpack_require__(347);
+
+	var _reactOcticon2 = _interopRequireDefault(_reactOcticon);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	class TableFlexHeader extends _react2.default.Component {
-	  render() {
-	    let className = (0, _classnames2.default)('table-header', this.props.className);
+			render() {
+					let className = (0, _classnames2.default)('table-header', this.props.className);
 
-	    return _react2.default.createElement(
-	      'div',
-	      { className: className },
-	      this.props.children
-	    );
-	  }
+					return _react2.default.createElement(
+							'div',
+							{ className: className },
+							this.props.children
+					);
+			}
 	}
 
 	exports.TableFlexHeader = TableFlexHeader;
 	class TableFlexBody extends _react2.default.Component {
-	  render() {
-	    let className = (0, _classnames2.default)('table-body', this.props.className);
+			render() {
+					let className = (0, _classnames2.default)('table-body', this.props.className);
 
-	    return _react2.default.createElement(
-	      'div',
-	      { className: className },
-	      this.props.children
-	    );
-	  }
+					return _react2.default.createElement(
+							'div',
+							{ className: className },
+							this.props.children
+					);
+			}
 	}
 
 	exports.TableFlexBody = TableFlexBody;
 	class TableFlexFooter extends _react2.default.Component {
-	  render() {
-	    let className = (0, _classnames2.default)('table-footer', this.props.className);
+			render() {
+					let className = (0, _classnames2.default)('table-footer', this.props.className);
 
-	    return _react2.default.createElement(
-	      'div',
-	      { className: className },
-	      this.props.children
-	    );
-	  }
+					return _react2.default.createElement(
+							'div',
+							{ className: className },
+							this.props.children
+					);
+			}
 	}
 
 	exports.TableFlexFooter = TableFlexFooter;
 	class TableFlexRow extends _react2.default.Component {
-	  render() {
-	    let className = (0, _classnames2.default)('table-row', this.props.className);
+			render() {
+					let className = (0, _classnames2.default)('table-row', this.props.className);
 
-	    return _react2.default.createElement(
-	      'div',
-	      { className: className },
-	      this.props.children
-	    );
-	  }
+					return _react2.default.createElement(
+							'div',
+							{ className: className },
+							this.props.children
+					);
+			}
 	}
 
 	exports.TableFlexRow = TableFlexRow;
 	class TableFlexColumn extends _react2.default.Component {
-	  render() {
-	    let className = (0, _classnames2.default)('table-column', this.props.className);
+			render() {
+					let className = (0, _classnames2.default)('table-column', this.props.className);
 
-	    return _react2.default.createElement(
-	      'div',
-	      { className: className, onClick: this.props.onClick },
-	      this.props.children
-	    );
-	  }
+					return _react2.default.createElement(
+							'div',
+							{ className: className, onClick: this.props.onClick },
+							this.props.children
+					);
+			}
 	}
 
 	exports.TableFlexColumn = TableFlexColumn;
 	class TableFlex extends _react2.default.Component {
-	  render() {
-	    let className = (0, _classnames2.default)('table-flex', this.props.className);
+			render() {
+					let className = (0, _classnames2.default)('table-flex', this.props.className);
 
-	    return _react2.default.createElement(
-	      'div',
-	      { className: className },
-	      this.props.children
-	    );
-	  }
+					return _react2.default.createElement(
+							'div',
+							{ className: className },
+							this.props.children
+					);
+			}
 	}
 
 	exports.TableFlex = TableFlex;
@@ -31446,56 +31561,95 @@
 	TableFlex.Column = TableFlexColumn;
 
 	class DataBoundFlexTable extends _react2.default.Component {
-	  render() {
-	    let rows = this.props.data && this.props.data.slice(1).map((row, rowIndex) => {
-	      rowIndex++;
-	      return _react2.default.createElement(
-	        TableFlex.Row,
-	        { key: rowIndex },
-	        row.map((column, columnIndex) => {
-	          return _react2.default.createElement(
-	            TableFlex.Column,
-	            { key: columnIndex, onClick: this.props.onClick && this.props.onClick.bind(this, rowIndex, columnIndex) },
-	            this.props.rowIndex === rowIndex && this.props.columnIndex === columnIndex && _react2.default.createElement(_reactAutosizeTextarea2.default, { autoFocus: true, onChange: this.props.onChange, onBlur: this.props.onBlur, value: this.props.value }),
-	            (this.props.rowIndex !== rowIndex || this.props.columnIndex !== columnIndex) && _react2.default.createElement(
-	              'span',
-	              null,
-	              row[columnIndex]
-	            )
-	          );
-	        })
-	      );
-	    });
+			render() {
+					let rows = this.props.data && this.props.data.slice(1).map((row, rowIndex) => {
+							rowIndex++;
+							return _react2.default.createElement(
+									TableFlex.Row,
+									{ key: rowIndex },
+									row.map((column, columnIndex) => {
+											return _react2.default.createElement(
+													TableFlex.Column,
+													{ key: columnIndex, onClick: this.props.onCellClick && this.props.onCellClick.bind(this, rowIndex, columnIndex) },
+													this.props.rowIndex === rowIndex && this.props.columnIndex === columnIndex && _react2.default.createElement(_reactAutosizeTextarea2.default, { autoFocus: true, onChange: this.props.onCellChange, onBlur: this.props.onCellBlur, value: this.props.value }),
+													(this.props.rowIndex !== rowIndex || this.props.columnIndex !== columnIndex) && _react2.default.createElement(
+															'span',
+															null,
+															row[columnIndex]
+													)
+											);
+									}),
+									_react2.default.createElement(
+											TableFlex.Column,
+											null,
+											_react2.default.createElement(
+													_Button.Button,
+													{ color: 'primary', onClick: this.props.onRemoveRowButtonClick && this.props.onRemoveRowButtonClick.bind(this, rowIndex) },
+													_react2.default.createElement(_reactOcticon2.default, { name: 'trashcan' })
+											)
+									)
+							);
+					});
 
-	    return _react2.default.createElement(
-	      TableFlex,
-	      null,
-	      _react2.default.createElement(
-	        TableFlex.Header,
-	        null,
-	        _react2.default.createElement(
-	          TableFlex.Row,
-	          null,
-	          this.props.data && this.props.data[0].map(column => {
-	            return _react2.default.createElement(
-	              TableFlex.Column,
-	              { key: column },
-	              _react2.default.createElement(
-	                'span',
-	                null,
-	                column
-	              )
-	            );
-	          })
-	        )
-	      ),
-	      _react2.default.createElement(
-	        TableFlex.Body,
-	        null,
-	        rows
-	      )
-	    );
-	  }
+					return _react2.default.createElement(
+							TableFlex,
+							null,
+							_react2.default.createElement(
+									TableFlex.Header,
+									null,
+									_react2.default.createElement(
+											TableFlex.Row,
+											null,
+											this.props.data && this.props.data[0].map(column => {
+													return _react2.default.createElement(
+															TableFlex.Column,
+															{ key: column },
+															_react2.default.createElement(
+																	'span',
+																	null,
+																	column
+															)
+													);
+											}),
+											_react2.default.createElement(TableFlex.Column, null)
+									)
+							),
+							_react2.default.createElement(
+									TableFlex.Body,
+									null,
+									rows
+							),
+							_react2.default.createElement(
+									TableFlex.Footer,
+									null,
+									_react2.default.createElement(
+											TableFlex.Row,
+											null,
+											this.props.data && this.props.data[0].map((column, columnIndex) => {
+													return _react2.default.createElement(
+															TableFlex.Column,
+															{ key: columnIndex, onClick: this.props.onCellClick && this.props.onCellClick.bind(this, -1, columnIndex) },
+															this.props.rowIndex === -1 && this.props.columnIndex === columnIndex && _react2.default.createElement(_reactAutosizeTextarea2.default, { autoFocus: true, onChange: this.props.onCellChange, onBlur: this.props.onCellBlur, value: this.props.value }),
+															(this.props.rowIndex !== -1 || this.props.columnIndex !== columnIndex) && _react2.default.createElement(
+																	'span',
+																	null,
+																	this.props.newRow && this.props.newRow[columnIndex]
+															)
+													);
+											}),
+											_react2.default.createElement(
+													TableFlex.Column,
+													null,
+													_react2.default.createElement(
+															_Button.Button,
+															{ color: 'primary', onClick: this.props.onAddRowButtonClick && this.props.onAddRowButtonClick.bind(this, -1) },
+															_react2.default.createElement(_reactOcticon2.default, { name: 'plus' })
+													)
+											)
+									)
+							)
+					);
+			}
 	}
 	exports.DataBoundFlexTable = DataBoundFlexTable;
 
@@ -31534,7 +31688,7 @@
 
 
 	// module
-	exports.push([module.id, ".table-flex {\r\n\tposition: absolute;\r\n\ttop: 0;\r\n\tright: 0;\r\n\tbottom: 0;\r\n\tleft: 0;\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n}\r\n\r\n.table-flex .table-header,\r\n.table-flex .table-body {\r\n\tborder-bottom: 1px solid #eee;\r\n}\r\n\r\n.table-flex .table-row\t{\r\n\tborder-bottom: 1px solid #eee;\r\n}\r\n\r\n.table-flex .table-header .table-row:last-child,\r\n.table-flex .table-footer .table-row:last-child\t{\r\n\tborder-bottom: none;\r\n}\r\n\r\n.table-flex .table-header,\r\n.table-flex .table-footer {\r\n\tflex: none;\r\n}\r\n\r\n.table-flex .table-body {\r\n\t flex: 1;\r\n\t overflow-y: scroll;\r\n}\r\n\r\n.table-flex .table-header .table-column {\r\n\tfont-weight: bold;\r\n}\r\n\r\n.table-flex .table-row {\r\n\tdisplay: flex;\r\n\tflex-direction: row;\r\n}\r\n\r\n.table-flex .table-column\t{\r\n\tflex: 1;\r\n\tborder-right: 1px solid #eee;\r\n\toverflow: hidden;\r\n}\r\n\r\n.table-flex .table-column:last-child\t{\r\n\tborder-right: none;\r\n}\r\n\r\n\r\n.table-flex .table-column span,\r\n.table-flex .table-column input,\r\n.table-flex .table-column textarea {\r\n\tline-height: 1.25rem;\r\n\tfont-family: Arial, Helvetica, sans-serif;\r\n\tfont-size: 1em;\r\n\tborder: none;\r\n\tbox-shadow: none;\r\n\tbackground: transparent;\r\n\tresize: none;\r\n\tpadding: 0.75rem;\r\n\tdisplay: block;\r\n\twidth: 100%;\r\n\twhite-space: pre;\r\n}\r\n\r\n.table-flex .table-column textarea {\r\n\tbackground-color: #f7f7f7;\r\n}\r\n", ""]);
+	exports.push([module.id, ".table-flex {\r\n\tposition: absolute;\r\n\ttop: 0;\r\n\tright: 0;\r\n\tbottom: 0;\r\n\tleft: 0;\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n}\r\n\r\n.table-flex .table-header,\r\n.table-flex .table-body {\r\n\tborder-bottom: 1px solid #eee;\r\n}\r\n\r\n.table-flex .table-row\t{\r\n\tborder-bottom: 1px solid #eee;\r\n}\r\n\r\n.table-flex .table-header .table-row:last-child,\r\n.table-flex .table-footer .table-row:last-child\t{\r\n\tborder-bottom: none;\r\n}\r\n\r\n.table-flex .table-header,\r\n.table-flex .table-footer {\r\n\tflex: none;\r\n}\r\n\r\n.table-flex .table-body {\r\n\t flex: 1;\r\n\t overflow-y: scroll;\r\n}\r\n\r\n.table-flex .table-header .table-column {\r\n\tfont-weight: bold;\r\n}\r\n\r\n.table-flex .table-row {\r\n\tdisplay: flex;\r\n\tflex-direction: row;\r\n}\r\n\r\n.table-flex .table-column\t{\r\n\tflex: 1;\r\n\tborder-right: 1px solid #eee;\r\n\toverflow: hidden;\r\n}\r\n\r\n.table-flex .table-column:last-child\t{\r\n\tborder-right: none;\r\n\tflex: 0 0 40px;\r\n}\r\n\r\n\r\n.table-flex .table-column > span,\r\n.table-flex .table-column > input,\r\n.table-flex .table-column > textarea {\r\n\tline-height: 1.25rem;\r\n\tfont-size: 1em;\r\n\tborder: none;\r\n\tbox-shadow: none;\r\n\tbackground: transparent;\r\n\tresize: none;\r\n\tpadding: 0.75rem;\r\n\tdisplay: block;\r\n\twidth: 100%;\r\n\twhite-space: pre;\r\n}\r\n\r\n.table-flex .table-column > textarea {\r\n\tbackground-color: #f7f7f7;\r\n}\r\n", ""]);
 
 	// exports
 

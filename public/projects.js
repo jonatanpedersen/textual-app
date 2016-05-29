@@ -10,7 +10,7 @@ import { Layout } from './components/Layout';
 import { Brand } from './components/Brand';
 import { DefaultLayout } from './Layout';
 import { DataBoundFlexTable, TableFlex } from './components/TableFlex';
-import { del, get, put, post } from './api';
+import { del, get, patch, put, post } from './api';
 import { getUserRepositories } from './user';
 import AutosizeTextarea from 'react-autosize-textarea';
 import Octicon from 'react-octicon';
@@ -72,17 +72,68 @@ export function updateProjectTexts(projectIdOrName, newProjectTexts) {
 	return put(`/api/projects/${projectIdOrName}/texts`, newProjectTexts);
 }
 
-export function removeProjectText(projectIdOrName, textId) {
-	return Promise.resolve();
+export function patchProjectTexts(projectIdOrName, projectTextsPatch) {
+	return patch(`/api/projects/${projectIdOrName}/texts`, projectTextsPatch);
 }
 
-export function addProjectText(projectIdOrName, text) {
-	return Promise.resolve();
-}
+export function addProjectText(projectIdOrName, textId, text) {
+	console.log(arguments);
+	 return patchProjectTexts(projectIdOrName, [
+		 {
+			 op: 'add',
+			 path: '/' + textId,
+			 value: text
+		 }
+	 ]);
+ }
 
-export function updateProjectText(projectIdOrName, text) {
-	return Promise.resolve();
-}
+ export function addProjectTextValue(projectIdOrName, textId, languageCode, value) {
+	 return patchProjectTexts(projectIdOrName, [
+		 {
+			 op: 'add',
+			 path: '/' + textId + '/' + languageCode,
+			 value: value
+		 }
+	 ]);
+ }
+
+ export function replaceProjectTextValue(projectIdOrName, textId, languageCode, value) {
+	 return patchProjectTexts(projectIdOrName, [
+		 {
+			 op: 'replace',
+			 path: '/' + textId + '/' + languageCode,
+			 value: value
+		 }
+	 ]);
+ }
+
+ export function removeProjectTextValue(projectIdOrName, textId, languageCode) {
+	 return patchProjectTexts(projectIdOrName, [
+		 {
+			 op: 'remove',
+			 path: '/' + textId + '/' + languageCode
+		 }
+	 ]);
+ }
+
+ export function removeProjectText(projectIdOrName, textId) {
+	 return patchProjectTexts(projectIdOrName, [
+		 {
+			 op: 'remove',
+			 path: '/' + textId
+		 }
+	 ]);
+ }
+
+ export function moveProjectText(projectIdOrName, fromTextId, toTextId) {
+	 return patchProjectTexts(projectIdOrName, [
+		 {
+			 op: 'move',
+			 from: '/' + fromTextId,
+			 path: '/' + toTextId
+		 }
+	 ]);
+ }
 
 export class NewProject extends React.Component {
 	constructor(props) {
@@ -138,9 +189,17 @@ export class NewProject extends React.Component {
 			selectedUserRepository: event.target.value,
 			repositoryUrl: event.target.value
 		});
+
+		if (this.state.projectName === '') {
+			let projectName = this.state.userRepositories.find(repo => repo.url === event.target.value).name;
+
+			this.setState({ projectName });
+		}
 	}
 
 	render () {
+		let sortedUserRepositories = this.state.userRepositories.sort((a, b) => a.name.localeCompare(b.name));
+
 		return (
 			<DefaultLayout>
 				<Container>
@@ -151,7 +210,7 @@ export class NewProject extends React.Component {
 						onUserRepositoryChange={this.handleUserRepositoryChange}
 						projectName={this.state.projectName}
 						repositoryUrl={this.state.repositoryUrl}
-						userRepositories={this.state.userRepositories}
+						userRepositories={sortedUserRepositories}
 						selectedUserRepository={this.state.selectedUserRepository}
 					/>
 				</Container>
@@ -378,10 +437,12 @@ export class ProjectLayout extends React.Component {
 export class ProjectTexts extends React.Component	{
 	constructor(props) {
 		super(props);
-		this.state = {};
-		this.handleChange = this.handleChange.bind(this);
-		this.handleBlur = this.handleBlur.bind(this);
-		this.handleClick = this.handleClick.bind(this);
+		this.state = { };
+		this.handleCellChange = this.handleCellChange.bind(this);
+		this.handleCellBlur = this.handleCellBlur.bind(this);
+		this.handleCellClick = this.handleCellClick.bind(this);
+		this.handleAddRowButtonClick = this.handleAddRowButtonClick.bind(this);
+		this.handleRemoveRowButtonClick = this.handleRemoveRowButtonClick.bind(this);
 		this.fetch(props.params.projectName);
 	}
 
@@ -398,32 +459,46 @@ export class ProjectTexts extends React.Component	{
 					return [textId, ...projectSettings.languages.map(language => projectTexts[textId][language])];
 				})];
 
-				this.setState({data});
+				let newRow = ['Text Id', ...projectSettings.languages];
+
+				this.setState({data, newRow, rowIndex: -1, columnIndex: -1});
 			});
 		});
 	}
 
-	handleChange (event) {
+	handleCellChange (event) {
 		let value = event.target.value;
 
 		this.setState({ value });
 	}
 
-	handleBlur (event) {
-		let oldValue = this.state.data[this.state.rowIndex][this.state.columnIndex];
+	handleCellBlur (event) {
 		let newValue = this.state.value;
+
+		if (this.state.rowIndex === -1) {
+			let newRow = this.state.newRow;
+			newRow[this.state.columnIndex] = newValue;
+			this.setState({newRow});
+			return;
+		}
+
+		let oldValue = this.state.data[this.state.rowIndex][this.state.columnIndex];
 
 		if (oldValue === newValue) {
 			return;
 		}
 
 		if (this.state.columnIndex === 0) {
-			console.log(`PUT texts/${oldValue}`, newValue);
+			moveProjectText(this.props.params.projectName, oldValue, newValue);
 		} else {
 			let textId = this.state.data[this.state.rowIndex][0];
 			let language = this.state.data[0][this.state.columnIndex];
 
-			console.log(`PUT texts/${textId}/${language}`, oldValue, newValue);
+			if (oldValue === undefined) {
+				addProjectTextValue(this.props.params.projectName, textId, language, newValue);
+			} else {
+				replaceProjectTextValue(this.props.params.projectName, textId, language, newValue);
+			}
 		}
 
 		let data = this.state.data;
@@ -431,10 +506,42 @@ export class ProjectTexts extends React.Component	{
 		this.setState({ data });
 	}
 
-	handleClick (rowIndex, columnIndex) {
-		let value = this.state.data[rowIndex][columnIndex];
+	handleCellClick (rowIndex, columnIndex) {
+		let row = rowIndex === -1 ? this.state.newRow : this.state.data[rowIndex];
+		let value = row[columnIndex];
 
 		this.setState({ rowIndex, columnIndex, value });
+	}
+
+	handleAddRowButtonClick (rowIndex) {
+		let data = this.state.data;
+		let newRow = this.state.newRow;
+
+		let textId = newRow[0];
+		let newText = data[0].slice(1).reduce((newText, language, index) => {
+			newText[language] = newRow[index];
+
+			return newText;
+		}, {});
+
+		addProjectText(this.props.params.projectName, textId, newText).then(() => {
+			data.push(newRow);
+			let rowIndex = null;
+			let columnIndex = null;
+			newRow = [...data[0]];
+
+			this.setState({ data, rowIndex, columnIndex, newRow });
+		});
+	}
+
+	handleRemoveRowButtonClick (rowIndex) {
+		let data = this.state.data;
+		let textId = data[rowIndex][0];
+
+		removeProjectText(this.props.params.projectName, textId).then(() => {
+			data.splice(rowIndex, 1);
+			this.setState({ data });
+		});
 	}
 
 	render() {
@@ -444,9 +551,12 @@ export class ProjectTexts extends React.Component	{
 				value={this.state.value}
 				columnIndex={this.state.columnIndex}
 				rowIndex={this.state.rowIndex}
-				onBlur={this.handleBlur}
-				onChange={this.handleChange}
-				onClick={this.handleClick}
+				newRow={this.state.newRow}
+				onCellBlur={this.handleCellBlur}
+				onCellChange={this.handleCellChange}
+				onCellClick={this.handleCellClick}
+				onRemoveRowButtonClick={this.handleRemoveRowButtonClick}
+				onAddRowButtonClick={this.handleAddRowButtonClick}
 			/>
 		);
 	}

@@ -3,6 +3,7 @@ import TableFlexStyles from './TableFlex.css';
 import classnames from 'classnames';
 import AutosizeTextarea from 'react-autosize-textarea';
 import { Button } from './Button';
+import Octicon from 'react-octicon';
 
 export class TableFlexHeader extends React.Component {
   render() {
@@ -90,12 +91,15 @@ export class DataBoundFlexTable extends React.Component	{
 				<TableFlex.Row key={rowIndex}>
 					{row.map((column, columnIndex) => {
 						return (
-							<TableFlex.Column key={columnIndex} onClick={this.props.onClick && this.props.onClick.bind(this, rowIndex, columnIndex)}>
-								{ this.props.rowIndex === rowIndex && this.props.columnIndex === columnIndex && <AutosizeTextarea autoFocus onChange={this.props.onChange} onBlur={this.props.onBlur} value={this.props.value}></AutosizeTextarea> }
+							<TableFlex.Column key={columnIndex} onClick={this.props.onCellClick && this.props.onCellClick.bind(this, rowIndex, columnIndex)}>
+								{ this.props.rowIndex === rowIndex && this.props.columnIndex === columnIndex && <AutosizeTextarea autoFocus onChange={this.props.onCellChange} onBlur={this.props.onCellBlur} value={this.props.value}></AutosizeTextarea> }
 								{ (this.props.rowIndex !== rowIndex || this.props.columnIndex !== columnIndex) && <span>{row[columnIndex]}</span> }
 							</TableFlex.Column>
 						);
 					})}
+					<TableFlex.Column>
+						<Button color="primary" onClick={this.props.onRemoveRowButtonClick && this.props.onRemoveRowButtonClick.bind(this, rowIndex)}><Octicon name="trashcan" /></Button>
+					</TableFlex.Column>
 				</TableFlex.Row>
 			);
 		});
@@ -109,11 +113,28 @@ export class DataBoundFlexTable extends React.Component	{
 								<TableFlex.Column key={column}><span>{column}</span></TableFlex.Column>
 							);
 						})}
+						<TableFlex.Column>
+						</TableFlex.Column>
 					</TableFlex.Row>
 				</TableFlex.Header>
 				<TableFlex.Body>
 					{rows}
 				</TableFlex.Body>
+				<TableFlex.Footer>
+					<TableFlex.Row>
+						{this.props.data && this.props.data[0].map((column, columnIndex) => {
+							return (
+								<TableFlex.Column key={columnIndex} onClick={this.props.onCellClick && this.props.onCellClick.bind(this, -1, columnIndex)}>
+									{ this.props.rowIndex === -1 && this.props.columnIndex === columnIndex && <AutosizeTextarea autoFocus onChange={this.props.onCellChange} onBlur={this.props.onCellBlur} value={this.props.value}></AutosizeTextarea> }
+									{ (this.props.rowIndex !== -1 || this.props.columnIndex !== columnIndex) && <span>{this.props.newRow && this.props.newRow[columnIndex]}</span> }
+								</TableFlex.Column>
+							);
+						})}
+						<TableFlex.Column>
+							<Button color="primary" onClick={this.props.onAddRowButtonClick && this.props.onAddRowButtonClick.bind(this, -1)}><Octicon name="plus" /></Button>
+						</TableFlex.Column>
+					</TableFlex.Row>
+				</TableFlex.Footer>
 			</TableFlex>
 		);
 	}

@@ -24,6 +24,21 @@ export function get (url) {
   .then(parseJSON);
 }
 
+export function patch (url, data) {
+	return fetch(url, {
+		body: JSON.stringify(data),
+		credentials: 'same-origin',
+	  method: 'PATCH',
+	  headers: {
+	    'Accept': 'application/json',
+	    'Content-Type': 'application/json'
+	  }
+	})
+	.then(handleUnauthorized)
+	.then(checkStatus)
+  .then(parseJSON);
+}
+
 export function post (url, data) {
 	return fetch(url, {
 		body: JSON.stringify(data),
