@@ -1,0 +1,52 @@
+.sidebar {
+	position: relative;
+	flex: 0 0 20rem;
+	background-color: #eee;
+
+	.sidebar__item {
+		margin: 0.5rem;
+		display: block;
+		cursor: pointer;
+
+		.sidebar__item__icon {
+	    width: 2rem;
+	    height: 2rem;
+	    padding: 0.5rem;
+	    display: inline-block;
+	    line-height: 1rem;
+	    vertical-align: middle;
+	    text-align: center;
+		}
+
+		.sidebar__item__text {
+	    height: 2rem;
+	    padding: 0.5rem 0;
+	    display: inline-block;
+	    line-height: 1rem;
+	    vertical-align: middle;
+	    text-align: center;
+		}
+	}
+
+	&--closed {
+		flex: 0 0 3rem;
+
+		.sidebar__item {
+			.sidebar__item__text {
+				display: none;
+			}
+		}
+	}
+
+	.sidebar__item-group {
+		&--top {
+		  position: absolute;
+		  top: 0;
+		}
+
+		&--bottom {
+		  position: absolute;
+		  bottom: 0;
+		}
+	}
+}

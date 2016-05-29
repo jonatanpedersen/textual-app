@@ -22,10 +22,14 @@ export function makeDeserializeUser (getUser) {
   };
 }
 
-export function makeGitHubStrategyCallback (getUserGitHubRepositories, updateUserGitHub) {
+export function makeGitHubStrategyCallback (getUserGitHubRepositories, updateUserGitHub, isUserAuthorized) {
   return async function(accessToken, refreshToken, profile, done) {
     try {
       let userGitHubRepositories = await getUserGitHubRepositories(accessToken);
+
+			if (!isUserAuthorized(profile.username)) {
+				throw new Error(`GitHub User '${profile.username}' Not Authorized`);
+			}
 
       let user = await updateUserGitHub({
         userId: profile.id,
@@ -36,8 +40,8 @@ export function makeGitHubStrategyCallback (getUserGitHubRepositories, updateUse
       });
 
       return done(null, user);
-    } catch (ex) {
-      return done(ex);
+    } catch (err) {
+      return done(err);
     }
   };
 }
