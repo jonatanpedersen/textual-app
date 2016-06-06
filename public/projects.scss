@@ -1,5 +1,7 @@
 @import 'variables';
 
+$table-color: #f7f7f7;
+
 .project-metrics-table {
 	margin-top: 3rem;
 	margin-bottom: 2rem;
@@ -48,6 +50,7 @@
 .project-dropdown {
 	margin: 0;
 	height: 3rem;
+	font-size: 1.1rem;
 	border: none;
 }
 
@@ -62,9 +65,26 @@
 	}
 }
 
-.project-texts-table {
-	.table-column:last-child {
-		padding: 0;
-	  flex: 0 0 80px;
+.project-texts-layout {
+	.table-flex {
+		.table-header {
+			.table-row:first-child {
+				background-color: $table-color;
+			}
+		}
+
+		.table-column:first-child {
+			padding: 0;
+			text-align: right;
+			background-color: $table-color;
+		  flex: 0 0 80px;
+		}
+	}
+
+	.filter {
+		font-size: 1.1rem;
+		width: 30rem;
+		height: 3rem;
+		float: right;
 	}
 }

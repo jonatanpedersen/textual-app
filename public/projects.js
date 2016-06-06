@@ -18,7 +18,9 @@ import ProjectsStyles from './projects.scss';
 import { Form } from './components/Forms';
 import { Paragraph } from './components/Paragraph';
 import { SideBar, SideBarLink } from './components/SideBar';
+import { Loading } from './components/Loading';
 import { Text } from './components/Text';
+import classnames from 'classnames';
 
 export async function getProjects() {
 	return get('/api/projects');
@@ -40,7 +42,7 @@ export async function getProjectMetrics(projectIdOrName) {
 		languages: projectSettings.languages.map(language => {
 			return {
 				code: language,
-				coverage: projectTextIds.map(textId => projectTexts[textId]).filter(text => text[language]).length / projectTextIds.length * 100
+				coverage: Math.round(projectTextIds.map(textId => projectTexts[textId]).filter(text => text[language]).length / projectTextIds.length * 10000) / 100
 			}
 		})
 	}
@@ -201,18 +203,22 @@ export class NewProject extends React.Component {
 
 		return (
 			<DefaultLayout>
-				<Container>
-					<NewProjectForm
-						onProjectNameChange={this.handleProjectNameChange}
-						onRepositoryUrlChange={this.handleRepositoryUrlChange}
-						onSubmit={this.handleSubmit}
-						onUserRepositoryChange={this.handleUserRepositoryChange}
-						projectName={this.state.projectName}
-						repositoryUrl={this.state.repositoryUrl}
-						userRepositories={sortedUserRepositories}
-						selectedUserRepository={this.state.selectedUserRepository}
-					/>
-				</Container>
+				<DefaultLayout.Header />
+				<DefaultLayout.Body>
+					<Container>
+						<NewProjectForm
+							onProjectNameChange={this.handleProjectNameChange}
+							onRepositoryUrlChange={this.handleRepositoryUrlChange}
+							onSubmit={this.handleSubmit}
+							onUserRepositoryChange={this.handleUserRepositoryChange}
+							projectName={this.state.projectName}
+							repositoryUrl={this.state.repositoryUrl}
+							userRepositories={sortedUserRepositories}
+							selectedUserRepository={this.state.selectedUserRepository}
+						/>
+					</Container>
+				</DefaultLayout.Body>
+				<DefaultLayout.Footer />
 			</DefaultLayout>
 		);
 	}
@@ -268,26 +274,20 @@ export class NewProjectButton extends React.Component {
 }
 
 export class Projects extends React.Component {
-	constructor (props) {
-		super(props);
-		this.state = {};
-		this.fetch();
-	}
-
-	fetch () {
-		getProjects().then(projects => {
-			this.setState({projects});
-		});
-	}
-
 	render () {
-		if (this.state.projects) {
+		let projects = this.props.projects;
+
+		if (projects) {
 			return (
 				<DefaultLayout>
-					<Container>
-						<ProjectsTable projects={this.state.projects} />
-						<NewProjectButton />
-					</Container>
+					<DefaultLayout.Header />
+					<DefaultLayout.Body>
+						<Container>
+							<ProjectsTable projects={projects} />
+							<NewProjectButton />
+						</Container>
+					</DefaultLayout.Body>
+					<DefaultLayout.Footer />
 				</DefaultLayout>
 			);
 		}
@@ -335,10 +335,13 @@ export class ProjectsTableRow extends React.Component {
 
 export class ProjectDropdown extends React.Component {
 	render() {
+		let projects = this.props.projects || [];
+		let selectedProject = this.props.selectedProject || {};
+		let onChange = this.props.onChange;
 		return (
-			<select className="project-dropdown" value={this.props.selectedProject} onChange={this.props.onChange}>
+			<select className="project-dropdown" value={selectedProject.name} onChange={onChange}>
 			{
-				this.props.projects.map(project => {
+				projects.map(project => {
 					return <option key={project.name} value={project.name}>{project.name}</option>;
 				})
 			}
@@ -347,21 +350,48 @@ export class ProjectDropdown extends React.Component {
 	}
 }
 
-export class ProjectLayout extends React.Component {
+export class ProjectsLayout extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = { project: {}, projects: [] };
-		this.handleProjectDropdownChange = this.handleProjectDropdownChange.bind(this);
+		this.state = {};
 		this.fetch();
 	}
 
 	fetch() {
-		getProject(this.props.params.projectName).then(project => {
-			this.setState({project});
-		});
-
 		getProjects().then(projects => {
 			this.setState({projects});
+		});
+	}
+
+	render() {
+		let children = this.props.children;
+		let projects = this.state.projects;
+
+		return (
+			<div className="projects-layout">
+        {children && React.cloneElement(children, { projects })}
+			</div>
+		);
+	}
+}
+
+export class Project extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {};
+		this.handleProjectDropdownChange = this.handleProjectDropdownChange.bind(this);
+		this.fetch(props.params.projectName);
+	}
+
+	componentWillReceiveProps (nextProps) {
+		if (nextProps.params.projectName !== this.props.params.projectName) {
+			this.fetch(nextProps.params.projectName);
+		}
+	}
+
+	fetch(projectName) {
+		getProject(projectName).then(project => {
+			this.setState({project});
 		});
 	}
 
@@ -372,67 +402,88 @@ export class ProjectLayout extends React.Component {
 	}
 
 	render() {
+		let children = this.props.children;
+		let project = this.state.project;
+		let projects = this.props.projects;
+		let handleProjectDropdownChange = this.handleProjectDropdownChange;
+
 		return (
-			<Layout className="project-layout">
-				<Layout.Header>
-					<Link to="/"><Brand /></Link>
-					<ProjectDropdown selectedProject={this.props.params.projectName} projects={this.state.projects} onChange={this.handleProjectDropdownChange} />
-				</Layout.Header>
-				<Layout.Body>
-					<SideBar isClosed={true}>
-						<SideBar.ItemGroup>
-							<SideBar.Item onClick={() => browserHistory.push(`/projects/${this.props.params.projectName}`)}>
-								<SideBar.Item.Icon>
-									<Octicon name="pencil" />
-								</SideBar.Item.Icon>
-								<SideBar.Item.Text>
-									<Text>Texts</Text>
-								</SideBar.Item.Text>
-							</SideBar.Item>
-							<SideBar.Item onClick={() => browserHistory.push(`/projects/${this.props.params.projectName}/metrics`)}>
-								<SideBar.Item.Icon>
-									<Octicon name="graph" />
-								</SideBar.Item.Icon>
-								<SideBar.Item.Text>
-									<Text>Metrics</Text>
-								</SideBar.Item.Text>
-							</SideBar.Item>
-							<SideBar.Item onClick={() => browserHistory.push(`/projects/${this.props.params.projectName}/settings`)}>
-								<SideBar.Item.Icon>
-									<Octicon name="gear" />
-								</SideBar.Item.Icon>
-								<SideBar.Item.Text>
-									<Text>Settings</Text>
-								</SideBar.Item.Text>
-							</SideBar.Item>
-						</SideBar.ItemGroup>
-						<SideBar.ItemGroup>
-							<SideBar.Item onClick={() => browserHistory.push(`/user`)}>
-								<SideBar.Item.Icon>
-									<Octicon name="person" />
-								</SideBar.Item.Icon>
-								<SideBar.Item.Text>
-									<Text>User Profile</Text>
-								</SideBar.Item.Text>
-							</SideBar.Item>
-							<SideBar.Item onClick={() => browserHistory.push(`/logout`)}>
-								<SideBar.Item.Icon>
-									<Octicon name="sign-out" />
-								</SideBar.Item.Icon>
-								<SideBar.Item.Text>
-									<Text>Log out</Text>
-								</SideBar.Item.Text>
-							</SideBar.Item>
-						</SideBar.ItemGroup>
-					</SideBar>
-					<div className="content">
-						{this.props.children}
-					</div>
-				</Layout.Body>
-				<Layout.Footer>
-					<p>Copyright &copy; 2015-2016 <a href="https://www.jonatanpedersen.com" target="_blank">Jonatan Pedersen</a></p>
-				</Layout.Footer>
-			</Layout>
+			<div className="project">
+				{children && React.cloneElement(children, { projects, project, handleProjectDropdownChange })}
+			</div>
+		);
+	}
+}
+
+export class ProjectContent extends React.Component {
+	constructor(props) {
+		super(props);
+	}
+
+	render() {
+		return (
+			<div className="content">
+				{this.props.children}
+			</div>
+		);
+	}
+}
+
+export class ProjectSideBar extends React.Component {
+	constructor(props) {
+		super(props);
+	}
+
+	render() {
+		let project = this.props.project || {};
+
+		return (
+			<SideBar isClosed={this.props.isClosed}>
+				<SideBar.ItemGroup>
+					<SideBar.Item onClick={() => browserHistory.push(`/projects/${project.name}`)}>
+						<SideBar.Item.Icon>
+							<Octicon name="pencil" />
+						</SideBar.Item.Icon>
+						<SideBar.Item.Text>
+							<Text>Texts</Text>
+						</SideBar.Item.Text>
+					</SideBar.Item>
+					<SideBar.Item onClick={() => browserHistory.push(`/projects/${project.name}/metrics`)}>
+						<SideBar.Item.Icon>
+							<Octicon name="graph" />
+						</SideBar.Item.Icon>
+						<SideBar.Item.Text>
+							<Text>Metrics</Text>
+						</SideBar.Item.Text>
+					</SideBar.Item>
+					<SideBar.Item onClick={() => browserHistory.push(`/projects/${project.name}/settings`)}>
+						<SideBar.Item.Icon>
+							<Octicon name="gear" />
+						</SideBar.Item.Icon>
+						<SideBar.Item.Text>
+							<Text>Settings</Text>
+						</SideBar.Item.Text>
+					</SideBar.Item>
+				</SideBar.ItemGroup>
+				<SideBar.ItemGroup>
+					<SideBar.Item onClick={() => browserHistory.push(`/user`)}>
+						<SideBar.Item.Icon>
+							<Octicon name="person" />
+						</SideBar.Item.Icon>
+						<SideBar.Item.Text>
+							<Text>User Profile</Text>
+						</SideBar.Item.Text>
+					</SideBar.Item>
+					<SideBar.Item onClick={() => browserHistory.push(`/logout`)}>
+						<SideBar.Item.Icon>
+							<Octicon name="sign-out" />
+						</SideBar.Item.Icon>
+						<SideBar.Item.Text>
+							<Text>Log out</Text>
+						</SideBar.Item.Text>
+					</SideBar.Item>
+				</SideBar.ItemGroup>
+			</SideBar>
 		);
 	}
 }
@@ -440,17 +491,19 @@ export class ProjectLayout extends React.Component {
 export class ProjectTexts extends React.Component	{
 	constructor(props) {
 		super(props);
-		this.state = { };
-		this.handleCellChange = this.handleCellChange.bind(this);
+		this.state = {};
 		this.handleCellBlur = this.handleCellBlur.bind(this);
+		this.handleCellChange = this.handleCellChange.bind(this);
 		this.handleCellClick = this.handleCellClick.bind(this);
 		this.handleAddRowButtonClick = this.handleAddRowButtonClick.bind(this);
+		this.handleFilterChange = this.handleFilterChange.bind(this);
 		this.handleRemoveRowButtonClick = this.handleRemoveRowButtonClick.bind(this);
 		this.fetch(props.params.projectName);
 	}
 
 	componentWillReceiveProps (nextProps) {
 		if (nextProps.params.projectName !== this.props.params.projectName) {
+			this.setState({data: undefined});
 			this.fetch(nextProps.params.projectName);
 		}
 	}
@@ -458,21 +511,17 @@ export class ProjectTexts extends React.Component	{
 	fetch (projectName) {
 		getProjectSettings(projectName).then(projectSettings => {
 			getProjectTexts(projectName).then(projectTexts => {
-				let data = [['Text Id', ...projectSettings.languages], ...Object.keys(projectTexts).map(textId => {
-					return [textId, ...projectSettings.languages.map(language => projectTexts[textId][language])];
+				let textIds = Object.keys(projectTexts);
+
+				let data = [['#', 'Text Id', ...projectSettings.languages], ...textIds.map((textId, idx) => {
+					return [idx + 1,textId, ...projectSettings.languages.map(language => projectTexts[textId][language])];
 				})];
 
-				let newRow = ['Text Id', ...projectSettings.languages];
+				let newRow = [textIds.length + 1, 'Text Id', ...projectSettings.languages];
 
 				this.setState({data, newRow, rowIndex: -1, columnIndex: -1});
 			});
 		});
-	}
-
-	handleCellChange (event) {
-		let value = event.target.value;
-
-		this.setState({ value });
 	}
 
 	handleCellBlur (event) {
@@ -509,6 +558,12 @@ export class ProjectTexts extends React.Component	{
 		this.setState({ data });
 	}
 
+	handleCellChange (event) {
+		let value = event.target.value;
+
+		this.setState({ value });
+	}
+
 	handleCellClick (rowIndex, columnIndex) {
 		let row = rowIndex === -1 ? this.state.newRow : this.state.data[rowIndex];
 		let value = row[columnIndex];
@@ -537,6 +592,12 @@ export class ProjectTexts extends React.Component	{
 		});
 	}
 
+	handleFilterChange (event) {
+		let filter = event.target.value;
+
+		this.setState({filter});
+	}
+
 	handleRemoveRowButtonClick (rowIndex) {
 		let data = this.state.data;
 		let textId = data[rowIndex][0];
@@ -547,25 +608,67 @@ export class ProjectTexts extends React.Component	{
 		});
 	}
 
-	render() {
-		if (this.state.data) {
-			return (
-				<DataBoundFlexTable
-					data={this.state.data}
-					value={this.state.value}
-					columnIndex={this.state.columnIndex}
-					rowIndex={this.state.rowIndex}
-					newRow={this.state.newRow}
-					onCellBlur={this.handleCellBlur}
-					onCellChange={this.handleCellChange}
-					onCellClick={this.handleCellClick}
-					onRemoveRowButtonClick={this.handleRemoveRowButtonClick}
-					onAddRowButtonClick={this.handleAddRowButtonClick}
-				/>
-			);
+	filterData (data, filter) {
+		if (data && filter) {
+			let pattern;
+			try {
+				pattern = new RegExp(filter, 'im');
+			} catch (err) {
+				return data;
+			}
+
+			return data.filter((row, idx) => {
+				if (idx === 0) return true;
+
+				return row.some(cell => pattern.test(cell));
+			}) || [];
 		}
 
-		return <Loading />
+		return data;
+	}
+
+	render() {
+		let data = this.state.data;
+		let filter = this.state.filter;
+		let content;
+
+		if (data) {
+			let filteredData = this.filterData(data, filter);
+
+			content = <DataBoundFlexTable
+				data={filteredData}
+				value={this.state.value}
+				columnIndex={this.state.columnIndex}
+				rowIndex={this.state.rowIndex}
+				newRow={this.state.newRow}
+				onCellBlur={this.handleCellBlur}
+				onCellChange={this.handleCellChange}
+				onCellClick={this.handleCellClick}
+				onRemoveRowButtonClick={this.handleRemoveRowButtonClick}
+				onAddRowButtonClick={this.handleAddRowButtonClick}
+			/>;
+		} else {
+			content = <Loading />;
+		}
+
+		return (
+			<ProjectLayout className="project-texts-layout">
+				<ProjectLayout.Header onProjectDropdownChange={this.props.handleProjectDropdownChange} selectedProject={this.props.project} projects={this.props.projects}>
+					<ProjectTextsFilter value={filter} onChange={this.handleFilterChange} />
+				</ProjectLayout.Header>
+				<ProjectLayout.Body project={this.props.project}>
+					{content}
+				</ProjectLayout.Body>
+				<ProjectLayout.Footer />
+			</ProjectLayout>
+		);
+	}
+}
+
+export class ProjectTextsFilter extends React.Component	{
+	render() {
+		let value = this.props.value || '';
+		return <input className="filter" type="text" value={value} onChange={this.props.onChange} placeholder="filter" />
 	}
 }
 
@@ -584,10 +687,18 @@ export class ProjectMetrics extends React.Component	{
 
 	render() {
 		return (
-			<Container className="project-metrics">
-				<ProjectMetricsTable projectMetrics={this.state.projectMetrics} />
-			</Container>
+			<ProjectLayout>
+				<ProjectLayout.Header onProjectDropdownChange={this.props.handleProjectDropdownChange} selectedProject={this.props.project} projects={this.props.projects} />
+				<ProjectLayout.Body project={this.props.project}>
+					<Container>
+						{ this.state.projectMetrics ? <ProjectMetricsTable projectMetrics={this.state.projectMetrics} /> : <Loading /> }
+					</Container>
+				</ProjectLayout.Body>
+				<ProjectLayout.Footer />
+			</ProjectLayout>
 		);
+
+		return <Loading />;
 	}
 }
 
@@ -678,15 +789,19 @@ export class ProjectSettings extends React.Component	{
 	}
 
 	render() {
-		if (this.state.project) {
-			return (
-				<Container>
-					<ProjectSettingsForm project={this.state.project} onBlur={this.handleProjectSettingsFormBlur} onChange={this.handleProjectSettingsFormChange} onSubmit={this.handleUpdateProjectSettingsFormSubmit} />
-					<RenameProjectForm project={this.state.project} onSubmit={this.handleRenameProjectFormSubmit} />
-					<DeleteProjectForm project={this.state.project} onSubmit={this.handleDeleteProjectFormSubmit} />
-				</Container>
-			);
-		}
+		return (
+			<ProjectLayout>
+				<ProjectLayout.Header onProjectDropdownChange={this.props.handleProjectDropdownChange} selectedProject={this.props.project} projects={this.props.projects} />
+				<ProjectLayout.Body project={this.props.project}>
+					<Container>
+						{ this.state.project ? <ProjectSettingsForm project={this.state.project} onBlur={this.handleProjectSettingsFormBlur} onChange={this.handleProjectSettingsFormChange} onSubmit={this.handleUpdateProjectSettingsFormSubmit} /> : <Loading /> }
+						{ this.state.project ? <RenameProjectForm project={this.state.project} onSubmit={this.handleRenameProjectFormSubmit} /> : <Loading /> }
+						{ this.state.project ? <DeleteProjectForm project={this.state.project} onSubmit={this.handleDeleteProjectFormSubmit} /> : <Loading /> }
+					</Container>
+				</ProjectLayout.Body>
+				<ProjectLayout.Footer />
+			</ProjectLayout>
+		);
 
 		return <Loading />
 	}
@@ -787,12 +902,58 @@ export class DeleteProjectButton extends React.Component	{
 	}
 }
 
-export class Loading extends React.Component	{
+export class ProjectLayout extends React.Component {
 	render() {
+		let className = classnames('project-layout', this.props.className);
+
 		return (
-			<div className="loading">
-				<Octicon name="clock" spin={true} />
-			</div>
+			<DefaultLayout className={className}>
+				{this.props.children}
+			</DefaultLayout>
 		);
 	}
 }
+
+export class ProjectLayoutHeader extends React.Component {
+	render() {
+		let className = classnames('project-layout__header', this.props.className);
+
+		return (
+			<DefaultLayout.Header className={className}>
+				{this.props.projects && this.props.selectedProject && <ProjectDropdown projects={this.props.projects} selectedProject={this.props.selectedProject} onChange={this.props.onProjectDropdownChange} />}
+				{this.props.children}
+			</DefaultLayout.Header>
+		);
+	}
+}
+
+export class ProjectLayoutBody extends React.Component {
+	render() {
+		let className = classnames('project-layout__body', this.props.className);
+
+		return (
+			<DefaultLayout.Body className={className}>
+				{this.props.project && <ProjectSideBar project={this.props.project} isClosed={true} /> }
+				<ProjectContent>
+					{this.props.children}
+				</ProjectContent>
+			</DefaultLayout.Body>
+		);
+	}
+}
+
+export class ProjectLayoutFooter extends React.Component {
+	render() {
+		let className = classnames('project-layout__footer', this.props.className);
+
+		return (
+			<DefaultLayout.Footer className={className}>
+				{this.props.children}
+			</DefaultLayout.Footer>
+		);
+	}
+}
+
+ProjectLayout.Header = ProjectLayoutHeader;
+ProjectLayout.Body = ProjectLayoutBody;
+ProjectLayout.Footer = ProjectLayoutFooter;

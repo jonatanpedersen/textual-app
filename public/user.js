@@ -187,10 +187,14 @@ export class User extends React.Component	{
 	render() {
 		return (
 			<DefaultLayout>
-				<Container>
-					<UserProfile />
-					<UserSettings />
-				</Container>
+				<DefaultLayout.Header />
+				<DefaultLayout.Body>
+					<Container>
+						<UserProfile />
+						<UserSettings />
+					</Container>
+				</DefaultLayout.Body>
+				<DefaultLayout.Footer />
 			</DefaultLayout>
 		);
 	}

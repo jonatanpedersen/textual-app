@@ -92,8 +92,8 @@ export class DataBoundFlexTable extends React.Component	{
 					{row.map((column, columnIndex) => {
 						return (
 							<TableFlex.Column key={columnIndex} onClick={this.props.onCellClick && this.props.onCellClick.bind(this, rowIndex, columnIndex)}>
-								{ this.props.rowIndex === rowIndex && this.props.columnIndex === columnIndex && <AutosizeTextarea autoFocus onChange={this.props.onCellChange} onBlur={this.props.onCellBlur} value={this.props.value}></AutosizeTextarea> }
-								{ (this.props.rowIndex !== rowIndex || this.props.columnIndex !== columnIndex) && <span>{row[columnIndex]}</span> }
+								{ this.props.rowIndex === rowIndex && this.props.columnIndex === columnIndex && this.props.columnIndex !== 0 && <AutosizeTextarea autoFocus onChange={this.props.onCellChange} onBlur={this.props.onCellBlur} value={this.props.value}></AutosizeTextarea> }
+								{ (this.props.rowIndex !== rowIndex || this.props.columnIndex !== columnIndex || this.props.columnIndex === 0) && <span>{row[columnIndex]}</span> }
 							</TableFlex.Column>
 						);
 					})}
@@ -125,8 +125,8 @@ export class DataBoundFlexTable extends React.Component	{
 						{this.props.data && this.props.data[0].map((column, columnIndex) => {
 							return (
 								<TableFlex.Column key={columnIndex} onClick={this.props.onCellClick && this.props.onCellClick.bind(this, -1, columnIndex)}>
-									{ this.props.rowIndex === -1 && this.props.columnIndex === columnIndex && <AutosizeTextarea autoFocus onChange={this.props.onCellChange} onBlur={this.props.onCellBlur} value={this.props.value}></AutosizeTextarea> }
-									{ (this.props.rowIndex !== -1 || this.props.columnIndex !== columnIndex) && <span>{this.props.newRow && this.props.newRow[columnIndex]}</span> }
+									{ this.props.rowIndex === -1 && this.props.columnIndex === columnIndex && this.props.columnIndex !== 0 && <AutosizeTextarea autoFocus onChange={this.props.onCellChange} onBlur={this.props.onCellBlur} value={this.props.value}></AutosizeTextarea> }
+									{ (this.props.rowIndex !== -1 || this.props.columnIndex !== columnIndex || this.props.columnIndex === 0) && <span>{this.props.newRow && this.props.newRow[columnIndex]}</span> }
 								</TableFlex.Column>
 							);
 						})}
