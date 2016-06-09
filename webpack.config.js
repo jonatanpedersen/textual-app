@@ -17,6 +17,7 @@ module.exports = {
                     plugins: ['transform-runtime']
                 }
             },
+            { test: /\.json$/, loaders: ["json"] },
             { test: /\.scss$/, loaders: ["style", "css", "sass"] },
             { test: /\.css$/, loaders: ["style", "css"] },
             { test: /\.(otf|eot|svg|ttf|woff|woff2).*$/, loader: 'url?limit=1048576' }

@@ -21,6 +21,7 @@ import { SideBar, SideBarLink } from './components/SideBar';
 import { Loading } from './components/Loading';
 import { Text } from './components/Text';
 import classnames from 'classnames';
+import Shortcuts from 'react-shortcuts/component';
 
 export async function getProjects() {
 	return get('/api/projects');
@@ -234,7 +235,7 @@ export class NewProjectForm extends React.Component {
 				<Form.Body>
 					<Paragraph>
 						<label htmlFor="project-name" className="project-name">Project name</label>
-						<input id="project-name" className="project-name" type="text" value={this.props.projectName} onChange={this.props.onProjectNameChange} />
+						<input id="project-name" className="project-name" type="text" value={this.props.projectName} onChange={this.props.onProjectNameChange} autoFocus={true} />
 						<tooltip>e.g. <span>textual-app</span></tooltip>
 					</Paragraph>
 					<Paragraph>
@@ -274,21 +275,39 @@ export class NewProjectButton extends React.Component {
 }
 
 export class Projects extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = { selectedProject: 0 };
+		this.handleShortcuts = this.handleShortcuts.bind(this);
+	}
+
+	handleShortcuts (action) {
+    switch (action) {
+      case 'MOVE_UP': this.setState({selectedProject: Math.max(0, this.state.selectedProject - 1) }); break;
+			case 'MOVE_DOWN': this.setState({selectedProject: Math.min(this.props.projects.length - 1, this.state.selectedProject + 1) }); break;
+			case 'OPEN_PROJECT': browserHistory.push(`/projects/${this.props.projects[this.state.selectedProject].name}`); break;
+      case 'NEW_PROJECT': browserHistory.push('/projects/new'); break;
+		}
+	}
+
 	render () {
 		let projects = this.props.projects;
+		let selectedProject = this.state.selectedProject;
 
 		if (projects) {
 			return (
-				<DefaultLayout>
-					<DefaultLayout.Header />
-					<DefaultLayout.Body>
-						<Container>
-							<ProjectsTable projects={projects} />
-							<NewProjectButton />
-						</Container>
-					</DefaultLayout.Body>
-					<DefaultLayout.Footer />
-				</DefaultLayout>
+				<Shortcuts name="Projects" handler={this.handleShortcuts}>
+					<DefaultLayout>
+						<DefaultLayout.Header />
+						<DefaultLayout.Body>
+							<Container>
+								<ProjectsTable selectedProject={selectedProject} projects={projects} />
+								<NewProjectButton />
+							</Container>
+						</DefaultLayout.Body>
+						<DefaultLayout.Footer />
+					</DefaultLayout>
+				</Shortcuts>
 			);
 		}
 
@@ -300,8 +319,8 @@ export class ProjectsTable extends React.Component {
 	render() {
 		let projects = this.props.projects;
 
-		let rows = projects && projects.map(project => (
-			<ProjectsTableRow key={project._id} project={project} />
+		let rows = projects && projects.map((project, idx) => (
+			<ProjectsTableRow key={project._id} project={project} isSelected={this.props.selectedProject === idx} />
 		));
 
 		return (
@@ -322,9 +341,10 @@ export class ProjectsTable extends React.Component {
 export class ProjectsTableRow extends React.Component {
 	render() {
 		let project = this.props.project;
+		let trClassname = classnames('projects-table__row', { 'projects-table__row--selected': this.props.isSelected });
 
 		return project && (
-			<tr className="projects-table__row">
+			<tr className={trClassname}>
 				<td className="project-name">
 					<Link to={`/projects/${project.name}`}>{project.name}</Link>
 				</td>
@@ -600,7 +620,7 @@ export class ProjectTexts extends React.Component	{
 
 	handleRemoveRowButtonClick (rowIndex) {
 		let data = this.state.data;
-		let textId = data[rowIndex][0];
+		let textId = data[rowIndex][1];
 
 		removeProjectText(this.props.params.projectName, textId).then(() => {
 			data.splice(rowIndex, 1);

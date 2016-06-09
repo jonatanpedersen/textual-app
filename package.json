@@ -55,6 +55,7 @@
     "react-dom": "^15.0.2",
     "react-octicon": "^2.0.0",
     "react-router": "^2.4.0",
+    "react-shortcuts": "^0.9.2",
     "style-loader": "^0.13.1",
     "textual-app-texts": "git+ssh://github.com/jonatanpedersen/textual-app-texts.git",
     "url-loader": "^0.5.7",

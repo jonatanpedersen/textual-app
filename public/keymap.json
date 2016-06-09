@@ -1,0 +1,8 @@
+{
+	"Projects": {
+		"MOVE_UP": "up",
+		"MOVE_DOWN": "down",
+		"OPEN_PROJECT": "enter",
+		"NEW_PROJECT": "n"
+	}
+}

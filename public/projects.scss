@@ -35,6 +35,10 @@ $table-color: #f7f7f7;
 		border: 1px solid $border-color;
 	}
 	.projects-table__row {
+		&--selected {
+			background-color: #f7f7f7;
+		}
+
 		.project-name {
 			width: 50%
 		}

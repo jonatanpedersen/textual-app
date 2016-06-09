@@ -7,26 +7,49 @@ import { User, UserProfile, UserSettings } from './user';
 import { Home } from './home';
 import { Layout } from './layout';
 import { Edit } from './edit';
+import keymap from './keymap.json';
+import ShortcutsManager from 'react-shortcuts';
 
 export function main () {
+  let shortcutsManager = new ShortcutsManager(keymap);
   let mainElement = document.getElementById('main');
 
   render((
-    <Router history={browserHistory}>
-      <Route path="/" component={Layout}>
-        <IndexRedirect to="/projects" />
-        <Route path="/projects/new" component={NewProject} />
-        <Route path="/projects" component={ProjectsLayout}>
-          <IndexRoute component={Projects}/>
-          <Route path="/projects/:projectName" component={Project}>
-            <IndexRoute component={ProjectTexts}/>
-            <Route path="/projects/:projectName/metrics" component={ProjectMetrics} />
-            <Route path="/projects/:projectName/settings" component={ProjectSettings} />
+    <Main shortcutsManager={shortcutsManager}>
+      <Router history={browserHistory}>
+        <Route path="/" component={Layout}>
+          <IndexRedirect to="/projects" />
+          <Route path="/projects/new" component={NewProject} />
+          <Route path="/projects" component={ProjectsLayout}>
+            <IndexRoute component={Projects}/>
+            <Route path="/projects/:projectName" component={Project}>
+              <IndexRoute component={ProjectTexts}/>
+              <Route path="/projects/:projectName/metrics" component={ProjectMetrics} />
+              <Route path="/projects/:projectName/settings" component={ProjectSettings} />
+            </Route>
           </Route>
+          <Route path="/user" component={User} />
+  				<Route path="/edit" component={Edit} />
         </Route>
-        <Route path="/user" component={User} />
-				<Route path="/edit" component={Edit} />
-      </Route>
-    </Router>
+      </Router>
+    </Main>
   ), mainElement);
 }
+
+class Main extends React.Component {
+  getChildContext () {
+    return {
+      shortcuts: this.props.shortcutsManager
+    };
+  }
+
+  render () {
+    return (<main>
+      {this.props.children}
+    </main>);
+  }
+}
+
+Main.childContextTypes = {
+  shortcuts: React.PropTypes.object.isRequired
+};
