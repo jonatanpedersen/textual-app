@@ -1,0 +1,20 @@
+.component {
+	padding: 0.5rem 0;
+
+	label,
+	input {
+		margin: 0.25rem 0;
+		display: block;
+	}
+
+	label, button {
+		display: inline-block;
+	}
+}
+
+.form2 {
+		padding: 2rem;
+		outline: 1px solid #eee;
+		background-color: #fff;
+		box-shadow: 0 0 4rem #eee;
+}

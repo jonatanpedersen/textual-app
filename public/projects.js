@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from 'react-dom';
+import ReactDOM from 'react-dom';
 import { Link, browserHistory } from 'react-router';
 import { Button } from './components/Button';
 import { ButtonGroup } from './components/ButtonGroup';
@@ -281,12 +281,20 @@ export class Projects extends React.Component {
 		this.handleShortcuts = this.handleShortcuts.bind(this);
 	}
 
-	handleShortcuts (action) {
+	handleShortcuts (action, event) {
+		event.preventDefault();
     switch (action) {
       case 'MOVE_UP': this.setState({selectedProject: Math.max(0, this.state.selectedProject - 1) }); break;
 			case 'MOVE_DOWN': this.setState({selectedProject: Math.min(this.props.projects.length - 1, this.state.selectedProject + 1) }); break;
 			case 'OPEN_PROJECT': browserHistory.push(`/projects/${this.props.projects[this.state.selectedProject].name}`); break;
       case 'NEW_PROJECT': browserHistory.push('/projects/new'); break;
+		}
+	}
+
+	focusRef (component) {
+		let domNode = ReactDOM.findDOMNode(component);
+		if (domNode && domNode.focus) {
+			domNode.focus();
 		}
 	}
 
@@ -296,7 +304,7 @@ export class Projects extends React.Component {
 
 		if (projects) {
 			return (
-				<Shortcuts name="Projects" handler={this.handleShortcuts}>
+				<Shortcuts name="Projects" handler={this.handleShortcuts} ref={this.focusRef}>
 					<DefaultLayout>
 						<DefaultLayout.Header />
 						<DefaultLayout.Body>
@@ -518,6 +526,7 @@ export class ProjectTexts extends React.Component	{
 		this.handleAddRowButtonClick = this.handleAddRowButtonClick.bind(this);
 		this.handleFilterChange = this.handleFilterChange.bind(this);
 		this.handleRemoveRowButtonClick = this.handleRemoveRowButtonClick.bind(this);
+		this.handleShortcuts = this.handleShortcuts.bind(this);
 		this.fetch(props.params.projectName);
 	}
 
@@ -647,6 +656,19 @@ export class ProjectTexts extends React.Component	{
 		return data;
 	}
 
+	handleShortcuts (action, event) {
+		switch (action) {
+			case 'SEARCH': break;
+		}
+	}
+
+	focusRef (component) {
+		let domNode = ReactDOM.findDOMNode(component);
+		if (domNode && domNode.focus) {
+			domNode.focus();
+		}
+	}
+
 	render() {
 		let data = this.state.data;
 		let filter = this.state.filter;
@@ -660,6 +682,7 @@ export class ProjectTexts extends React.Component	{
 				value={this.state.value}
 				columnIndex={this.state.columnIndex}
 				rowIndex={this.state.rowIndex}
+				cursor={this.state.cursor}
 				newRow={this.state.newRow}
 				onCellBlur={this.handleCellBlur}
 				onCellChange={this.handleCellChange}
@@ -672,15 +695,17 @@ export class ProjectTexts extends React.Component	{
 		}
 
 		return (
-			<ProjectLayout className="project-texts-layout">
-				<ProjectLayout.Header onProjectDropdownChange={this.props.handleProjectDropdownChange} selectedProject={this.props.project} projects={this.props.projects}>
-					<ProjectTextsFilter value={filter} onChange={this.handleFilterChange} />
-				</ProjectLayout.Header>
-				<ProjectLayout.Body project={this.props.project}>
-					{content}
-				</ProjectLayout.Body>
-				<ProjectLayout.Footer />
-			</ProjectLayout>
+			<Shortcuts name="ProjectTexts" handler={this.handleShortcuts} ref={this.focusRef}>
+				<ProjectLayout className="project-texts-layout">
+					<ProjectLayout.Header onProjectDropdownChange={this.props.handleProjectDropdownChange} selectedProject={this.props.project} projects={this.props.projects}>
+						<ProjectTextsFilter value={filter} ref="filter" onChange={this.handleFilterChange} />
+					</ProjectLayout.Header>
+					<ProjectLayout.Body project={this.props.project}>
+						{content}
+					</ProjectLayout.Body>
+					<ProjectLayout.Footer />
+				</ProjectLayout>
+			</Shortcuts>
 		);
 	}
 }

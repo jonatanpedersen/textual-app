@@ -71,3 +71,7 @@
 .table-flex .table-column > textarea {
 	background-color: rgba(192, 0, 0, 0.05);
 }
+
+.active {
+	background-color: #fafafa;
+}

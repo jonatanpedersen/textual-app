@@ -1,9 +1,11 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import TableFlexStyles from './TableFlex.css';
 import classnames from 'classnames';
 import AutosizeTextarea from 'react-autosize-textarea';
 import { Button } from './Button';
 import Octicon from 'react-octicon';
+import Shortcuts from 'react-shortcuts/component';
 
 export class TableFlexHeader extends React.Component {
   render() {
@@ -84,14 +86,56 @@ TableFlex.Row = TableFlexRow;
 TableFlex.Column = TableFlexColumn;
 
 export class DataBoundFlexTable extends React.Component	{
+	constructor (props) {
+		super(props);
+		this.state = { cursorRowIndex: 1, cursorColumnIndex: 1 };
+		this.handleShortcuts = this.handleShortcuts.bind(this);
+		this.moveCursor = this.moveCursor.bind(this);
+	}
+
+	moveCursor (rowOffset, columnOffset) {
+		let { cursorRowIndex, cursorColumnIndex } = this.state;
+
+		let newCursorRowIndexCandidate = cursorRowIndex + rowOffset;
+		let newCursorColumnIndexCandidate = cursorColumnIndex + columnOffset;
+
+		if (newCursorRowIndexCandidate > 0 && newCursorRowIndexCandidate < this.props.data.length) {
+			cursorRowIndex = newCursorRowIndexCandidate;
+		}
+
+		if (newCursorColumnIndexCandidate > 0 && newCursorColumnIndexCandidate < this.props.data[0].length) {
+			cursorColumnIndex = newCursorColumnIndexCandidate;
+		}
+		this.setState({ cursorRowIndex, cursorColumnIndex });
+	}
+
+	handleShortcuts (action, event) {
+		switch (action) {
+			case 'UP': this.moveCursor(-1, 0); break;
+			case 'RIGHT': this.moveCursor(0, 1); break;
+			case 'DOWN': this.moveCursor(1, 0); break;
+			case 'LEFT': this.moveCursor(0, -1); break;
+			case 'ENTER': break;
+		}
+	}
+
+	focusRef (component) {
+		let domNode = ReactDOM.findDOMNode(component);
+		if (domNode && domNode.focus) {
+			domNode.focus();
+		}
+	}
+
 	render() {
+		let { cursorRowIndex, cursorColumnIndex } = this.state;
+
 		let rows = this.props.data && this.props.data.slice(1).map((row, rowIndex) => {
 			rowIndex++;
 			return (
 				<TableFlex.Row key={rowIndex}>
 					{row.map((column, columnIndex) => {
 						return (
-							<TableFlex.Column key={columnIndex} onClick={this.props.onCellClick && this.props.onCellClick.bind(this, rowIndex, columnIndex)}>
+							<TableFlex.Column key={columnIndex} onClick={this.props.onCellClick && this.props.onCellClick.bind(this, rowIndex, columnIndex)} className={{active: cursorRowIndex === rowIndex && cursorColumnIndex === columnIndex}}>
 								{ this.props.rowIndex === rowIndex && this.props.columnIndex === columnIndex && this.props.columnIndex !== 0 && <AutosizeTextarea autoFocus onChange={this.props.onCellChange} onBlur={this.props.onCellBlur} value={this.props.value}></AutosizeTextarea> }
 								{ (this.props.rowIndex !== rowIndex || this.props.columnIndex !== columnIndex || this.props.columnIndex === 0) && <span>{row[columnIndex]}</span> }
 							</TableFlex.Column>
@@ -105,37 +149,39 @@ export class DataBoundFlexTable extends React.Component	{
 		});
 
 		return (
-			<TableFlex>
-				<TableFlex.Header>
-					<TableFlex.Row>
-						{this.props.data && this.props.data[0].map(column => {
-							return (
-								<TableFlex.Column key={column}><span>{column}</span></TableFlex.Column>
-							);
-						})}
-						<TableFlex.Column>
-						</TableFlex.Column>
-					</TableFlex.Row>
-				</TableFlex.Header>
-				<TableFlex.Body>
-					{rows}
-				</TableFlex.Body>
-				<TableFlex.Footer>
-					<TableFlex.Row>
-						{this.props.data && this.props.data[0].map((column, columnIndex) => {
-							return (
-								<TableFlex.Column key={columnIndex} onClick={this.props.onCellClick && this.props.onCellClick.bind(this, -1, columnIndex)}>
-									{ this.props.rowIndex === -1 && this.props.columnIndex === columnIndex && this.props.columnIndex !== 0 && <AutosizeTextarea autoFocus onChange={this.props.onCellChange} onBlur={this.props.onCellBlur} value={this.props.value}></AutosizeTextarea> }
-									{ (this.props.rowIndex !== -1 || this.props.columnIndex !== columnIndex || this.props.columnIndex === 0) && <span>{this.props.newRow && this.props.newRow[columnIndex]}</span> }
-								</TableFlex.Column>
-							);
-						})}
-						<TableFlex.Column>
-							<Button color="primary" onClick={this.props.onAddRowButtonClick && this.props.onAddRowButtonClick.bind(this, -1)}><Octicon name="plus" /></Button>
-						</TableFlex.Column>
-					</TableFlex.Row>
-				</TableFlex.Footer>
-			</TableFlex>
+			<Shortcuts name="DataBoundFlexTable" handler={this.handleShortcuts} ref={this.focusRef}>
+				<TableFlex>
+					<TableFlex.Header>
+						<TableFlex.Row>
+							{this.props.data && this.props.data[0].map(column => {
+								return (
+									<TableFlex.Column key={column}><span>{column}</span></TableFlex.Column>
+								);
+							})}
+							<TableFlex.Column>
+							</TableFlex.Column>
+						</TableFlex.Row>
+					</TableFlex.Header>
+					<TableFlex.Body>
+						{rows}
+					</TableFlex.Body>
+					<TableFlex.Footer>
+						<TableFlex.Row>
+							{this.props.data && this.props.data[0].map((column, columnIndex) => {
+								return (
+									<TableFlex.Column key={columnIndex} onClick={this.props.onCellClick && this.props.onCellClick.bind(this, -1, columnIndex)}>
+										{ this.props.rowIndex === -1 && this.props.columnIndex === columnIndex && this.props.columnIndex !== 0 && <AutosizeTextarea autoFocus onChange={this.props.onCellChange} onBlur={this.props.onCellBlur} value={this.props.value}></AutosizeTextarea> }
+										{ (this.props.rowIndex !== -1 || this.props.columnIndex !== columnIndex || this.props.columnIndex === 0) && <span>{this.props.newRow && this.props.newRow[columnIndex]}</span> }
+									</TableFlex.Column>
+								);
+							})}
+							<TableFlex.Column>
+								<Button color="primary" onClick={this.props.onAddRowButtonClick && this.props.onAddRowButtonClick.bind(this, -1)}><Octicon name="plus" /></Button>
+							</TableFlex.Column>
+						</TableFlex.Row>
+					</TableFlex.Footer>
+				</TableFlex>
+			</Shortcuts>
 		);
 	}
 }

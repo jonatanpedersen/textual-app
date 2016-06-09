@@ -104,3 +104,5 @@ input, textarea, select {
 	margin: 1rem 0;
 	display: block;
 }
+
+shortcuts:focus { outline:none; }
