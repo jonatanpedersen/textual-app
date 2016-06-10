@@ -11,7 +11,6 @@ import { Brand } from './components/Brand';
 import { DefaultLayout } from './Layout';
 import { DataBoundFlexTable, TableFlex } from './components/TableFlex';
 import { del, get, patch, put, post } from './api';
-import { getUserRepositories } from './user';
 import AutosizeTextarea from 'react-autosize-textarea';
 import Octicon from 'react-octicon';
 import ProjectsStyles from './projects.scss';
@@ -22,6 +21,10 @@ import { Loading } from './components/Loading';
 import { Text } from './components/Text';
 import classnames from 'classnames';
 import Shortcuts from 'react-shortcuts/component';
+
+export async function getUserRepositories() {
+	return get('/api/user/repositories');
+}
 
 export async function getProjects() {
 	return get('/api/projects');
@@ -240,7 +243,7 @@ export class NewProjectForm extends React.Component {
 					</Paragraph>
 					<Paragraph>
 						<label htmlFor="userRepository">Pick a repository from the list, or write the url below</label>
-						<select className="user-repository" value={this.props.selectedUserRepository} onChange={this.props.onUserRepositoryChange}>
+						<select className="c-select user-repository" value={this.props.selectedUserRepository} onChange={this.props.onUserRepositoryChange}>
 						{
 							this.props.userRepositories.map(userRepository => {
 								return <option key={userRepository.url} value={userRepository.url}>{userRepository.name}</option>;

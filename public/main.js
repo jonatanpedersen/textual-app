@@ -3,7 +3,7 @@ import { render } from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Link, browserHistory } from 'react-router';
 import * as api from './api';
 import { NewProject, Projects, Project, ProjectsLayout, ProjectTexts, ProjectMetrics, ProjectSettings } from './projects';
-import { User, UserProfile, UserSettings } from './user';
+import { User } from './user/User';
 import { Home } from './home';
 import { Layout } from './layout';
 import { Edit } from './edit';
