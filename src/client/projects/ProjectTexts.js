@@ -171,9 +171,9 @@ export class ProjectTexts extends React.Component	{
 			let language = this.state.data[0][columnIndex];
 
 			if (oldValue === undefined) {
-				//addProjectTextValue(this.props.params.projectName, textId, language, newValue);
+				addProjectTextValue(this.props.params.projectName, textId, language, newValue);
 			} else {
-				//replaceProjectTextValue(this.props.params.projectName, textId, language, newValue);
+				replaceProjectTextValue(this.props.params.projectName, textId, language, newValue);
 			}
 		}
 

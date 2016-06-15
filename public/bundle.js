@@ -26838,7 +26838,7 @@
 /* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -28115,10 +28115,10 @@
 				let language = this.state.data[0][columnIndex];
 
 				if (oldValue === undefined) {
-					//addProjectTextValue(this.props.params.projectName, textId, language, newValue);
+					addProjectTextValue(this.props.params.projectName, textId, language, newValue);
 				} else {
-						//replaceProjectTextValue(this.props.params.projectName, textId, language, newValue);
-					}
+					replaceProjectTextValue(this.props.params.projectName, textId, language, newValue);
+				}
 			}
 
 			let data = this.state.data;
