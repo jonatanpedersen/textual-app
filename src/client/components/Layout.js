@@ -31,9 +31,9 @@ export class LayoutBody extends React.Component {
     let className = classnames('layout__body', this.props.className);
 
     return (
-      <main className={className}>
+      <content className={className}>
         {this.props.children}
-      </main>
+      </content>
     );
   }
 }

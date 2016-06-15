@@ -79,6 +79,11 @@ input, textarea, select {
  outline: none;
 }
 
+input:focus, textarea:focus, select:focus {
+ outline: 1px solid #ccc;
+ box-shadow: 0 0 1rem #ccc;
+}
+
 .loading {
 	position: absolute;
 	margin-top: -4rem;
@@ -104,3 +109,5 @@ input, textarea, select {
 	margin: 1rem 0;
 	display: block;
 }
+
+shortcuts:focus { outline:none; }

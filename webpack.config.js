@@ -1,7 +1,7 @@
 var webpack = require('webpack');
 
 module.exports = {
-    entry: "./public/index.js",
+    entry: "./src/client/index.js",
     output: {
         path: __dirname + '/public',
         filename: "./bundle.js"
@@ -17,6 +17,7 @@ module.exports = {
                     plugins: ['transform-runtime']
                 }
             },
+            { test: /\.json$/, loaders: ["json"] },
             { test: /\.scss$/, loaders: ["style", "css", "sass"] },
             { test: /\.css$/, loaders: ["style", "css"] },
             { test: /\.(otf|eot|svg|ttf|woff|woff2).*$/, loader: 'url?limit=1048576' }

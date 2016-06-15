@@ -1,0 +1,19 @@
+{
+	"Projects": {
+		"MOVE_UP": "up",
+		"MOVE_DOWN": "down",
+		"OPEN_PROJECT": "enter",
+		"NEW_PROJECT": "n"
+	},
+	"ProjectTexts": {
+		"SEARCH": "."
+	},
+	"DataBoundFlexTable": {
+		"UP": "up",
+		"RIGHT": "right",
+		"DOWN": "down",
+		"LEFT": "left",
+		"ENTER": "enter",
+		"ESCAPE": "esc"
+	}
+}

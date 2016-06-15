@@ -71,3 +71,11 @@
 .table-flex .table-column > textarea {
 	background-color: rgba(192, 0, 0, 0.05);
 }
+
+.focused {
+	background-color: #fafafa;
+}
+
+.selected {
+	background-color: #fafafa;
+}

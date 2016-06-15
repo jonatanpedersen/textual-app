@@ -33,7 +33,7 @@ export async function main () {
         clientSecret: cnf.github.client_secret,
         callbackURL: cnf.github.callback_url
       },
-      makeGitHubStrategyCallback(users.makeGetUserGitHubRepositories(GitHub), users.makeUpdateUserGitHub(db), (user) => cnf.github.authorizedUsers.includes(user))
+      makeGitHubStrategyCallback(users.makeGetUserGitHubRepositories(GitHub), users.makeUpdateUserGitHub(db), (user) => cnf.github.authorizedUsers.indexOf(user) > -1)
     ));
 
     app.use(cookieParser());

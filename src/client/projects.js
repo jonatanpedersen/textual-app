@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from 'react-dom';
+import ReactDOM from 'react-dom';
 import { Link, browserHistory } from 'react-router';
 import { Button } from './components/Button';
 import { ButtonGroup } from './components/ButtonGroup';
@@ -8,10 +8,9 @@ import { NavBar } from './components/NavBar';
 import { Container } from './components/Container';
 import { Layout } from './components/Layout';
 import { Brand } from './components/Brand';
-import { DefaultLayout } from './Layout';
+import { DefaultLayout } from './components/DefaultLayout';
 import { DataBoundFlexTable, TableFlex } from './components/TableFlex';
 import { del, get, patch, put, post } from './api';
-import { getUserRepositories } from './user';
 import AutosizeTextarea from 'react-autosize-textarea';
 import Octicon from 'react-octicon';
 import ProjectsStyles from './projects.scss';
@@ -21,6 +20,11 @@ import { SideBar, SideBarLink } from './components/SideBar';
 import { Loading } from './components/Loading';
 import { Text } from './components/Text';
 import classnames from 'classnames';
+import Shortcuts from 'react-shortcuts/component';
+
+export async function getUserRepositories() {
+	return get('/api/user/repositories');
+}
 
 export async function getProjects() {
 	return get('/api/projects');
@@ -234,12 +238,12 @@ export class NewProjectForm extends React.Component {
 				<Form.Body>
 					<Paragraph>
 						<label htmlFor="project-name" className="project-name">Project name</label>
-						<input id="project-name" className="project-name" type="text" value={this.props.projectName} onChange={this.props.onProjectNameChange} />
+						<input id="project-name" className="project-name" type="text" value={this.props.projectName} onChange={this.props.onProjectNameChange} autoFocus={true} />
 						<tooltip>e.g. <span>textual-app</span></tooltip>
 					</Paragraph>
 					<Paragraph>
 						<label htmlFor="userRepository">Pick a repository from the list, or write the url below</label>
-						<select className="user-repository" value={this.props.selectedUserRepository} onChange={this.props.onUserRepositoryChange}>
+						<select className="c-select user-repository" value={this.props.selectedUserRepository} onChange={this.props.onUserRepositoryChange}>
 						{
 							this.props.userRepositories.map(userRepository => {
 								return <option key={userRepository.url} value={userRepository.url}>{userRepository.name}</option>;
@@ -274,21 +278,47 @@ export class NewProjectButton extends React.Component {
 }
 
 export class Projects extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = { selectedProject: 0 };
+		this.handleShortcuts = this.handleShortcuts.bind(this);
+	}
+
+	handleShortcuts (action, event) {
+		event.preventDefault();
+    switch (action) {
+      case 'MOVE_UP': this.setState({selectedProject: Math.max(0, this.state.selectedProject - 1) }); break;
+			case 'MOVE_DOWN': this.setState({selectedProject: Math.min(this.props.projects.length - 1, this.state.selectedProject + 1) }); break;
+			case 'OPEN_PROJECT': browserHistory.push(`/projects/${this.props.projects[this.state.selectedProject].name}`); break;
+      case 'NEW_PROJECT': browserHistory.push('/projects/new'); break;
+		}
+	}
+
+	focusRef (component) {
+		let domNode = ReactDOM.findDOMNode(component);
+		if (domNode && domNode.focus) {
+			domNode.focus();
+		}
+	}
+
 	render () {
 		let projects = this.props.projects;
+		let selectedProject = this.state.selectedProject;
 
 		if (projects) {
 			return (
-				<DefaultLayout>
-					<DefaultLayout.Header />
-					<DefaultLayout.Body>
-						<Container>
-							<ProjectsTable projects={projects} />
-							<NewProjectButton />
-						</Container>
-					</DefaultLayout.Body>
-					<DefaultLayout.Footer />
-				</DefaultLayout>
+				<Shortcuts name="Projects" handler={this.handleShortcuts} ref={this.focusRef}>
+					<DefaultLayout>
+						<DefaultLayout.Header />
+						<DefaultLayout.Body>
+							<Container>
+								<ProjectsTable selectedProject={selectedProject} projects={projects} />
+								<NewProjectButton />
+							</Container>
+						</DefaultLayout.Body>
+						<DefaultLayout.Footer />
+					</DefaultLayout>
+				</Shortcuts>
 			);
 		}
 
@@ -300,8 +330,8 @@ export class ProjectsTable extends React.Component {
 	render() {
 		let projects = this.props.projects;
 
-		let rows = projects && projects.map(project => (
-			<ProjectsTableRow key={project._id} project={project} />
+		let rows = projects && projects.map((project, idx) => (
+			<ProjectsTableRow key={project._id} project={project} isSelected={this.props.selectedProject === idx} />
 		));
 
 		return (
@@ -322,9 +352,10 @@ export class ProjectsTable extends React.Component {
 export class ProjectsTableRow extends React.Component {
 	render() {
 		let project = this.props.project;
+		let trClassname = classnames('projects-table__row', { 'projects-table__row--selected': this.props.isSelected });
 
 		return project && (
-			<tr className="projects-table__row">
+			<tr className={trClassname}>
 				<td className="project-name">
 					<Link to={`/projects/${project.name}`}>{project.name}</Link>
 				</td>
@@ -498,6 +529,7 @@ export class ProjectTexts extends React.Component	{
 		this.handleAddRowButtonClick = this.handleAddRowButtonClick.bind(this);
 		this.handleFilterChange = this.handleFilterChange.bind(this);
 		this.handleRemoveRowButtonClick = this.handleRemoveRowButtonClick.bind(this);
+		this.handleShortcuts = this.handleShortcuts.bind(this);
 		this.fetch(props.params.projectName);
 	}
 
@@ -600,7 +632,7 @@ export class ProjectTexts extends React.Component	{
 
 	handleRemoveRowButtonClick (rowIndex) {
 		let data = this.state.data;
-		let textId = data[rowIndex][0];
+		let textId = data[rowIndex][1];
 
 		removeProjectText(this.props.params.projectName, textId).then(() => {
 			data.splice(rowIndex, 1);
@@ -627,6 +659,19 @@ export class ProjectTexts extends React.Component	{
 		return data;
 	}
 
+	handleShortcuts (action, event) {
+		switch (action) {
+			case 'SEARCH': break;
+		}
+	}
+
+	focusRef (component) {
+		let domNode = ReactDOM.findDOMNode(component);
+		if (domNode && domNode.focus) {
+			domNode.focus();
+		}
+	}
+
 	render() {
 		let data = this.state.data;
 		let filter = this.state.filter;
@@ -640,6 +685,7 @@ export class ProjectTexts extends React.Component	{
 				value={this.state.value}
 				columnIndex={this.state.columnIndex}
 				rowIndex={this.state.rowIndex}
+				cursor={this.state.cursor}
 				newRow={this.state.newRow}
 				onCellBlur={this.handleCellBlur}
 				onCellChange={this.handleCellChange}
@@ -652,15 +698,17 @@ export class ProjectTexts extends React.Component	{
 		}
 
 		return (
-			<ProjectLayout className="project-texts-layout">
-				<ProjectLayout.Header onProjectDropdownChange={this.props.handleProjectDropdownChange} selectedProject={this.props.project} projects={this.props.projects}>
-					<ProjectTextsFilter value={filter} onChange={this.handleFilterChange} />
-				</ProjectLayout.Header>
-				<ProjectLayout.Body project={this.props.project}>
-					{content}
-				</ProjectLayout.Body>
-				<ProjectLayout.Footer />
-			</ProjectLayout>
+			<Shortcuts name="ProjectTexts" handler={this.handleShortcuts} ref={this.focusRef}>
+				<ProjectLayout className="project-texts-layout">
+					<ProjectLayout.Header onProjectDropdownChange={this.props.handleProjectDropdownChange} selectedProject={this.props.project} projects={this.props.projects}>
+						<ProjectTextsFilter value={filter} ref="filter" onChange={this.handleFilterChange} />
+					</ProjectLayout.Header>
+					<ProjectLayout.Body project={this.props.project}>
+						{content}
+					</ProjectLayout.Body>
+					<ProjectLayout.Footer />
+				</ProjectLayout>
+			</Shortcuts>
 		);
 	}
 }

@@ -21,7 +21,7 @@
 
 	.layout__body {
 		flex: 1;
-		overflow-y: hidden;
+		overflow-y: auto;
 		display: flex;
 		flex-direction: row;
 	}

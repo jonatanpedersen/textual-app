@@ -1,9 +1,9 @@
 import React from 'react';
-import { Layout } from './components/Layout';
-import { Nav } from './components/Nav';
-import { Text } from './components/Text';
-import { Paragraph } from './components/Paragraph';
-import { Brand } from './components/Brand';
+import { Layout } from './Layout';
+import { Nav } from './Nav';
+import { Text } from './Text';
+import { Paragraph } from './Paragraph';
+import { Brand } from './Brand';
 import { Link } from 'react-router';
 import classnames from 'classnames';
 
