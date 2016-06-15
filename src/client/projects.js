@@ -8,7 +8,7 @@ import { NavBar } from './components/NavBar';
 import { Container } from './components/Container';
 import { Layout } from './components/Layout';
 import { Brand } from './components/Brand';
-import { DefaultLayout } from './Layout';
+import { DefaultLayout } from './components/DefaultLayout';
 import { DataBoundFlexTable, TableFlex } from './components/TableFlex';
 import { del, get, patch, put, post } from './api';
 import AutosizeTextarea from 'react-autosize-textarea';

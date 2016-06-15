@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "concurrent --kill-others \"webpack --watch\" \"nodemon -i ./public\"",
+    "dev": "concurrent --kill-others \"webpack --watch\" \"nodemon\"",
     "test": "mocha"
   },
   "repository": {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container } from '../components/Container';
-import { DefaultLayout } from '../layout';
+import { DefaultLayout } from '../components/DefaultLayout';
 import { UserProfile } from './UserProfile';
 import { UserSettings } from './UserSettings';
 

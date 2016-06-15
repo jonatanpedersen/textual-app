@@ -72,6 +72,10 @@
 	background-color: rgba(192, 0, 0, 0.05);
 }
 
-.active {
+.focused {
+	background-color: #fafafa;
+}
+
+.selected {
 	background-color: #fafafa;
 }

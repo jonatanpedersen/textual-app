@@ -13,6 +13,7 @@
 		"RIGHT": "right",
 		"DOWN": "down",
 		"LEFT": "left",
-		"ENTER": "enter"
+		"ENTER": "enter",
+		"ESCAPE": "esc"
 	}
 }

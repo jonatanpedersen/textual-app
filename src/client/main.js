@@ -2,10 +2,14 @@ import React from 'react';
 import { render } from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Link, browserHistory } from 'react-router';
 import * as api from './api';
-import { NewProject, Projects, Project, ProjectsLayout, ProjectTexts, ProjectMetrics, ProjectSettings } from './projects';
+import { ProjectTexts } from './projects/ProjectTexts';
+import { NewProject } from './projects/NewProject';
+import { ProjectMetrics } from './projects/ProjectMetrics';
+import { ProjectSettings } from './projects/ProjectSettings';
+import { ProjectsLayout } from './projects/ProjectsLayout';
+import { Projects } from './projects/Projects';
+import { Project } from './projects/Project';
 import { User } from './user/User';
-import { Home } from './home';
-import { Layout } from './layout';
 import { Edit } from './edit';
 import keymap from './keymap.json';
 import ShortcutsManager from 'react-shortcuts';
@@ -17,7 +21,7 @@ export function main () {
   render((
     <Main shortcutsManager={shortcutsManager}>
       <Router history={browserHistory}>
-        <Route path="/" component={Layout}>
+        <Route path="/">
           <IndexRedirect to="/projects" />
           <Route path="/projects/new" component={NewProject} />
           <Route path="/projects" component={ProjectsLayout}>
