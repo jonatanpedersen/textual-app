@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserProfileForm } from './UserProfileForm';
-import { get } from '../api';
+import { get, put } from '../api';
 
 export function getUserProfile() {
 	return get('/api/user/profile');
