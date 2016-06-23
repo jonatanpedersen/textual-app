@@ -37904,7 +37904,7 @@
 	}
 
 	function updateUserProfile(newUserProfile) {
-		return put('/api/user/profile', newUserProfile);
+		return (0, _api.put)('/api/user/profile', newUserProfile);
 	}
 
 	var UserProfile = exports.UserProfile = function (_React$Component) {
