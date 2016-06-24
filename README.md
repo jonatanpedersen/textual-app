@@ -22,7 +22,7 @@ and
 npm start
 ```
 
-Then open user interface http://localhost:8080.
+Then open user interface http://localhost:80.
 
 
 ## Test
