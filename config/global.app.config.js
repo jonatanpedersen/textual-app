@@ -12,7 +12,8 @@ export default {
 			'mpushkin',
 			'Oligrand',
 			'sscdebitoor',
-			'wtfil'
+			'wtfil',
+			'ajleoni'
 		]
 	}
 }
