@@ -13,7 +13,8 @@ export default {
 			'Oligrand',
 			'sscdebitoor',
 			'wtfil',
-			'ajleoni'
+			'ajleoni',
+			'hilleer'
 		]
 	}
 }
