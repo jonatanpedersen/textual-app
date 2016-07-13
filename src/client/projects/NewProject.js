@@ -5,6 +5,7 @@ import { Loading } from '../components/Loading';
 import classnames from 'classnames';
 import { NewProjectForm } from './NewProjectForm';
 import { get, post } from '../api';
+import { browserHistory } from 'react-router';
 
 export async function getUserRepositories() {
 	return get('/api/user/repositories');
