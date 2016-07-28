@@ -14,7 +14,8 @@ export default {
 			'sscdebitoor',
 			'wtfil',
 			'ajleoni',
-			'hilleer'
+			'hilleer',
+			'omichelsen'
 		]
 	}
 }
