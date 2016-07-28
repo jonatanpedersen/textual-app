@@ -3,8 +3,8 @@ export function makeSerializeUser () {
     try {
       let userId = user._id;
       callback(null, userId);
-    } catch (ex) {
-      callback(ex);
+    } catch (err) {
+      callback(err);
     }
   };
 }
@@ -16,14 +16,14 @@ export function makeDeserializeUser (getUser) {
       user.id = user._id.toString();
 
       callback(null, user);
-    } catch (ex) {
-      callback(ex);
+    } catch (err) {
+      callback(err);
     }
   };
 }
 
 export function makeGitHubStrategyCallback (getUserGitHubRepositories, updateUserGitHub, isUserAuthorized) {
-  return async function(accessToken, refreshToken, profile, done) {
+  return async function(accessToken, refreshToken, profile, callback) {
     try {
       let userGitHubRepositories = await getUserGitHubRepositories(accessToken);
 
@@ -39,9 +39,9 @@ export function makeGitHubStrategyCallback (getUserGitHubRepositories, updateUse
         repositories: userGitHubRepositories
       });
 
-      return done(null, user);
+      return callback(null, user);
     } catch (err) {
-      return done(err);
+      return callback();
     }
   };
 }

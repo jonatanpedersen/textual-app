@@ -474,6 +474,8 @@
 
 	var _reactShortcuts2 = _interopRequireDefault(_reactShortcuts);
 
+	var _Unauthorized = __webpack_require__(453);
+
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -506,7 +508,7 @@
 	          )
 	        ),
 	        _react2.default.createElement(_reactRouter.Route, { path: '/user', component: _User.User }),
-	        _react2.default.createElement(_reactRouter.Route, { path: '/edit', component: _edit.Edit })
+	        _react2.default.createElement(_reactRouter.Route, { path: '/unauthorized', component: _Unauthorized.Unauthorized })
 	      )
 	    )
 	  ), mainElement);
@@ -29273,7 +29275,7 @@
 /* 328 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -57876,6 +57878,285 @@
 	  str = str.replace(/^-+|-+$/g, '');
 	  return str.toLowerCase();
 	};
+
+
+/***/ },
+/* 453 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.Unauthorized = undefined;
+
+	var _getPrototypeOf = __webpack_require__(6);
+
+	var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+
+	var _classCallCheck2 = __webpack_require__(32);
+
+	var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+	var _createClass2 = __webpack_require__(33);
+
+	var _createClass3 = _interopRequireDefault(_createClass2);
+
+	var _possibleConstructorReturn2 = __webpack_require__(37);
+
+	var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+	var _inherits2 = __webpack_require__(84);
+
+	var _inherits3 = _interopRequireDefault(_inherits2);
+
+	var _react = __webpack_require__(92);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactRouter = __webpack_require__(263);
+
+	var _Container = __webpack_require__(412);
+
+	var _Headers = __webpack_require__(454);
+
+	var _Paragraph = __webpack_require__(399);
+
+	var _DefaultLayout = __webpack_require__(391);
+
+	var _Unauthorized = __webpack_require__(457);
+
+	var _Unauthorized2 = _interopRequireDefault(_Unauthorized);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var Unauthorized = exports.Unauthorized = function (_React$Component) {
+		(0, _inherits3.default)(Unauthorized, _React$Component);
+
+		function Unauthorized() {
+			(0, _classCallCheck3.default)(this, Unauthorized);
+			return (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(Unauthorized).apply(this, arguments));
+		}
+
+		(0, _createClass3.default)(Unauthorized, [{
+			key: 'render',
+			value: function render() {
+				return _react2.default.createElement(
+					_DefaultLayout.DefaultLayout,
+					{ className: 'unauthorized' },
+					_react2.default.createElement(_DefaultLayout.DefaultLayout.Header, null),
+					_react2.default.createElement(
+						_DefaultLayout.DefaultLayout.Body,
+						null,
+						_react2.default.createElement(
+							_Container.Container,
+							null,
+							_react2.default.createElement(
+								_Headers.H1,
+								null,
+								'Unauthorized'
+							),
+							_react2.default.createElement(
+								_Paragraph.Paragraph,
+								null,
+								'textual.io is currently in private beta, and you have not been granted access.'
+							)
+						)
+					),
+					_react2.default.createElement(_DefaultLayout.DefaultLayout.Footer, null)
+				);
+			}
+		}]);
+		return Unauthorized;
+	}(_react2.default.Component);
+
+/***/ },
+/* 454 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.H3 = exports.H2 = exports.H1 = undefined;
+
+	var _getPrototypeOf = __webpack_require__(6);
+
+	var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+
+	var _classCallCheck2 = __webpack_require__(32);
+
+	var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+	var _createClass2 = __webpack_require__(33);
+
+	var _createClass3 = _interopRequireDefault(_createClass2);
+
+	var _possibleConstructorReturn2 = __webpack_require__(37);
+
+	var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+	var _inherits2 = __webpack_require__(84);
+
+	var _inherits3 = _interopRequireDefault(_inherits2);
+
+	var _react = __webpack_require__(92);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _Headers = __webpack_require__(455);
+
+	var _Headers2 = _interopRequireDefault(_Headers);
+
+	var _classnames = __webpack_require__(366);
+
+	var _classnames2 = _interopRequireDefault(_classnames);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var H1 = exports.H1 = function (_React$Component) {
+	  (0, _inherits3.default)(H1, _React$Component);
+
+	  function H1() {
+	    (0, _classCallCheck3.default)(this, H1);
+	    return (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(H1).apply(this, arguments));
+	  }
+
+	  (0, _createClass3.default)(H1, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'h1',
+	        null,
+	        this.props.children
+	      );
+	    }
+	  }]);
+	  return H1;
+	}(_react2.default.Component);
+
+	var H2 = exports.H2 = function (_React$Component2) {
+	  (0, _inherits3.default)(H2, _React$Component2);
+
+	  function H2() {
+	    (0, _classCallCheck3.default)(this, H2);
+	    return (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(H2).apply(this, arguments));
+	  }
+
+	  (0, _createClass3.default)(H2, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'h2',
+	        null,
+	        this.props.children
+	      );
+	    }
+	  }]);
+	  return H2;
+	}(_react2.default.Component);
+
+	var H3 = exports.H3 = function (_React$Component3) {
+	  (0, _inherits3.default)(H3, _React$Component3);
+
+	  function H3() {
+	    (0, _classCallCheck3.default)(this, H3);
+	    return (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(H3).apply(this, arguments));
+	  }
+
+	  (0, _createClass3.default)(H3, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'h3',
+	        { className: 'header header-3' },
+	        this.props.children
+	      );
+	    }
+	  }]);
+	  return H3;
+	}(_react2.default.Component);
+
+/***/ },
+/* 455 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(456);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(4)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./../../../node_modules/sass-loader/index.js!./Headers.scss", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./../../../node_modules/sass-loader/index.js!./Headers.scss");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 456 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(3)();
+	// imports
+
+
+	// module
+	exports.push([module.id, "h1 {\n  margin-bottom: 1rem; }\n\nh2 {\n  margin-bottom: 0.5rem; }\n\nh3 {\n  margin-bottom: 0.25rem; }\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 457 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(458);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(4)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./Unauthorized.scss", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./Unauthorized.scss");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 458 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(3)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".unauthorized .container {\n  margin-top: 4rem; }\n", ""]);
+
+	// exports
 
 
 /***/ }

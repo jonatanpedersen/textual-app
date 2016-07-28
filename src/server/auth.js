@@ -1,6 +1,7 @@
 export function makeLoginRouteHandler (redirectUrl) {
-  if (!redirectUrl)
-    throw new Error('redirectUrl can\'t be undefined');
+  if (typeof redirectUrl !== 'string') {
+    throw new TypeError('redirectUrl is not a string');
+  }
 
   return function loginRouteHandler (req, res) {
     res.redirect(redirectUrl);
@@ -8,8 +9,9 @@ export function makeLoginRouteHandler (redirectUrl) {
 }
 
 export function makeLogoutRouteHandler (redirectUrl) {
-  if (!redirectUrl)
-    throw new Error('redirectUrl can\'t be undefined');
+  if (typeof redirectUrl !== 'string') {
+    throw new TypeError('redirectUrl is not a string');
+  }
 
   return function logoutRouteHandler (req, res) {
      req.logout();
