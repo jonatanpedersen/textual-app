@@ -28,11 +28,6 @@ export class NewProjectForm extends React.Component {
 						}
 						</select>
 					</Paragraph>
-					<Paragraph>
-						<label htmlFor="repositoryUrl">Repository url</label>
-						<input id="repositoryUrl" className="repository-url" type="uri" value={this.props.repositoryUrl} onChange={this.props.onRepositoryUrlChange} required />
-						<tooltip>e.g. <span>https://github.com/jonatanpedersen/textual-app-texts.git</span></tooltip>
-					</Paragraph>
 				</Form.Body>
 				<Form.Footer>
 					<CreateProjectButton />
