@@ -21,7 +21,7 @@ export class TableFlexHeader extends React.Component {
 
 export class TableFlexBody extends React.Component {
   render() {
-		let className = classnames('table-body', this.props.className);
+    let className = classnames('table-body', this.props.className);
 
     return (
       <div className={className}>
@@ -33,7 +33,7 @@ export class TableFlexBody extends React.Component {
 
 export class TableFlexFooter extends React.Component {
   render() {
-		let className = classnames('table-footer', this.props.className);
+    let className = classnames('table-footer', this.props.className);
 
     return (
       <div className={className}>
@@ -45,7 +45,7 @@ export class TableFlexFooter extends React.Component {
 
 export class TableFlexRow extends React.Component {
   render() {
-		let className = classnames('table-row', this.props.className);
+    let className = classnames('table-row', this.props.className);
 
     return (
       <div className={className}>
@@ -57,7 +57,7 @@ export class TableFlexRow extends React.Component {
 
 export class TableFlexColumn extends React.Component {
   render() {
-		let className = classnames('table-column', this.props.className);
+    let className = classnames('table-column', this.props.className);
 
     return (
       <div className={className} onClick={this.props.onClick}>
@@ -69,7 +69,7 @@ export class TableFlexColumn extends React.Component {
 
 export class TableFlex extends React.Component {
   render() {
-		let className = classnames('table-flex', this.props.className);
+    let className = classnames('table-flex', this.props.className);
 
     return (
       <div className={className}>

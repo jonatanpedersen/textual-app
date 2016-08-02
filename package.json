@@ -63,11 +63,15 @@
     "textual-app-texts": "git+ssh://github.com/jonatanpedersen/textual-app-texts.git",
     "url-loader": "^0.5.7",
     "vhost": "^3.0.2",
-    "webpack": "^1.13.0",
+    "webpack": "^1.13.1",
     "whatwg-fetch": "^1.0.0"
   },
   "engines": {
     "node": "6.1.0",
     "npm": "3.8.5"
+  },
+  "devDependencies": {
+    "webpack-dev-middleware": "^1.6.1",
+    "webpack-hot-middleware": "^2.12.1"
   }
 }

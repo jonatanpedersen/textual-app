@@ -18,8 +18,12 @@ import * as projects from './projects';
 import * as users from './users';
 import GitHub from 'github-api';
 import mongodb from 'mongodb';
+import webpack from 'webpack';
+import webpackDevMiddleware from 'webpack-dev-middleware';
 import { connectToMongoDB } from './mongodb';
 import { makeSerializeUser, makeDeserializeUser, makeGitHubStrategyCallback } from './passport';
+
+const compiler = webpack(require('../../webpack.config'));
 
 export async function main () {
   try {
@@ -35,6 +39,9 @@ export async function main () {
       },
       makeGitHubStrategyCallback(users.makeGetUserGitHubRepositories(GitHub), users.makeUpdateUserGitHub(db), (user) => cnf.github.authorizedUsers.indexOf(user) > -1)
     ));
+
+
+    app.use(webpackDevMiddleware(compiler, {noInfo: true}));
 
     app.use(cookieParser());
     app.use(bodyParser.json());

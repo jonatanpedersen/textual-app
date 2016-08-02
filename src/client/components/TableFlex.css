@@ -30,6 +30,10 @@
 .table-flex .table-body {
 	 flex: 1;
 	 overflow-y: scroll;
+	 margin-bottom: 40px;
+}
+.table-flex .table-footer {
+	border-top: 1px solid #eee;
 }
 
 .table-flex .table-header .table-column {
