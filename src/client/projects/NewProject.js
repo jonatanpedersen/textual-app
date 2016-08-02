@@ -5,6 +5,8 @@ import { Loading } from '../components/Loading';
 import classnames from 'classnames';
 import { NewProjectForm } from './NewProjectForm';
 import { get, post } from '../api';
+import { browserHistory } from 'react-router';
+import dashify from 'dashify';
 
 export async function getUserRepositories() {
 	return get('/api/user/repositories');
@@ -19,13 +21,13 @@ export class NewProject extends React.Component {
 		super(props);
 		this.state = {
 			projectName: '',
+			projectNameChanged: false,
 			repositoryUrl: '',
 			selectedUserRepository: '',
 			userRepositories: []
 		};
 
 		this.handleProjectNameChange = this.handleProjectNameChange.bind(this);
-		this.handleRepositoryUrlChange = this.handleRepositoryUrlChange.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.handleUserRepositoryChange = this.handleUserRepositoryChange.bind(this);
 
@@ -41,13 +43,7 @@ export class NewProject extends React.Component {
 	handleProjectNameChange (event) {
 		event.preventDefault();
 
-		this.setState({projectName: event.target.value});
-	}
-
-	handleRepositoryUrlChange (event) {
-		event.preventDefault();
-
-		this.setState({repositoryUrl: event.target.value});
+		this.setState({projectName: event.target.value, projectNameChanged: true});
 	}
 
 	handleSubmit (event) {
@@ -69,10 +65,11 @@ export class NewProject extends React.Component {
 			repositoryUrl: event.target.value
 		});
 
-		if (this.state.projectName === '') {
-			let projectName = this.state.userRepositories.find(repo => repo.url === event.target.value).name;
+		if (!this.state.projectNameChanged) {
+			let repository = this.state.userRepositories.find(repo => repo.url === event.target.value)
+			let projectName = dashify(repository.name);
 
-			this.setState({ projectName });
+			this.setState({projectName});
 		}
 	}
 
@@ -86,7 +83,6 @@ export class NewProject extends React.Component {
 					<Container>
 						<NewProjectForm
 							onProjectNameChange={this.handleProjectNameChange}
-							onRepositoryUrlChange={this.handleRepositoryUrlChange}
 							onSubmit={this.handleSubmit}
 							onUserRepositoryChange={this.handleUserRepositoryChange}
 							projectName={this.state.projectName}

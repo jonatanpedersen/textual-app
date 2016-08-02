@@ -13,6 +13,7 @@ import { User } from './user/User';
 import { Edit } from './edit';
 import keymap from './keymap.json';
 import ShortcutsManager from 'react-shortcuts';
+import { Unauthorized } from './Unauthorized'
 
 export function main () {
   let shortcutsManager = new ShortcutsManager(keymap);
@@ -33,7 +34,7 @@ export function main () {
             </Route>
           </Route>
           <Route path="/user" component={User} />
-  				<Route path="/edit" component={Edit} />
+  				<Route path="/unauthorized" component={Unauthorized} />
         </Route>
       </Router>
     </Main>

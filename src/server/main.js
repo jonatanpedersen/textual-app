@@ -53,7 +53,7 @@ export async function main () {
     app.get('/logout', auth.makeLogoutRouteHandler('/'));
     app.get('/auth/github', auth.makeAuthGithubRouteHandler(passport));
     app.get('/auth/github/callback',
-      auth.makeAuthGithubCallbackMiddleware(passport, '/'),
+      auth.makeAuthGithubCallbackMiddleware(passport, '/unauthorized'),
       auth.makeAuthGithubCallbackRouteHandler('/')
     );
 

@@ -111,3 +111,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 shortcuts:focus { outline:none; }
+
+select {
+  -webkit-appearance:none;
+} 
