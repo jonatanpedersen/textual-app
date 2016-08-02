@@ -16,6 +16,12 @@ export default {
 			'philipshurpik',
 			'ajleoni',
 			'hilleer',
+			'alexeydebitoor',
+			'AndreaDebitoor',
+			'Laco21',
+			'lenedebitoor',
+			'PilarPMC',
+			'SergioLozano',
 			'omichelsen'
 		]
 	}
