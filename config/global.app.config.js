@@ -23,7 +23,8 @@ export default {
 			'PilarPMC',
 			'SergioLozano',
 			'omichelsen',
-			'HannahHLN'
+			'HannahHLN',
+			'CharlesPlasson'
 		]
 	}
 }
