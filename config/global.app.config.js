@@ -22,7 +22,8 @@ export default {
 			'lenedebitoor',
 			'PilarPMC',
 			'SergioLozano',
-			'omichelsen'
+			'omichelsen',
+			'HannahHLN'
 		]
 	}
 }
