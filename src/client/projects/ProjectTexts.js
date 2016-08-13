@@ -148,8 +148,8 @@ export class ProjectTexts extends React.Component	{
 			getProjectTexts(projectName).then(projectTexts => {
 				let textIds = Object.keys(projectTexts);
 
-				let data = [['#', 'Text Id', ...projectSettings.languages], ...textIds.map((textId, idx) => {
-					return [idx + 1,textId, ...projectSettings.languages.map(language => projectTexts[textId][language])];
+				let data = [['Text Id', ...projectSettings.languages], ...textIds.map((textId, idx) => {
+					return [textId, ...projectSettings.languages.map(language => projectTexts[textId][language])];
 				})];
 
 				this.setState({data, rowIndex: -1, columnIndex: -1});
@@ -167,7 +167,7 @@ export class ProjectTexts extends React.Component	{
 		if (columnIndex === 0) {
 			moveProjectText(this.props.params.projectName, oldValue, newValue);
 		} else {
-			let textId = this.state.data[rowIndex][1];
+			let textId = this.state.data[rowIndex][0];
 			let language = this.state.data[0][columnIndex];
 
 			if (oldValue === undefined) {
@@ -187,8 +187,8 @@ export class ProjectTexts extends React.Component	{
 		let data = this.state.data;
 
 		let textId = newRow[1];
-		let newText = data[0].slice(2).reduce((newText, language, index) => {
-			newText[language] = newRow[index + 2];
+		let newText = data[0].slice(1).reduce((newText, language, index) => {
+			newText[language] = newRow[index + 1];
 
 			return newText;
 		}, {});
@@ -210,7 +210,7 @@ export class ProjectTexts extends React.Component	{
 
 	handleRemoveRow (rowIndex) {
 		let data = this.state.data;
-		let textId = data[rowIndex][1];
+		let textId = data[rowIndex][0];
 
 		removeProjectText(this.props.params.projectName, textId).then(() => {
 			data.splice(rowIndex, 1);
@@ -227,10 +227,12 @@ export class ProjectTexts extends React.Component	{
 				return data;
 			}
 
-			return data.filter((row, idx) => {
-				if (idx === 0) return true;
+			return data.map((row, idx) => {
+				if (idx === 0) {
+					return row;
+				}
 
-				return row.some(cell => pattern.test(cell));
+				return row.some(cell => pattern.test(cell)) ? row : undefined;
 			}) || [];
 		}
 

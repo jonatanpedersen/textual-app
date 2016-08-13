@@ -88,7 +88,7 @@ TableFlex.Column = TableFlexColumn;
 export class DataBoundFlexTable extends React.Component	{
 	constructor (props) {
 		super(props);
-		this.state = { rowIndex: 1, columnIndex: 1 };
+		this.state = { newRow: [], rowIndex: 1, columnIndex: 1 };
 		this.handleAddRowButtonClick = this.handleAddRowButtonClick.bind(this);
 		this.handleCellClick = this.handleCellClick.bind(this);
 		this.handleCellChange = this.handleCellChange.bind(this);
@@ -113,7 +113,7 @@ export class DataBoundFlexTable extends React.Component	{
 	}
 
 	moveTo (newRowIndex, newColumnIndex) {
-		if ((newRowIndex !== this.state.rowIndex || newColumnIndex !== this.state.columnIndex) && ((newRowIndex === -1 || newRowIndex > 0) && newRowIndex < this.props.data.length) && (newColumnIndex > 0 && newColumnIndex < this.props.data[0].length)) {
+		if ((newRowIndex !== this.state.rowIndex || newColumnIndex !== this.state.columnIndex) && ((newRowIndex === -1 || newRowIndex > 0) && newRowIndex < this.props.data.length) && (newColumnIndex >= 0 && newColumnIndex < this.props.data[0].length)) {
 			this.setState({ rowIndex: newRowIndex, columnIndex: newColumnIndex});
 		}
 	}
@@ -162,7 +162,7 @@ export class DataBoundFlexTable extends React.Component	{
 
 	handleAddRowButtonClick () {
 		this.props.onAddRow && this.props.onAddRow([...this.state.newRow]);
-		this.setState({newRow: undefined});
+		this.setState({newRow: []});
 	}
 
 	handleRemoveRowButtonClick (rowIndex) {
@@ -171,13 +171,13 @@ export class DataBoundFlexTable extends React.Component	{
 
 	render() {
 		let headerRow = this.props.data[0];
-		let newRow = this.state.newRow || [];
-		newRow[0] = this.props.data.length;
+		let newRow = this.state.newRow;
 
 		let rows = this.props.data && this.props.data.slice(1).map((row, rowIndex) => {
 			rowIndex++;
-			return (
+			return row && (
 				<TableFlex.Row key={rowIndex}>
+					<TableFlex.Column><span>{rowIndex}</span></TableFlex.Column>
 					{row.map((column, columnIndex) => {
 						return (
 							<DataBoundFlexTableColumn
@@ -203,6 +203,7 @@ export class DataBoundFlexTable extends React.Component	{
 				<TableFlex>
 					<TableFlex.Header>
 						<TableFlex.Row>
+							<TableFlex.Column><span>#</span></TableFlex.Column>
 							{this.props.data && this.props.data[0].map(column => {
 								return (
 									<TableFlex.Column key={column}><span>{column}</span></TableFlex.Column>
@@ -217,6 +218,7 @@ export class DataBoundFlexTable extends React.Component	{
 					</TableFlex.Body>
 					<TableFlex.Footer>
 						<TableFlex.Row key={newRow[0]}>
+							<TableFlex.Column><span>{this.props.data.length}</span></TableFlex.Column>
 							{this.props.data && this.props.data[0].map((column, columnIndex) => {
 								return (
 									<DataBoundFlexTableColumn
