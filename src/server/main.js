@@ -75,7 +75,6 @@ export async function main () {
 
     app.use('/', express.static('./node_modules/textual-brand/favicon'));
     app.use('/', express.static('./public'));
-
     app.use('/*', express.static('./public/index.html'));
 
     app.use(error.makeErrorMiddleware());
