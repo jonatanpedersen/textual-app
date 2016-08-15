@@ -12,6 +12,9 @@ export default {
     client_secret: process.env.GITHUB_CLIENT_SECRET,
     callback_url: process.env.HOST + '/auth/github/callback'
   },
+  jwt: {
+    secret: process.env.JWT_SECRET
+  },
   mongodb: {
     connectionString: process.env.MONGODB
   }
