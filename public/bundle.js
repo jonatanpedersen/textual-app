@@ -35901,10 +35901,6 @@
 
 	var _Brand2 = _interopRequireDefault(_Brand);
 
-	var _reactOcticon = __webpack_require__(374);
-
-	var _reactOcticon2 = _interopRequireDefault(_reactOcticon);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var Brand = exports.Brand = function (_React$Component) {
