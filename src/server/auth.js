@@ -36,7 +36,7 @@ export function makeAuthGithubCallbackMiddleware (passport, failureRedirect) {
 export function makeAuthGithubCallbackRouteHandler (generateToken, redirectUrl) {
   return function (req, res) {
     let token = generateToken(req.user._id);
-    res.cookie('jwt', token, { maxAge: 1000 * 60 * 20 });
+    res.cookie('jwt', token, { httpOnly: true });
     res.redirect(redirectUrl);
   }
 }
