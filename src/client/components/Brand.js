@@ -5,7 +5,7 @@ import Octicon from 'react-octicon';
 export class Brand extends React.Component {
 	render() {
 		return (
-			<span className="brand"><Octicon name="rocket"/></span>
+			<span className="brand"></span>
 		);
 	}
 }
