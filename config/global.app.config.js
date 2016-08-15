@@ -24,7 +24,8 @@ export default {
 			'SergioLozano',
 			'omichelsen',
 			'HannahHLN',
-			'CharlesPlasson'
+			'CharlesPlasson',
+			'WhitneyWHI'
 		]
 	}
 }
