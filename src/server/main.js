@@ -3,11 +3,11 @@ import https from 'https';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import session from 'express-session';
 import fs from 'fs';
 import path  from 'path';
 import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github';
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import cnf from 'cnf';
 import url from 'url';
 import mkdirp from 'mkdirp';
@@ -19,37 +19,44 @@ import * as users from './users';
 import GitHub from 'github-api';
 import mongodb from 'mongodb';
 import { connectToMongoDB } from './mongodb';
-import { makeSerializeUser, makeDeserializeUser, makeGitHubStrategyCallback } from './passport';
+import jsonwebtoken from 'jsonwebtoken';
 
 export async function main () {
   try {
     let app = express();
     let db = await connectToMongoDB(mongodb, cnf.mongodb.connectionString);
 
-    passport.serializeUser(makeSerializeUser());
-    passport.deserializeUser(makeDeserializeUser(users.makeGetUser(db)));
+    passport.use(new JwtStrategy({
+        jwtFromRequest: ExtractJwt.fromExtractors([
+          auth.fromCookie(),
+          ExtractJwt.fromAuthHeader()
+        ]),
+        secretOrKey: cnf.jwt.secret
+      },
+      auth.makeJwtStrategyCallback(users.makeGetUser(db))
+    ));
+
     passport.use(new GitHubStrategy({
         clientID: cnf.github.client_id,
         clientSecret: cnf.github.client_secret,
         callbackURL: cnf.github.callback_url
       },
-      makeGitHubStrategyCallback(users.makeGetUserGitHubRepositories(GitHub), users.makeUpdateUserGitHub(db), (user) => cnf.github.authorizedUsers.indexOf(user) > -1)
+      auth.makeGitHubStrategyCallback(users.makeGetUserGitHubRepositories(GitHub), users.makeUpdateUserGitHub(db), (user) => cnf.github.authorizedUsers.indexOf(user) > -1)
     ));
 
-    app.use(cookieParser());
     app.use(bodyParser.json());
-    app.use(session(cnf.session));
+    app.use(cookieParser());
     app.use(passport.initialize());
-    app.use(passport.session());
 
     app.get('/login', auth.makeLoginRouteHandler('/auth/github'));
     app.get('/logout', auth.makeLogoutRouteHandler('/'));
     app.get('/auth/github', auth.makeAuthGithubRouteHandler(passport));
     app.get('/auth/github/callback',
       auth.makeAuthGithubCallbackMiddleware(passport, '/unauthorized'),
-      auth.makeAuthGithubCallbackRouteHandler('/')
+      auth.makeAuthGithubCallbackRouteHandler(auth.makeGenerateToken(jsonwebtoken, cnf.jwt.secret), '/')
     );
 
+    app.use('/api', auth.makeAuthJwtMiddleware(passport));
     app.use('/api', auth.makeIsAuthenticatedMiddleware());
     app.get('/api/user/profile', users.makeGetUserProfileRouteHandler(users.makeGetUserProfile(db)));
     app.put('/api/user/profile', users.makePostUserProfileRouteHandler(users.makeUpdateUserProfile(db)));
@@ -66,6 +73,7 @@ export async function main () {
     app.get('/api/projects/:projectIdOrName/texts', projects.createGetProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), GitHub));
     app.patch('/api/projects/:projectIdOrName/texts', projects.createPatchProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), jsonPatch, GitHub));
 
+    app.use('/', express.static('./node_modules/textual-brand/favicon'));
     app.use('/', express.static('./public'));
     app.use('/*', express.static('./public/index.html'));
 
@@ -74,7 +82,7 @@ export async function main () {
     app.listen(cnf.port, () => {
       console.log(`textual-app listening on port ${cnf.port}`);
     });
-  } catch (ex) {
-    console.log(ex, ex.stack);
+  } catch (err) {
+    console.error(err, err.stack);
   }
 }

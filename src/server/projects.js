@@ -112,7 +112,7 @@ export function createPostProjectsRouteHandler (createProject) {
 export function createGetProjectsRouteHandler (getProjectsByRepositoryUrls, getUserRepositories) {
 	return async (req, res, next) => {
 		try {
-			let userRepositories = await getUserRepositories(req.user.id);
+			let userRepositories = await getUserRepositories(req.user._id);
 			let userRepositoryUrls = userRepositories.map(userRepository => userRepository.url);
 
 			let projects = await getProjectsByRepositoryUrls(userRepositoryUrls);

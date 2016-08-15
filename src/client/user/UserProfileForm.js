@@ -11,11 +11,11 @@ export class UserProfileForm extends React.Component	{
 				<Form.Body>
 					<Paragraph>
 						<label htmlFor="displayName">Display name</label>
-						<input id="displayName" type="text" className="display-name" onChange={this.props.onDisplayNameChange} value={this.props.displayName} requried />
+						<input id="displayName" type="text" className="display-name" onChange={this.props.onDisplayNameChange} value={this.props.displayName} />
 					</Paragraph>
 					<Paragraph>
 						<label htmlFor="emailAddress">Email address</label>
-						<input id="emailAddress" type="email" className="email" onChange={this.props.onEmailChange} value={this.props.email} requried />
+						<input id="emailAddress" type="email" className="email" onChange={this.props.onEmailChange} value={this.props.email} />
 					</Paragraph>
 				</Form.Body>
 				<Form.Footer>

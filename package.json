@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "concurrent --kill-others \"webpack --watch\" \"nodemon\"",
+    "dev": "concurrently --kill-others \"webpack --watch\" \"nodemon\"",
     "test": "mocha"
   },
   "repository": {
@@ -46,13 +46,13 @@
     "imports-loader": "^0.6.5",
     "json-loader": "^0.5.4",
     "json-patch": "^0.5.0",
+    "jsonwebtoken": "^7.1.9",
     "mkdirp": "^0.5.1",
-    "mocha": "^2.3.4",
     "mongodb": "^2.1.18",
     "node-sass": "^3.7.0",
-    "nodemon": "^1.9.2",
     "passport": "^0.3.2",
     "passport-github": "^1.0.0",
+    "passport-jwt": "^2.1.0",
     "react": "^15.0.2",
     "react-autosize-textarea": "^0.3.0",
     "react-dom": "^15.0.2",
@@ -62,6 +62,7 @@
     "sass-loader": "^3.2.0",
     "style-loader": "^0.13.1",
     "textual-app-texts": "git+ssh://github.com/jonatanpedersen/textual-app-texts.git",
+    "textual-brand": "git+ssh://github.com/jonatanpedersen/textual-brand.git",
     "url-loader": "^0.5.7",
     "vhost": "^3.0.2",
     "webpack": "^1.13.0",
@@ -70,5 +71,10 @@
   "engines": {
     "node": "6.1.0",
     "npm": "3.8.5"
+  },
+  "devDependencies": {
+    "concurrently": "^2.2.0",
+    "mocha": "^2.3.4",
+    "nodemon": "^1.9.2"
   }
 }
