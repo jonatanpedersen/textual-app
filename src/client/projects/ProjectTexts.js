@@ -186,7 +186,7 @@ export class ProjectTexts extends React.Component	{
 	handleAddRow (newRow) {
 		let data = this.state.data;
 
-		let textId = newRow[1];
+		let textId = newRow[0];
 		let newText = data[0].slice(1).reduce((newText, language, index) => {
 			newText[language] = newRow[index + 1];
 
