@@ -73,7 +73,7 @@ export async function main () {
     app.get('/api/projects/:projectIdOrName/texts', projects.createGetProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), GitHub));
     app.patch('/api/projects/:projectIdOrName/texts', projects.createPatchProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), jsonPatch, GitHub));
 
-    app.use('/', express.static('./node_modules/textual-brand/favicon'));
+    app.use('/', express.static('./node_modules/@jonatanpedersen/textual-brand/favicon'));
     app.use('/', express.static('./public'));
     app.use('/*', express.static('./public/index.html'));
 
