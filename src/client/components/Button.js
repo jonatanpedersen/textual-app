@@ -11,8 +11,10 @@ export class Button extends React.Component {
 			'button--secondary': this.props.color === 'secondary'
 		});
 
+		let props = {...this.props, className};
+
 		return (
-			<button className={className} {...this.props}>
+			<button {...props}>
 				{this.props.children}
 			</button>
 		);
