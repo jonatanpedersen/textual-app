@@ -212,7 +212,7 @@ export class ProjectTexts extends React.Component	{
 		let filter = event.target.value;
 		let offset = 0;
 
-		this.setState({filter, offset, length});
+		this.setState({filter, offset});
 	}
 
 	handlePaginationChange (offset, length) {
