@@ -126,7 +126,7 @@ export class ProjectTexts extends React.Component	{
 		super(props);
 		this.state = {
 			offset: 0,
-			length: 5,
+			length: 20,
 			filter: null
 		};
 		this.handleCellChange = this.handleCellChange.bind(this);
