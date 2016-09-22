@@ -291,7 +291,7 @@ function paginateData (data, offset, length) {
 			visibleIdx++;
 		}
 
-		return (visibleIdx >= offset && visibleIdx <= offset + length) ? row : undefined;
+		return (visibleIdx > offset && visibleIdx <= offset + length) ? row : undefined;
 	});
 }
 
