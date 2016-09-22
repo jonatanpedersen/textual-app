@@ -210,7 +210,6 @@ export class ProjectTexts extends React.Component	{
 	handleFilterChange (event) {
 		let filter = event.target.value;
 		let offset = 0;
-		let length = 10;
 
 		this.setState({filter, offset, length});
 	}
