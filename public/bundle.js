@@ -29650,7 +29650,7 @@
 /* 331 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -30950,6 +30950,8 @@
 
 	var _ProjectLayout = __webpack_require__(394);
 
+	var _Button = __webpack_require__(374);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function updateProjectTexts(projectIdOrName, newProjectTexts) {
@@ -31114,7 +31116,6 @@
 			value: function handleFilterChange(event) {
 				var filter = event.target.value;
 				var offset = 0;
-				var length = 10;
 
 				this.setState({ filter: filter, offset: offset, length: length });
 			}
@@ -31300,18 +31301,18 @@
 						)
 					),
 					_react2.default.createElement(
-						'button',
+						_Button.Button,
 						{ className: 'pagination__button button', disabled: offset === 0, onClick: function onClick() {
 								return _this6.props.onChange && _this6.props.onChange(offset - length, length);
 							} },
-						'Previous'
+						_react2.default.createElement(_reactOcticon2.default, { name: 'chevron-left' })
 					),
 					_react2.default.createElement(
-						'button',
+						_Button.Button,
 						{ className: 'pagination__button button', disabled: offset + length > count, onClick: function onClick() {
 								return _this6.props.onChange && _this6.props.onChange(offset + length, length);
 							} },
-						'Next'
+						_react2.default.createElement(_reactOcticon2.default, { name: 'chevron-right' })
 					)
 				);
 			}
@@ -33989,6 +33990,10 @@
 	});
 	exports.Button = undefined;
 
+	var _extends2 = __webpack_require__(460);
+
+	var _extends3 = _interopRequireDefault(_extends2);
+
 	var _getPrototypeOf = __webpack_require__(6);
 
 	var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
@@ -34043,7 +34048,7 @@
 
 				return _react2.default.createElement(
 					'button',
-					{ className: className, type: this.props.type, onClick: this.props.onClick },
+					(0, _extends3.default)({ className: className }, this.props),
 					this.props.children
 				);
 			}
@@ -59532,6 +59537,94 @@
 
 	// exports
 
+
+/***/ },
+/* 460 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	exports.__esModule = true;
+
+	var _assign = __webpack_require__(461);
+
+	var _assign2 = _interopRequireDefault(_assign);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	exports.default = _assign2.default || function (target) {
+	  for (var i = 1; i < arguments.length; i++) {
+	    var source = arguments[i];
+
+	    for (var key in source) {
+	      if (Object.prototype.hasOwnProperty.call(source, key)) {
+	        target[key] = source[key];
+	      }
+	    }
+	  }
+
+	  return target;
+	};
+
+/***/ },
+/* 461 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = { "default": __webpack_require__(462), __esModule: true };
+
+/***/ },
+/* 462 */
+/***/ function(module, exports, __webpack_require__) {
+
+	__webpack_require__(463);
+	module.exports = __webpack_require__(19).Object.assign;
+
+/***/ },
+/* 463 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// 19.1.3.1 Object.assign(target, source)
+	var $export = __webpack_require__(18);
+
+	$export($export.S + $export.F, 'Object', {assign: __webpack_require__(464)});
+
+/***/ },
+/* 464 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	// 19.1.2.1 Object.assign(target, source, ...)
+	var getKeys  = __webpack_require__(51)
+	  , gOPS     = __webpack_require__(75)
+	  , pIE      = __webpack_require__(76)
+	  , toObject = __webpack_require__(9)
+	  , IObject  = __webpack_require__(54)
+	  , $assign  = Object.assign;
+
+	// should work with symbols and should have deterministic property order (V8 bug)
+	module.exports = !$assign || __webpack_require__(28)(function(){
+	  var A = {}
+	    , B = {}
+	    , S = Symbol()
+	    , K = 'abcdefghijklmnopqrst';
+	  A[S] = 7;
+	  K.split('').forEach(function(k){ B[k] = k; });
+	  return $assign({}, A)[S] != 7 || Object.keys($assign({}, B)).join('') != K;
+	}) ? function assign(target, source){ // eslint-disable-line no-unused-vars
+	  var T     = toObject(target)
+	    , aLen  = arguments.length
+	    , index = 1
+	    , getSymbols = gOPS.f
+	    , isEnum     = pIE.f;
+	  while(aLen > index){
+	    var S      = IObject(arguments[index++])
+	      , keys   = getSymbols ? getKeys(S).concat(getSymbols(S)) : getKeys(S)
+	      , length = keys.length
+	      , j      = 0
+	      , key;
+	    while(length > j)if(isEnum.call(S, key = keys[j++]))T[key] = S[key];
+	  } return T;
+	} : $assign;
 
 /***/ }
 /******/ ]);

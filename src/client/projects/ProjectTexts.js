@@ -10,6 +10,7 @@ import { Loading } from '../components/Loading';
 import classnames from 'classnames';
 import Shortcuts from 'react-shortcuts/component';
 import { ProjectLayout } from './ProjectLayout';
+import { Button } from '../components/Button';
 
 export async function getProject(projectIdOrName) {
 	return get(`/api/projects/${projectIdOrName}`);
@@ -322,8 +323,8 @@ export class ProjectTextsPagination extends React.Component {
 		return (
 			<span className="pagination">
 				<span className="pagination__text">Showing <strong>{offset + 1}</strong> to <strong>{offset + length < count ? offset + length : count}</strong> of <strong>{count}</strong></span>
-				<button className="pagination__button button" disabled={offset === 0} onClick={() => this.props.onChange && this.props.onChange(offset - length, length)}>Previous</button>
-				<button className="pagination__button button" disabled={offset + length > count} onClick={() => this.props.onChange && this.props.onChange(offset + length, length)}>Next</button>
+				<Button className="pagination__button button" disabled={offset === 0} onClick={() => this.props.onChange && this.props.onChange(offset - length, length)}><Octicon name="chevron-left" /></Button>
+				<Button className="pagination__button button" disabled={offset + length > count} onClick={() => this.props.onChange && this.props.onChange(offset + length, length)}><Octicon name="chevron-right" /></Button>
 			</span>
 		);
 	}

@@ -12,7 +12,7 @@ export class Button extends React.Component {
 		});
 
 		return (
-			<button className={className} type={this.props.type} onClick={this.props.onClick}>
+			<button className={className} {...this.props}>
 				{this.props.children}
 			</button>
 		);
