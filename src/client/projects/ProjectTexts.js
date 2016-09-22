@@ -124,10 +124,15 @@ export function addProjectText(projectIdOrName, textId, text) {
 export class ProjectTexts extends React.Component	{
 	constructor(props) {
 		super(props);
-		this.state = {};
+		this.state = {
+			offset: 0,
+			length: 5,
+			filter: null
+		};
 		this.handleCellChange = this.handleCellChange.bind(this);
 		this.handleAddRow = this.handleAddRow.bind(this);
 		this.handleFilterChange = this.handleFilterChange.bind(this);
+		this.handlePaginationChange = this.handlePaginationChange.bind(this);
 		this.handleRemoveRow = this.handleRemoveRow.bind(this);
 		this.handleShortcuts = this.handleShortcuts.bind(this);
 	}
@@ -204,8 +209,14 @@ export class ProjectTexts extends React.Component	{
 
 	handleFilterChange (event) {
 		let filter = event.target.value;
+		let offset = 0;
+		let length = 10;
 
-		this.setState({filter});
+		this.setState({filter, offset, length});
+	}
+
+	handlePaginationChange (offset, length) {
+		this.setState({offset, length});
 	}
 
 	handleRemoveRow (rowIndex) {
@@ -216,27 +227,6 @@ export class ProjectTexts extends React.Component	{
 			data.splice(rowIndex, 1);
 			this.setState({ data });
 		});
-	}
-
-	filterData (data, filter) {
-		if (data && filter) {
-			let pattern;
-			try {
-				pattern = new RegExp(filter, 'im');
-			} catch (err) {
-				return data;
-			}
-
-			return data.map((row, idx) => {
-				if (idx === 0) {
-					return row;
-				}
-
-				return row.some(cell => pattern.test(cell)) ? row : undefined;
-			}) || [];
-		}
-
-		return data;
 	}
 
 	handleShortcuts (action, event) {
@@ -253,40 +243,94 @@ export class ProjectTexts extends React.Component	{
 	}
 
 	render() {
-		let data = this.state.data;
-		let filter = this.state.filter;
-		let content;
+		let { data, filter, offset, length } = this.state;
 
 		if (data) {
-			let filteredData = this.filterData(data, filter);
+			let filteredData = filterData(data, filter);
+			let paginatedData = paginateData(filteredData, offset, length);
+			let count = filteredData.filter(row => row !== undefined).length;
 
-			content = <DataBoundFlexTable
-				data={filteredData}
+			let content = <DataBoundFlexTable
+				data={paginatedData}
+				highlight={filter}
 				onCellChange={this.handleCellChange}
 				onRemoveRow={this.handleRemoveRow}
 				onAddRow={this.handleAddRow}
 			/>;
+
+			return (
+				<Shortcuts name="ProjectTexts" handler={this.handleShortcuts} ref={this.focusRef}>
+					<ProjectLayout className="project-texts-layout">
+						<ProjectLayout.Header onProjectDropdownChange={this.props.handleProjectDropdownChange} selectedProject={this.props.project} projects={this.props.projects}>
+							<ProjectTextsFilter value={filter} ref="filter" onChange={this.handleFilterChange} />
+						</ProjectLayout.Header>
+						<ProjectLayout.Body project={this.props.project}>
+							{content}
+						</ProjectLayout.Body>
+						<ProjectLayout.Footer>
+							<ProjectTextsPagination offset={offset} length={length} count={count} onChange={this.handlePaginationChange} />
+						</ProjectLayout.Footer>
+					</ProjectLayout>
+				</Shortcuts>
+			);
 		} else {
-			content = <Loading />;
+			return <Loading />;
+		}
+	}
+}
+
+function paginateData (data, offset, length) {
+	let visibleIdx = 0;
+
+	return data.map((row, idx) => {
+		if (idx === 0) {
+			return row;
 		}
 
+		if (row !== undefined) {
+			visibleIdx++;
+		}
+
+		return (visibleIdx >= offset && visibleIdx <= offset + length) ? row : undefined;
+	});
+}
+
+function filterData (data, filter) {
+	if (data && filter) {
+		let pattern;
+		try {
+			pattern = new RegExp(filter, 'im');
+		} catch (err) {
+			return data;
+		}
+
+		return data.map((row, idx) => {
+			if (idx === 0) {
+				return row;
+			}
+
+			return row.some(cell => pattern.test(cell)) ? row : undefined;
+		}) || [];
+	}
+
+	return data;
+}
+
+export class ProjectTextsPagination extends React.Component {
+	render() {
+		let { offset, length, count } = this.props;
+
 		return (
-			<Shortcuts name="ProjectTexts" handler={this.handleShortcuts} ref={this.focusRef}>
-				<ProjectLayout className="project-texts-layout">
-					<ProjectLayout.Header onProjectDropdownChange={this.props.handleProjectDropdownChange} selectedProject={this.props.project} projects={this.props.projects}>
-						<ProjectTextsFilter value={filter} ref="filter" onChange={this.handleFilterChange} />
-					</ProjectLayout.Header>
-					<ProjectLayout.Body project={this.props.project}>
-						{content}
-					</ProjectLayout.Body>
-					<ProjectLayout.Footer />
-				</ProjectLayout>
-			</Shortcuts>
+			<span className="pagination">
+				<span className="pagination__text">Showing <strong>{offset + 1}</strong> to <strong>{offset + length < count ? offset + length : count}</strong> of <strong>{count}</strong></span>
+				<button className="pagination__button button" disabled={offset === 0} onClick={() => this.props.onChange && this.props.onChange(offset - length, length)}>Previous</button>
+				<button className="pagination__button button" disabled={offset + length > count} onClick={() => this.props.onChange && this.props.onChange(offset + length, length)}>Next</button>
+			</span>
 		);
 	}
 }
 
-export class ProjectTextsFilter extends React.Component	{
+export class ProjectTextsFilter extends React.Component {
 	render() {
 		let value = this.props.value || '';
 		return <input className="filter" type="text" value={value} onChange={this.props.onChange} placeholder="filter" />

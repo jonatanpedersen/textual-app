@@ -91,4 +91,9 @@ $table-color: #f7f7f7;
 		height: 3rem;
 		float: right;
 	}
+
+	.pagination {
+		float: right;
+		&__text { padding: 1rem; }
+	}
 }

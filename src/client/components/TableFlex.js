@@ -6,6 +6,7 @@ import AutosizeTextarea from 'react-autosize-textarea';
 import { Button } from './Button';
 import Octicon from 'react-octicon';
 import Shortcuts from 'react-shortcuts/component';
+import Highlighter from 'react-highlight-words';
 
 export class TableFlexHeader extends React.Component {
   render() {
@@ -88,8 +89,9 @@ TableFlex.Column = TableFlexColumn;
 export class DataBoundFlexTable extends React.Component	{
 	constructor (props) {
 		super(props);
-		this.state = { newRow: [], rowIndex: 1, columnIndex: 1 };
+		this.state = { rowIndex: 1, columnIndex: 1 };
 		this.handleAddRowButtonClick = this.handleAddRowButtonClick.bind(this);
+    this.handleCellBail = this.handleCellBail.bind(this);
 		this.handleCellClick = this.handleCellClick.bind(this);
 		this.handleCellChange = this.handleCellChange.bind(this);
 		this.handleRemoveRowButtonClick = this.handleRemoveRowButtonClick.bind(this);
@@ -138,15 +140,18 @@ export class DataBoundFlexTable extends React.Component	{
 		}
 	}
 
+  handleCellBail (rowIndex, columnIndex, newValue) {
+		this.blur();
+	}
+
 	handleCellChange (rowIndex, columnIndex, newValue) {
 		this.blur();
 
 		if (rowIndex === -1) {
-			let newRow = this.state.newRow || [];
+      let headerRow = this.props.data[0];
+			let newRow = this.state.newRow || new Array(headerRow.length);
 			newRow[columnIndex] = newValue;
 			this.setState({newRow});
-
-			return;
 		} else {
 			this.props.onCellChange && this.props.onCellChange(rowIndex, columnIndex, newValue);
 		}
@@ -170,9 +175,9 @@ export class DataBoundFlexTable extends React.Component	{
 	}
 
 	render() {
+    let { highlight } = this.props;
 		let headerRow = this.props.data[0];
-		let newRow = this.state.newRow;
-
+		let newRow = this.state.newRow || [];
 		let rows = this.props.data && this.props.data.slice(1).map((row, rowIndex) => {
 			rowIndex++;
 			return row && (
@@ -182,24 +187,26 @@ export class DataBoundFlexTable extends React.Component	{
 						return (
 							<DataBoundFlexTableColumn
 								key={columnIndex}
+                onBail={this.handleCellBail.bind(this, rowIndex, columnIndex)}
 								onChange={this.handleCellChange.bind(this, rowIndex, columnIndex)}
 								onClick={this.handleCellClick.bind(this, rowIndex, columnIndex)}
 								focused={rowIndex === this.state.rowIndex && columnIndex === this.state.columnIndex && this.state.focused}
 								selected={rowIndex === this.state.rowIndex && columnIndex === this.state.columnIndex}
 								placeholder={row[columnIndex]}
 								value={row[columnIndex]}
+                highlight={highlight}
 							/>
 						);
 					})}
 					<TableFlex.Column>
-						<Button color="primary" onClick={this.handleRemoveRowButtonClick && this.handleRemoveRowButtonClick.bind(this, rowIndex)}><Octicon name="trashcan" /></Button>
+						<Button color="primary" size="small" onClick={this.handleRemoveRowButtonClick && this.handleRemoveRowButtonClick.bind(this, rowIndex)}><Octicon name="trashcan" /></Button>
 					</TableFlex.Column>
 				</TableFlex.Row>
 			);
 		});
 
 		return (
-			<Shortcuts name="DataBoundFlexTable" handler={this.handleShortcuts} ref={this.focusRef}>
+			<Shortcuts name="DataBoundFlexTable" handler={this.handleShortcuts} ref={this.focusRef} stopPropagation={false}>
 				<TableFlex>
 					<TableFlex.Header>
 						<TableFlex.Row>
@@ -223,6 +230,7 @@ export class DataBoundFlexTable extends React.Component	{
 								return (
 									<DataBoundFlexTableColumn
 										key={columnIndex}
+                    onBail={this.handleCellBail.bind(this, -1, columnIndex)}
 										onChange={this.handleCellChange.bind(this, -1, columnIndex)}
 										onClick={this.handleCellClick.bind(this, -1, columnIndex)}
 										selected={this.state.rowIndex === -1 && columnIndex === this.state.columnIndex}
@@ -233,7 +241,7 @@ export class DataBoundFlexTable extends React.Component	{
 								);
 							})}
 							<TableFlex.Column>
-								<Button color="primary" onClick={this.handleAddRowButtonClick && this.handleAddRowButtonClick.bind(this, -1)}><Octicon name="plus" /></Button>
+								<Button color="primary" size="small" onClick={this.handleAddRowButtonClick && this.handleAddRowButtonClick.bind(this, -1)}><Octicon name="plus" /></Button>
 							</TableFlex.Column>
 						</TableFlex.Row>
 					</TableFlex.Footer>
@@ -246,18 +254,28 @@ export class DataBoundFlexTable extends React.Component	{
 export class DataBoundFlexTableColumn extends React.Component	{
 	constructor (props) {
 		super (props);
+    this.handleBail = this.handleBail.bind(this);
+    this.handleBlur = this.handleBlur.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleClick = this.handleClick.bind(this);
+		this.handleKeyUp = this.handleKeyUp.bind(this);
 
-		this.handleClick = this.handleClick.bind(this);
-		this.handleChange = this.handleChange.bind(this);
-		this.handleBlur = this.handleBlur.bind(this);
-
-		this.state = {};
+		this.state = {
+      value: props.value
+    };
 	}
 
-	handleBlur (event) {
-		let oldValue = this.props.value;
-		let newValue = this.state.value || this.props.value;
+  componentWillReceiveProps (nextProps) {
+    let value = nextProps.value;
+    this.setState({value});
+  }
 
+  handleBail () {
+    this.props.onBail && this.props.onBail();
+  }
+
+	handleBlur (event) {
+		let newValue = this.state.value;
 		this.props.onChange && this.props.onChange(newValue);
 	}
 
@@ -270,12 +288,15 @@ export class DataBoundFlexTableColumn extends React.Component	{
 		this.props.onClick && this.props.onClick();
 	}
 
-	render() {
-		let placeholder = this.props.placeholder;
-		let selected = this.props.selected;
-		let focused = this.props.focused;
-		let value = focused ? this.state.value || this.props.value : this.props.value;
+  handleKeyUp (event) {
+		if (event.keyCode === 27) {
+      this.handleBail();
+    }
+	}
 
+	render() {
+		let { placeholder, selected, focused, highlight } = this.props;
+		let { value } = this.state;
 		let child;
 
 		if (selected && focused) {
@@ -283,11 +304,22 @@ export class DataBoundFlexTableColumn extends React.Component	{
 				autoFocus
 				onChange={this.handleChange}
 				onBlur={this.handleBlur}
+        onKeyUp={this.handleKeyUp}
 				value={value}
 				placeholder={placeholder}>
 			</AutosizeTextarea>;
 		} else {
-			child = <span>{value || placeholder}</span>;
+      if ((value || placeholder) && highlight) {
+        child = <span>
+          <Highlighter
+            highlightClassName='highlight'
+            searchWords={[highlight]}
+            textToHighlight={value || placeholder}
+          />
+        </span>;
+      } else {
+        child = <span>{value || placeholder}</span>;
+      }
 		}
 
 		return (
@@ -300,9 +332,10 @@ export class DataBoundFlexTableColumn extends React.Component	{
 	}
 
 	shouldComponentUpdate (nextProps, nextState) {
-		return this.props.placeholder !== nextProps.placeholder ||
+    return this.props.placeholder !== nextProps.placeholder ||
 			this.props.focused !== nextProps.focused ||
 			this.props.selected !== nextProps.selected ||
+      this.props.highlight !== nextProps.highlight ||
 			this.props.value !== nextProps.value ||
 			this.state.value !== nextState.value;
 	}

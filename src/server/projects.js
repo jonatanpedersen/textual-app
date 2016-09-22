@@ -219,13 +219,26 @@ export function createGetProjectTextsRouteHandler (getProjectId, getProject, Git
 			let branchName = 'master';
 			let filePath = 'texts.json';
 
-			repo.getContents(branchName, filePath, true, (err, data) => {
+			repo.getTree(branchName, (err, tree) => {
 				if (err) {
 					return next(err);
 				}
 
-				res.json(data);
+				let item = tree.tree.find(item => item.path === 'texts.json');
+
+				if (!item) {
+					throw new Error('Texts Not Found');
+				}
+
+				repo.getBlob(item.sha, (err, data) => {
+					if (err) {
+						return next(err);
+					}
+
+					res.json(data);
+				});
 			});
+
 		} catch (err) {
 			return next(err);
 		}

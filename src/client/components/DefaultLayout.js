@@ -1,4 +1,5 @@
 import React from 'react';
+import { Copyright } from './Copyright';
 import { Layout } from './Layout';
 import { Nav } from './Nav';
 import { Text } from './Text';
@@ -54,10 +55,7 @@ export class DefaultLayoutFooter extends React.Component {
 
 		return (
 			<Layout.Footer className={className}>
-				<Text>&copy; 2015-2016&nbsp;&nbsp;-&nbsp;&nbsp;</Text>
-				<a href="https://www.jonatanpedersen.com">
-					<Text>Jonatan Pedersen</Text>
-				</a>
+				<Copyright />
 				{this.props.children}
 			</Layout.Footer>
 		);
