@@ -144,7 +144,7 @@ export class ProjectTexts extends React.Component	{
 
 	componentWillReceiveProps (nextProps) {
 		if (nextProps.params.projectName !== this.props.params.projectName) {
-			this.setState({data: undefined});
+			this.setState({data: undefined, offset: 0});
 			this.fetch(nextProps.params.projectName);
 		}
 	}
@@ -248,7 +248,7 @@ export class ProjectTexts extends React.Component	{
 		if (data) {
 			let filteredData = filterData(data, filter);
 			let paginatedData = paginateData(filteredData, offset, length);
-			let count = filteredData.filter(row => row !== undefined).length;
+			let count = filteredData.filter(row => row !== undefined).length - 1;
 
 			let content = <DataBoundFlexTable
 				data={paginatedData}

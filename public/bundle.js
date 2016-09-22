@@ -31039,7 +31039,7 @@
 			key: 'componentWillReceiveProps',
 			value: function componentWillReceiveProps(nextProps) {
 				if (nextProps.params.projectName !== this.props.params.projectName) {
-					this.setState({ data: undefined });
+					this.setState({ data: undefined, offset: 0 });
 					this.fetch(nextProps.params.projectName);
 				}
 			}
@@ -31168,7 +31168,7 @@
 					var paginatedData = paginateData(filteredData, offset, length);
 					var count = filteredData.filter(function (row) {
 						return row !== undefined;
-					}).length;
+					}).length - 1;
 
 					var content = _react2.default.createElement(_TableFlex.DataBoundFlexTable, {
 						data: paginatedData,
