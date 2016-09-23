@@ -1,25 +1,26 @@
-import http from 'http';
-import https from 'https';
-import express from 'express';
-import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
-import fs from 'fs';
-import path  from 'path';
-import passport from 'passport';
+import { connectToMongoDB } from './mongodb';
 import { Strategy as GitHubStrategy } from 'passport-github';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import cnf from 'cnf';
-import url from 'url';
-import mkdirp from 'mkdirp';
-import jsonPatch from 'json-patch';
 import * as auth from './auth';
 import * as error from './error';
 import * as projects from './projects';
 import * as users from './users';
+import bodyParser from 'body-parser';
+import cnf from 'cnf';
+import cookieParser from 'cookie-parser';
+import express from 'express';
+import fs from 'fs';
 import GitHub from 'github-api';
-import mongodb from 'mongodb';
-import { connectToMongoDB } from './mongodb';
+import GitHubApi from 'github';
+import http from 'http';
+import https from 'https';
+import jsonPatch from 'json-patch';
 import jsonwebtoken from 'jsonwebtoken';
+import mkdirp from 'mkdirp';
+import mongodb from 'mongodb';
+import passport from 'passport';
+import path  from 'path';
+import url from 'url';
 
 export async function main () {
   try {
@@ -70,8 +71,8 @@ export async function main () {
     app.post('/api/projects/:projectIdOrName/rename', projects.createPostProjectRenameRouteHandler(projects.createGetProjectId(db), projects.createRenameProject(db)));
     app.delete('/api/projects/:projectIdOrName', projects.createDeleteProjectRouteHandler(projects.createGetProjectId(db), projects.createDeleteProject(db)));
     app.put('/api/projects/:projectIdOrName/settings', projects.createPostProjectSettingsRouteHandler(projects.createGetProjectId(db), projects.createUpdateProjectSettings(db)));
-    app.get('/api/projects/:projectIdOrName/texts', projects.createGetProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), GitHub));
-    app.patch('/api/projects/:projectIdOrName/texts', projects.createPatchProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), jsonPatch, GitHub));
+    app.get('/api/projects/:projectIdOrName/texts', projects.createGetProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), GitHubApi));
+    app.patch('/api/projects/:projectIdOrName/texts', projects.createPatchProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), jsonPatch, GitHubApi));
 
     app.use('/', express.static('./node_modules/@jonatanpedersen/textual-brand/favicon'));
     app.use('/', express.static('./public'));

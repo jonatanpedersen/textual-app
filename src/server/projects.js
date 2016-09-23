@@ -1,6 +1,3 @@
-import mongodb from 'mongodb';
-import Github from 'github-api';
-
 export function createGetProjectId (db) {
 	return async function getProjectId (projectIdOrName) {
 		return db.collection('projects')
@@ -15,7 +12,7 @@ export function createGetProjectId (db) {
 
 				throw new Error(`Project with Id or Name '${projectIdOrName}' not found`);
 			});
-	}
+	};
 }
 
 export function createCreateProject (db) {
@@ -92,7 +89,7 @@ export function createDeleteProject (db) {
 	return async function deleteProject(projectId) {
 		return db.collection('projects')
 			.remove({ _id: projectId });
-	}
+	};
 }
 
 export function createPostProjectsRouteHandler (createProject) {
@@ -217,7 +214,6 @@ export function createGetProjectTextsRouteHandler (getProjectId, getProject, Git
 			let repositoryName = getRepositoryNameFromRepositoryUrl(project.repositoryUrl);
 			let repo = github.getRepo(repositoryName);
 			let branchName = 'master';
-			let filePath = 'texts.json';
 
 			repo.getTree(branchName, (err, tree) => {
 				if (err) {
@@ -238,7 +234,6 @@ export function createGetProjectTextsRouteHandler (getProjectId, getProject, Git
 					res.json(data);
 				});
 			});
-
 		} catch (err) {
 			return next(err);
 		}
@@ -250,7 +245,7 @@ export function createPatchProjectTextsRouteHandler (getProjectId, getProject, j
 		try {
 			let github = new GitHub({
 				token: req.user.github.accessToken,
-				auth: "oauth"
+				auth: 'oauth'
 			});
 
 			let projectIdOrName = req.params.projectIdOrName;
@@ -274,10 +269,10 @@ export function createPatchProjectTextsRouteHandler (getProjectId, getProject, j
 					let author = { name: req.user.profile.displayName, email: req.user.profile.email };
 					let committer = author;
 					let message = patch.reduce((messages, patchEntry) => {
-						if (patchEntry.op === 'add') messages.push(`add ${patchEntry.path}`);
-						if (patchEntry.op === 'replace') messages.push(`update ${patchEntry.path}`);
-						if (patchEntry.op === 'remove') messages.push(`remove ${patchEntry.path}`);
-						if (patchEntry.op === 'move') messages.push(`move ${patchEntry.from} to $(patchEntry.path}`);
+						if (patchEntry.op === 'add') { messages.push(`add ${patchEntry.path}`); }
+						if (patchEntry.op === 'replace') { messages.push(`update ${patchEntry.path}`); }
+						if (patchEntry.op === 'remove') { messages.push(`remove ${patchEntry.path}`); }
+						if (patchEntry.op === 'move') { messages.push(`move ${patchEntry.from} to $(patchEntry.path}`); }
 
 						return messages;
 					}, []).join('\n');
