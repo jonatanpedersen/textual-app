@@ -34,10 +34,10 @@ export function makeGetUserRepositories(db) {
 	};
 }
 
-export function makeGetUserGitHubRepositories(GitHub) {
+export function makeGetUserGitHubRepositories(GitHubApi) {
 	return async function getUserGitHubRepositories(githubAccessToken) {
 		try {
-			let github = new GitHub({
+			let github = new GitHubApi({
 				token: githubAccessToken,
 				auth: 'oauth'
 			});

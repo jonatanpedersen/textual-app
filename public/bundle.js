@@ -29650,7 +29650,7 @@
 /* 331 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
@@ -38306,9 +38306,7 @@
 			value: function render() {
 				return _react2.default.createElement(
 					_Button.Button,
-					{ color: 'primary', onClick: function onClick() {
-							return browserHistory.push('/projects/new');
-						}, type: 'submit', className: 'create-project-button' },
+					{ color: 'primary', type: 'submit', className: 'create-project-button' },
 					_react2.default.createElement(_reactOcticon2.default, { name: 'plus' }),
 					' Create Project'
 				);

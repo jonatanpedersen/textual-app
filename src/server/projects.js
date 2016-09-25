@@ -203,96 +203,87 @@ export function createPostProjectRenameRouteHandler (getProjectId, renameProject
 export function createGetProjectTextsRouteHandler (getProjectId, getProject, GitHub) {
 	return async function getProjectTextsRouteHandler (req, res, next) {
 		try {
-			let github = new GitHub({
-				token: req.user.github.accessToken,
-				auth: 'oauth'
+			let github = new GitHub();
+			github.authenticate({
+		    type: 'oauth',
+		    token: req.user.github.accessToken
 			});
 
 			let projectIdOrName = req.params.projectIdOrName;
 			let projectId = await getProjectId(projectIdOrName);
 			let project = await getProject(projectId);
-			let repositoryName = getRepositoryNameFromRepositoryUrl(project.repositoryUrl);
-			let repo = github.getRepo(repositoryName);
-			let branchName = 'master';
+			let repositoryNameParts = getRepositoryNameFromRepositoryUrl(project.repositoryUrl).split('/');
+			let user = repositoryNameParts[0];
+			let repo = repositoryNameParts[1];
+			let ref = 'heads/master';
+			let reference = await github.gitdata.getReference({user, repo, ref});
+			let tree = await github.gitdata.getTree({user, repo, sha: reference.object.sha});
+			let item = tree.tree.find(item => item.path === 'texts.json');
+			let blob = await github.gitdata.getBlob({user, repo, sha: item.sha});
+			let json = Buffer.from(blob.content, blob.encoding).toString();
+			let data = JSON.parse(json);
 
-			repo.getTree(branchName, (err, tree) => {
-				if (err) {
-					return next(err);
-				}
-
-				let item = tree.tree.find(item => item.path === 'texts.json');
-
-				if (!item) {
-					throw new Error('Texts Not Found');
-				}
-
-				repo.getBlob(item.sha, (err, data) => {
-					if (err) {
-						return next(err);
-					}
-
-					res.json(data);
-				});
-			});
+			res.json(data);
 		} catch (err) {
 			return next(err);
 		}
 	};
 }
 
+
 export function createPatchProjectTextsRouteHandler (getProjectId, getProject, jsonPatch, GitHub) {
 	return async function patchProjectTextsRouteHandler (req, res, next) {
 		try {
-			let github = new GitHub({
-				token: req.user.github.accessToken,
-				auth: 'oauth'
+			let github = new GitHub();
+			github.authenticate({
+		    type: 'oauth',
+		    token: req.user.github.accessToken
 			});
-
+			let patch = req.body;
 			let projectIdOrName = req.params.projectIdOrName;
 			let projectId = await getProjectId(projectIdOrName);
 			let project = await getProject(projectId);
-			let repositoryName = getRepositoryNameFromRepositoryUrl(project.repositoryUrl);
-			let repo = github.getRepo(repositoryName);
-			let branchName = 'master';
-			let filePath = 'texts.json';
-			let patch = req.body;
+			let repositoryNameParts = getRepositoryNameFromRepositoryUrl(project.repositoryUrl).split('/');
+			let user = repositoryNameParts[0];
+			let repo = repositoryNameParts[1];
+			let ref = 'heads/master';
+			let reference = await github.gitdata.getReference({user, repo, ref });
+			let tree = await github.gitdata.getTree({user, repo, sha: reference.object.sha});
+			let item = tree.tree.find(item => item.path === 'texts.json');
+			let blob = await github.gitdata.getBlob({user, repo, sha: item.sha});
+			let json = Buffer.from(blob.content, blob.encoding).toString();
+			let data = JSON.parse(json);
 
-			repo.getContents(branchName, filePath, true, (err, data) => {
-				if (err) {
-					return next(err);
+			jsonPatch.apply(data, patch);
+
+			let newJson = JSON.stringify(data, null, 4);
+			let newContent = Buffer.from(newJson, 'utf8').toString('base64');
+			let newBlob = await github.gitdata.createBlob({user, repo, content: newContent, encoding: 'base64'});
+
+			let newTree = [
+				{
+					path: 'texts.json',
+					mode: '100644',
+					type: 'blob',
+					sha: newBlob.sha
 				}
+			];
+			let newlyCreatedTree = await github.gitdata.createTree({user, repo, tree: newTree, base_tree: tree.sha});
+			let author = { name: req.user.profile.displayName, email: req.user.profile.email, date: new Date().toISOString() };
+			let committer = author;
+			let message = patch.reduce((messages, patchEntry) => {
+				if (patchEntry.op === 'add') { messages.push(`add ${patchEntry.path}`); }
+				if (patchEntry.op === 'replace') { messages.push(`update ${patchEntry.path}`); }
+				if (patchEntry.op === 'remove') { messages.push(`remove ${patchEntry.path}`); }
+				if (patchEntry.op === 'move') { messages.push(`move ${patchEntry.from} to $(patchEntry.path}`); }
 
-				try {
-					jsonPatch.apply(data, patch);
-					let newData = JSON.stringify(data, null, 4);
+				return messages;
+			}, []).join('\n');
 
-					let author = { name: req.user.profile.displayName, email: req.user.profile.email };
-					let committer = author;
-					let message = patch.reduce((messages, patchEntry) => {
-						if (patchEntry.op === 'add') { messages.push(`add ${patchEntry.path}`); }
-						if (patchEntry.op === 'replace') { messages.push(`update ${patchEntry.path}`); }
-						if (patchEntry.op === 'remove') { messages.push(`remove ${patchEntry.path}`); }
-						if (patchEntry.op === 'move') { messages.push(`move ${patchEntry.from} to $(patchEntry.path}`); }
+			let commit = await github.gitdata.createCommit({user, repo, message, author, committer, tree: newlyCreatedTree.sha, parents: [tree.sha]});
+			await github.gitdata.updateReference({user, repo, ref, sha: commit.sha});
 
-						return messages;
-					}, []).join('\n');
-
-					let options = {
-						author: author,
-						committer: committer
-					};
-
-					repo.writeFile(branchName, filePath, newData, message, options, function(err) {
-						if (err) {
-							return next(err);
-						}
-
-						return res.end();
-					});
-				} catch (err) {
-					return next(err);
-				}
-			});
+			res.end();
 		} catch (err) {
 			return next(err);
 		}

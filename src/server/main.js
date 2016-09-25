@@ -10,8 +10,8 @@ import cnf from 'cnf';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import fs from 'fs';
-import GitHub from 'github-api';
-import GitHubApi from 'github';
+import GitHubApi from 'github-api';
+import GitHub from 'github';
 import http from 'http';
 import https from 'https';
 import jsonPatch from 'json-patch';
@@ -42,7 +42,7 @@ export async function main () {
         clientSecret: cnf.github.client_secret,
         callbackURL: cnf.github.callback_url
       },
-      auth.makeGitHubStrategyCallback(users.makeGetUserGitHubRepositories(GitHub), users.makeUpdateUserGitHub(db), (user) => cnf.github.authorizedUsers.indexOf(user) > -1)
+      auth.makeGitHubStrategyCallback(users.makeGetUserGitHubRepositories(GitHubApi), users.makeUpdateUserGitHub(db), (user) => cnf.github.authorizedUsers.indexOf(user) > -1)
     ));
 
     app.use(bodyParser.json());
@@ -71,8 +71,8 @@ export async function main () {
     app.post('/api/projects/:projectIdOrName/rename', projects.createPostProjectRenameRouteHandler(projects.createGetProjectId(db), projects.createRenameProject(db)));
     app.delete('/api/projects/:projectIdOrName', projects.createDeleteProjectRouteHandler(projects.createGetProjectId(db), projects.createDeleteProject(db)));
     app.put('/api/projects/:projectIdOrName/settings', projects.createPostProjectSettingsRouteHandler(projects.createGetProjectId(db), projects.createUpdateProjectSettings(db)));
-    app.get('/api/projects/:projectIdOrName/texts', projects.createGetProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), GitHubApi));
-    app.patch('/api/projects/:projectIdOrName/texts', projects.createPatchProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), jsonPatch, GitHubApi));
+    app.get('/api/projects/:projectIdOrName/texts', projects.createGetProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), GitHub));
+    app.patch('/api/projects/:projectIdOrName/texts', projects.createPatchProjectTextsRouteHandler(projects.createGetProjectId(db), projects.createGetProject(db), jsonPatch, GitHub));
 
     app.use('/', express.static('./node_modules/@jonatanpedersen/textual-brand/favicon'));
     app.use('/', express.static('./public'));
